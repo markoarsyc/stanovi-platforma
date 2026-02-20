@@ -2,12 +2,13 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaService } from './prisma.service';
 
 @Global()
 @Module({
   providers: [
     {
-      provide: PrismaClient,
+      provide: PrismaService,
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const adapter = new PrismaPg({
@@ -18,6 +19,6 @@ import { PrismaPg } from '@prisma/adapter-pg';
       },
     },
   ],
-  exports: [PrismaClient],
+  exports: [PrismaService],
 })
 export class PrismaModule {}
