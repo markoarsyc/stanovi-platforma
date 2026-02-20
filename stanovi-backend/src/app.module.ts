@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { InvestorModule } from './investor/investor.module';
+import { BuyerModule } from './buyer/buyer.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { InvestorModule } from './investor/investor.module';
     PrismaModule,
     AuthModule,
     InvestorModule,
+    BuyerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
