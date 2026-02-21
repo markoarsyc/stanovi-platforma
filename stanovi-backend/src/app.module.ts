@@ -8,6 +8,7 @@ import { InvestorModule } from './investor/investor.module';
 import { BuyerModule } from './buyer/buyer.module';
 import { BuildingModule } from './building/building.module';
 import { ApartmentModule } from './apartment/apartment.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ApartmentModule } from './apartment/apartment.module';
     BuyerModule,
     BuildingModule,
     ApartmentModule,
+    LocationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
