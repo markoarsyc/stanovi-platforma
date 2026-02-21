@@ -1,10 +1,6 @@
-import { IsNotEmpty, IsString, IsUUID, IsPhoneNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID, IsPhoneNumber, IsOptional } from 'class-validator';
 
 export class CreateBuyerDto {
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
   @IsString()
   @IsNotEmpty()
   firstName: string;
@@ -20,11 +16,14 @@ export class CreateBuyerDto {
 
 export class UpdateBuyerDto {
   @IsString()
+  @IsOptional()
   firstName?: string;
 
   @IsString()
+  @IsOptional()
   lastName?: string;
 
   @IsString()
+  @IsOptional()
   phone?: string;
 }

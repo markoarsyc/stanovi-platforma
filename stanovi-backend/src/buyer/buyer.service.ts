@@ -1,14 +1,15 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBuyerDto, UpdateBuyerDto } from './dto/buyer.dto';
+import { Role } from '@prisma/client/index-browser';
 
 @Injectable()
 export class BuyerService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateBuyerDto) {
+  async create(dto: CreateBuyerDto, user: any) {
     const existing = await this.prisma.buyer.findUnique({
-      where: { userId: dto.userId },
+      where: { userId: user.id },
     });
 
     if (existing) {
@@ -16,7 +17,10 @@ export class BuyerService {
     }
 
     return this.prisma.buyer.create({
-      data: dto,
+      data: {
+        ...dto,
+        userId: user.id,
+      },
     });
   }
 
@@ -32,16 +36,36 @@ export class BuyerService {
     return buyer;
   }
 
-  async update(id: string, dto: UpdateBuyerDto) {
+  async update(id: string, dto: UpdateBuyerDto, user: any) {
+    await this.validateOwnership(id, user);
+
     return this.prisma.buyer.update({
       where: { id },
       data: dto,
     });
   }
 
-  async delete(id: string) {
+  async delete(id: string, user: any) {
+    await this.validateOwnership(id, user);
+
     return this.prisma.buyer.delete({
       where: { id },
     });
+  }
+
+  private async validateOwnership(buyerId: string, user: any) {
+    const buyer = await this.prisma.buyer.findUnique({
+      where: { id: buyerId },
+    });
+
+    if (!buyer) {
+      throw new NotFoundException(`Buyer profile not found.`);
+    }
+
+    if (user.role !== Role.ADMIN && buyer.userId !== user.id) {
+      throw new ForbiddenException('You can only modify your own profile.');
+    }
+
+    return buyer;
   }
 }
