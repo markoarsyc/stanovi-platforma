@@ -1,11 +1,6 @@
-// investor/dto/create-investor.dto.ts
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateInvestorDto {
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
   @IsString()
   @IsNotEmpty()
   companyName: string;

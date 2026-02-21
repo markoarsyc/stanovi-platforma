@@ -2,10 +2,6 @@ import { IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, IsDateString } from 'c
 import { BuildingStatus } from '@prisma/client';
 
 export class CreateBuildingDto {
-  @IsString()
-  @IsNotEmpty()
-  investorId: string;
-
   @IsInt()
   @IsNotEmpty()
   locationId: number;
