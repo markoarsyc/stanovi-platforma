@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { InvestorModule } from './investor/investor.module';
 import { BuyerModule } from './buyer/buyer.module';
 import { BuildingModule } from './building/building.module';
+import { ApartmentModule } from './apartment/apartment.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { BuildingModule } from './building/building.module';
     InvestorModule,
     BuyerModule,
     BuildingModule,
+    ApartmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
