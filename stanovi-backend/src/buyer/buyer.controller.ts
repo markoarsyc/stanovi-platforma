@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import type { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Controller('buyers')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -14,7 +15,7 @@ export class BuyerController {
 
   @Post()
   @Roles(Role.BUYER)
-  create(@Body() dto: CreateBuyerDto, @GetUser() user: any) {
+  create(@Body() dto: CreateBuyerDto, @GetUser() user: ActiveUser) {
     return this.buyerService.create(dto, user);
   }
 
@@ -32,13 +33,13 @@ export class BuyerController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.BUYER)
-  update(@Param('id') id: string, @Body() dto: UpdateBuyerDto, @GetUser() user: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateBuyerDto, @GetUser() user: ActiveUser) {
     return this.buyerService.update(id, dto, user);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN, Role.BUYER)
-  remove(@Param('id') id: string, @GetUser() user: any) {
+  remove(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.buyerService.delete(id, user);
   }
 }

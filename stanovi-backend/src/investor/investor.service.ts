@@ -1,12 +1,14 @@
 import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInvestorDto } from './dto/investor.dto';
+import { ActiveUser } from '../auth/interfaces/active-user.interface';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class InvestorService {
   constructor(private prisma: PrismaService) { }
 
-  async create(dto: CreateInvestorDto, user: any) {
+  async create(dto: CreateInvestorDto, user: ActiveUser) {
     const existing = await this.prisma.investor.findUnique({
       where: { userId: user.id }
     });
@@ -46,12 +48,12 @@ export class InvestorService {
     });
   }
 
-  async delete(id: string, user: any) {
+  async delete(id: string, user: ActiveUser) {
   const investor = await this.prisma.investor.findUnique({ where: { id } });
   
   if (!investor) throw new NotFoundException('Investor not found');
 
-  if (user.role !== 'ADMIN' && investor.userId !== user.id) {
+  if (user.role !== Role.ADMIN && investor.userId !== user.id) {
     throw new ForbiddenException('You can only delete your own profile');
   }
 

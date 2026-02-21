@@ -1,13 +1,14 @@
 import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBuyerDto, UpdateBuyerDto } from './dto/buyer.dto';
-import { Role } from '@prisma/client/index-browser';
+import { Role } from '@prisma/client';
+import { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Injectable()
 export class BuyerService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateBuyerDto, user: any) {
+  async create(dto: CreateBuyerDto, user: ActiveUser) {
     const existing = await this.prisma.buyer.findUnique({
       where: { userId: user.id },
     });
@@ -36,7 +37,7 @@ export class BuyerService {
     return buyer;
   }
 
-  async update(id: string, dto: UpdateBuyerDto, user: any) {
+  async update(id: string, dto: UpdateBuyerDto, user: ActiveUser) {
     await this.validateOwnership(id, user);
 
     return this.prisma.buyer.update({
@@ -45,7 +46,7 @@ export class BuyerService {
     });
   }
 
-  async delete(id: string, user: any) {
+  async delete(id: string, user: ActiveUser) {
     await this.validateOwnership(id, user);
 
     return this.prisma.buyer.delete({
@@ -53,7 +54,7 @@ export class BuyerService {
     });
   }
 
-  private async validateOwnership(buyerId: string, user: any) {
+  private async validateOwnership(buyerId: string, user: ActiveUser) {
     const buyer = await this.prisma.buyer.findUnique({
       where: { id: buyerId },
     });

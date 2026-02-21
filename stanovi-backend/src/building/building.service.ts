@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBuildingDto, UpdateBuildingDto } from './dto/building.dto';
-import { Role } from '@prisma/client/edge';
+import { Role } from '@prisma/client';
+import { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Injectable()
 export class BuildingService {
   constructor(private prisma: PrismaService) { }
 
-  async create(dto: CreateBuildingDto, user: any) {
+  async create(dto: CreateBuildingDto, user: ActiveUser) {
     const investor = await this.prisma.investor.findUnique({
       where: { userId: user.id },
     });
@@ -46,7 +47,7 @@ export class BuildingService {
     return building;
   }
 
-  async update(id: string, dto: UpdateBuildingDto, user: any) {
+  async update(id: string, dto: UpdateBuildingDto, user: ActiveUser) {
     if (user.role !== Role.ADMIN) {
       await this.validateOwnership(id, user);
     }
@@ -57,7 +58,7 @@ export class BuildingService {
     });
   }
 
-  async delete(id: string, user: any) {
+  async delete(id: string, user: ActiveUser) {
     if (user.role !== Role.ADMIN) {
       await this.validateOwnership(id, user);
     }
@@ -66,7 +67,7 @@ export class BuildingService {
     });
   }
 
-  private async validateOwnership(buildingId: string, user: any) {
+  private async validateOwnership(buildingId: string, user: ActiveUser) {
     //Check if building exists
     const building = await this.prisma.building.findUnique({
       where: { id: buildingId },

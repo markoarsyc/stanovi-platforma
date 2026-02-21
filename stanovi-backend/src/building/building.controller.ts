@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Role } from '@prisma/client';
+import type { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Controller('buildings')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -14,7 +15,7 @@ export class BuildingController {
 
   @Post()
   @Roles(Role.INVESTOR)
-  create(@Body() dto: CreateBuildingDto, @GetUser() user: any) {
+  create(@Body() dto: CreateBuildingDto, @GetUser() user: ActiveUser) {
     return this.buildingService.create(dto, user);
   }
 
@@ -30,13 +31,13 @@ export class BuildingController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.INVESTOR)
-  update(@Param('id') id: string, @Body() dto: UpdateBuildingDto, @GetUser() user: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateBuildingDto, @GetUser() user: ActiveUser) {
     return this.buildingService.update(id, dto, user);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN, Role.INVESTOR)
-  delete(@Param('id') id: string, @GetUser() user: any) {
+  delete(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.buildingService.delete(id, user);
   }
 }

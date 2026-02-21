@@ -2,12 +2,13 @@ import { Injectable, NotFoundException, ConflictException, ForbiddenException } 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApartmentDto, UpdateApartmentDto } from './dto/apartment.dto';
 import { Role } from '@prisma/client';
+import { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Injectable()
 export class ApartmentService {
   constructor(private prisma: PrismaService) { }
 
-  async create(dto: CreateApartmentDto, user: any) {
+  async create(dto: CreateApartmentDto, user: ActiveUser) {
     await this.validateBuildingOwnership(dto.buildingId, user);
 
     const existing = await this.prisma.apartment.findUnique({
@@ -43,7 +44,7 @@ export class ApartmentService {
     return apartment;
   }
 
-  async update(id: string, dto: UpdateApartmentDto, user: any) {
+  async update(id: string, dto: UpdateApartmentDto, user: ActiveUser) {
     const apartment = await this.prisma.apartment.findUnique({
       where: { id },
     });
@@ -58,7 +59,7 @@ export class ApartmentService {
     });
   }
 
-  async delete(id: string, user: any) {
+  async delete(id: string, user: ActiveUser) {
     const apartment = await this.prisma.apartment.findUnique({
       where: { id },
     });
@@ -70,7 +71,7 @@ export class ApartmentService {
     return this.prisma.apartment.delete({ where: { id } });
   }
 
-  private async validateBuildingOwnership(buildingId: string, user: any) {
+  private async validateBuildingOwnership(buildingId: string, user: ActiveUser) {
     if (user.role === Role.ADMIN) return;
 
     // Find investor profile associated with the user

@@ -5,7 +5,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import type { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Controller('apartments')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -14,7 +15,7 @@ export class ApartmentController {
 
   @Post()
   @Roles(Role.INVESTOR)
-  create(@Body() dto: CreateApartmentDto, @GetUser() user: any) {
+  create(@Body() dto: CreateApartmentDto, @GetUser() user: ActiveUser) {
     return this.apartmentService.create(dto, user);
   }
 
@@ -30,13 +31,13 @@ export class ApartmentController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.INVESTOR)
-  update(@Param('id') id: string, @Body() dto: UpdateApartmentDto, @GetUser() user: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateApartmentDto, @GetUser() user: ActiveUser) {
     return this.apartmentService.update(id, dto, user);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN, Role.INVESTOR)
-  delete(@Param('id') id: string, @GetUser() user: any) {
+  delete(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.apartmentService.delete(id, user);
   }
 }

@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import type { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Controller('investors')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -14,7 +15,7 @@ export class InvestorController {
 
   @Post()
   @Roles(Role.INVESTOR)
-  create(@Body() dto: CreateInvestorDto, @GetUser() user: any) {
+  create(@Body() dto: CreateInvestorDto, @GetUser() user: ActiveUser) {
     return this.investorService.create(dto, user);
   }
 
@@ -37,7 +38,7 @@ export class InvestorController {
 
   @Delete(':id')
   @Roles(Role.ADMIN, Role.INVESTOR)
-  delete(@Param('id') id: string, @GetUser() user: any) {
+  delete(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.investorService.delete(id, user);
   }
 }

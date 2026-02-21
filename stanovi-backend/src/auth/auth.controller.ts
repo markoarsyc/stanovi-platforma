@@ -5,6 +5,9 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
+import type { ActiveUser } from './interfaces/active-user.interface';
+import { GetUser } from './decorators/get-user.decorator';
+import { Role } from '.prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -22,8 +25,8 @@ export class AuthController {
 
     @Get('me')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('INVESTOR', 'BUYER')
-    getProfile(@Req() req: any) {
-        return req.user;
+    @Roles(Role.INVESTOR, Role.BUYER)
+    getProfile(@GetUser() user: ActiveUser) {
+        return user;
     }
 }
