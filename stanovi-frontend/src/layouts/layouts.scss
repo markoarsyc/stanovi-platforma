@@ -1,0 +1,59 @@
+// Definicija varijabli za lakše održavanje
+$primary-color: #2c3e50; // Tamno plava/siva za ozbiljnost
+$accent-color: #c0392b;  // Akcentna boja (npr. boja cigle ili brenda)
+$text-light: #666;
+$transition-speed: 0.3s;
+
+.public-header {
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem 5%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  nav {
+    ul {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 2rem; // Razmak između linkova
+      justify-content: flex-start; // Poravnanje uz levu ivicu
+
+      li {
+        a {
+          text-decoration: none;
+          color: $primary-color;
+          font-weight: 500;
+          font-size: 0.95rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          position: relative;
+          transition: color $transition-speed ease;
+
+          // Blagi hover efekat (promena boje i linija ispod)
+          &:hover {
+            color: $accent-color;
+
+            &::after {
+              width: 100%;
+            }
+          }
+
+          // Suptilna linija koja se širi pri hoveru
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: $accent-color;
+            transition: width $transition-speed ease;
+          }
+        }
+      }
+    }
+  }
+}
