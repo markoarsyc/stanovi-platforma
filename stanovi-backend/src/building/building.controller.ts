@@ -9,10 +9,9 @@ import { Role } from '@prisma/client';
 import type { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Controller('buildings')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class BuildingController {
   constructor(private readonly buildingService: BuildingService) {}
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   @Roles(Role.INVESTOR)
   create(@Body() dto: CreateBuildingDto, @GetUser() user: ActiveUser) {
@@ -29,12 +28,14 @@ export class BuildingController {
     return this.buildingService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
   @Roles(Role.ADMIN, Role.INVESTOR)
   update(@Param('id') id: string, @Body() dto: UpdateBuildingDto, @GetUser() user: ActiveUser) {
     return this.buildingService.update(id, dto, user);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
   @Roles(Role.ADMIN, Role.INVESTOR)
   delete(@Param('id') id: string, @GetUser() user: ActiveUser) {

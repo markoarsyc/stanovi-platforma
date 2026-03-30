@@ -1,1 +1,72 @@
 @import "tailwindcss";
+
+@theme {
+  /* Ovde definišemo varijable tako da ih Tailwind v4 prepozna kao klase */
+  --color-background: hsl(232 40% 6%);
+  --color-foreground: hsl(230 25% 92%);
+
+  --color-card: hsl(232 35% 10%);
+  --color-card-foreground: hsl(230 25% 92%);
+
+  --color-primary: hsl(239 84% 67%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(232 30% 16%);
+  --color-secondary-foreground: hsl(230 25% 85%);
+
+  --color-muted: hsl(232 25% 14%);
+  --color-muted-foreground: hsl(230 15% 55%);
+
+  --color-accent: hsl(45 93% 58%);
+  --color-accent-foreground: hsl(232 40% 6%);
+
+  --color-border: hsl(232 30% 18%);
+  --color-input: hsl(232 30% 18%);
+  --color-ring: hsl(239 84% 67%);
+
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
+
+  --font-display: "Playfair Display", serif;
+  --font-body: "DM Sans", sans-serif;
+}
+
+/* Osnovni stilovi za HTML elemente */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+/* Tvoji custom gradijenti i klase */
+@layer utilities {
+  .text-gradient-indigo {
+    background: linear-gradient(135deg, hsl(239 84% 67%), hsl(260 80% 75%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(45 93% 58%), hsl(35 90% 65%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .bg-gradient-indigo {
+    background: linear-gradient(135deg, hsl(239 84% 67%), hsl(260 70% 55%));
+  }
+
+  .shadow-indigo {
+    box-shadow: 0 10px 40px -10px hsla(239, 84%, 67%, 0.3);
+  }
+}

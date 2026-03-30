@@ -1,27 +1,24 @@
 import { Outlet } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import './layouts.scss';
+import Navbar from '../shared/components/Navbar';
 
 const PublicLayout = () => {
   return (
-    <>
-      <header className='public-header'>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">O nama</Link>
-            </li>
-            <li>
-              <Link to="/auth">Prijava</Link>
-            </li>
-          </ul>
-        </nav>
-      </header>
+    <div className="flex min-h-screen flex-col">
+      {/* Moderan Navbar sa glass-morphism efektom */}
+      <Navbar />
 
-      <main>
+      {/* Main content sa padding-top da ga Navbar ne bi prekrio (jer je fixed) */}
+      <main className="flex-grow pt-20">
         <Outlet />
       </main>
-    </>
+
+      {/* Ovde možeš kasnije dodati i Footer */}
+      <footer className="border-t border-border py-12 bg-card">
+        <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
+          &copy; {new Date().getFullYear()} Indigo Beograd. Sva prava zadržana.
+        </div>
+      </footer>
+    </div>
   );
 };
 
