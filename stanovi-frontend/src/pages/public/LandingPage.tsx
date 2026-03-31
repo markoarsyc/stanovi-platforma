@@ -80,12 +80,6 @@ const LandingPage = () => {
               >
                 Pregledaj Oglase <ArrowRight size={16} />
               </Link>
-              <Link
-                to="/o-nama"
-                className="inline-flex items-center gap-2 rounded-lg border border-border px-8 py-4 font-body text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-              >
-                Saznaj više
-              </Link>
             </div>
           </motion.div>
         </div>

@@ -25,7 +25,6 @@ const Navbar = () => {
   const navItems = [
     { label: "Početna", path: "/" },
     { label: "Oglasi", path: "/oglasi" },
-    { label: "O nama", path: "/o-nama" },
     // Dinamički dodajemo linkove za investitore
     ...(isInvestor ? [{ label: "Moji projekti", path: "/dashboard" }] : []),
   ];
