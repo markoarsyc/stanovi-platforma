@@ -9,17 +9,18 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import type { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Controller('investors')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class InvestorController {
   constructor(private readonly investorService: InvestorService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.INVESTOR)
   create(@Body() dto: CreateInvestorDto, @GetUser() user: ActiveUser) {
     return this.investorService.create(dto, user);
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   findAll() {
     return this.investorService.findAll();
@@ -31,12 +32,14 @@ export class InvestorController {
   }
 
   @Patch(':id/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   verify(@Param('id') id: string) {
     return this.investorService.verifyInvestor(id);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INVESTOR)
   delete(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.investorService.delete(id, user);
