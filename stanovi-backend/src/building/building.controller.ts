@@ -23,6 +23,13 @@ export class BuildingController {
     return this.buildingService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('investor/my-buildings')
+  @Roles(Role.INVESTOR)
+  getInvestorBuildings(@GetUser() user: ActiveUser) {
+    return this.buildingService.getInvestorBuildings(user);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.buildingService.findOne(id);

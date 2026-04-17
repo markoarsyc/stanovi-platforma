@@ -26,7 +26,7 @@ const Navbar = () => {
     { label: "Početna", path: "/" },
     { label: "Oglasi", path: "/oglasi" },
     // Dinamički dodajemo linkove za investitore
-    ...(isInvestor ? [{ label: "Moji projekti", path: "/dashboard" }] : []),
+    ...(isInvestor ? [{ label: "Moji projekti", path: "/investor" }] : []),
   ];
 
   return (

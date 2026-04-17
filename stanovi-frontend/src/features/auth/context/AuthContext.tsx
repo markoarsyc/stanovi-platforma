@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import type { AuthUser, AuthResponse } from '../types';
+import { Role } from '@/shared/types/enums/role.enum';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -8,6 +9,8 @@ interface AuthContextType {
   login: (data: AuthResponse) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isInvestor: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,6 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('auth_token'));
+  const [loading, setLoading] = useState(true);
 
   const getUserFromToken = (t: string): AuthUser | null => {
     try {
@@ -30,13 +34,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    if (token) {
-      const decodedUser = getUserFromToken(token);
-      if (decodedUser) {
-        setUser(decodedUser);
+    try {
+      if (token) {
+        const decodedUser = getUserFromToken(token);
+        if (decodedUser) {
+          setUser(decodedUser);
+        } else {
+          logout();
+        }
       } else {
-        logout();
+        setUser(null);
       }
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -59,7 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       token, 
       login, 
       logout, 
-      isAuthenticated: !!token 
+      isAuthenticated: !!token,
+      isInvestor: user?.role === Role.INVESTOR,
+      loading,
     }}>
       {children}
     </AuthContext.Provider>

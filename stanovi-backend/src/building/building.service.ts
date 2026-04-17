@@ -31,6 +31,24 @@ export class BuildingService {
     });
   }
 
+  async getInvestorBuildings(user: ActiveUser) {
+    const investor = await this.prisma.investor.findUnique({
+      where: { userId: user.id },
+    });
+    if (!investor) throw new ForbiddenException('Investor profile not found');
+
+    return this.prisma.building.findMany({
+      where: { investorId: investor.id },
+      include: {
+        location: true,
+        apartments: {
+          orderBy: { aptNo: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findOne(id: string) {
     const building = await this.prisma.building.findUnique({
       where: { id },
