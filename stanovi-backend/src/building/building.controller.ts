@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { BuildingService } from './building.service';
 import { CreateBuildingDto, UpdateBuildingDto } from './dto/building.dto';
+import { UpdateBuildingImageDto } from './dto/building-image.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -47,5 +49,49 @@ export class BuildingController {
   @Roles(Role.ADMIN, Role.INVESTOR)
   delete(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.buildingService.delete(id, user);
+  }
+
+  // ============================================
+  // Building Images Endpoints
+  // ============================================
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post(':id/images')
+  @Roles(Role.INVESTOR)
+  @UseInterceptors(FileInterceptor('image'))
+  uploadImage(
+    @Param('id') buildingId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: ActiveUser,
+  ) {
+    return this.buildingService.uploadBuildingImage(buildingId, file, user);
+  }
+
+  @Get(':id/images')
+  getBuildingImages(@Param('id') buildingId: string) {
+    return this.buildingService.getBuildingImages(buildingId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Delete(':id/images/:imageId')
+  @Roles(Role.INVESTOR)
+  deleteImage(
+    @Param('id') buildingId: string,
+    @Param('imageId') imageId: string,
+    @GetUser() user: ActiveUser,
+  ) {
+    return this.buildingService.deleteBuildingImage(buildingId, imageId, user);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch(':id/images/:imageId')
+  @Roles(Role.INVESTOR)
+  updateImage(
+    @Param('id') buildingId: string,
+    @Param('imageId') imageId: string,
+    @Body() dto: UpdateBuildingImageDto,
+    @GetUser() user: ActiveUser,
+  ) {
+    return this.buildingService.reorderBuildingImages(buildingId, [imageId], user);
   }
 }

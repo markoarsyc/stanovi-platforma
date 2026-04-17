@@ -2,16 +2,16 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import * as buildingsService from '@/api/services/buildings.service';
 import type { Building } from '@/shared/types/entity/building.entity';
-import type { Apartment } from '@/shared/types/entity/apartment.entity';
+import type { BuildingImage } from '@/shared/types/building-detail.types';
 
-interface BuildingWithApartments extends Building {
-  apartments: Apartment[];
-}
+type BuildingWithApartments = Awaited<ReturnType<typeof buildingsService.getInvestorBuildings>>[number];
 
 export const useInvestorBuildings = () => {
   const [buildings, setBuildings] = useState<BuildingWithApartments[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
 
   const fetchBuildings = useCallback(async () => {
     try {
@@ -76,13 +76,81 @@ export const useInvestorBuildings = () => {
     [fetchBuildings]
   );
 
+  const uploadBuildingImage = useCallback(
+    async (buildingId: string, file: File) => {
+      try {
+        setImageLoading(true);
+        setImageError(null);
+        const image = await buildingsService.uploadBuildingImage(buildingId, file);
+        toast.success('Slika dodana!');
+
+        // Update local state with new image
+        setBuildings((prevBuildings) =>
+          prevBuildings.map((building) =>
+            building.id === buildingId
+              ? {
+                  ...building,
+                  images: [...(building.images || []), image] as BuildingImage[],
+                }
+              : building
+          )
+        );
+
+        return image;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Greška pri dodavanju slike';
+        setImageError(message);
+        toast.error(message);
+        throw err;
+      } finally {
+        setImageLoading(false);
+      }
+    },
+    []
+  );
+
+  const deleteBuildingImage = useCallback(
+    async (buildingId: string, imageId: string) => {
+      try {
+        setImageLoading(true);
+        setImageError(null);
+        await buildingsService.deleteBuildingImage(buildingId, imageId);
+        toast.success('Slika obrisana!');
+
+        // Update local state by removing the image
+        setBuildings((prevBuildings) =>
+          prevBuildings.map((building) =>
+            building.id === buildingId
+              ? {
+                  ...building,
+                  images: (building.images || []).filter((img: BuildingImage) => img.id !== imageId) as BuildingImage[],
+                }
+              : building
+          )
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Greška pri brisanju slike';
+        setImageError(message);
+        toast.error(message);
+        throw err;
+      } finally {
+        setImageLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     buildings,
     loading,
     error,
+    imageError,
+    imageLoading,
     fetchBuildings,
     createBuilding,
     updateBuilding,
     deleteBuilding,
+    uploadBuildingImage,
+    deleteBuildingImage,
   };
 };

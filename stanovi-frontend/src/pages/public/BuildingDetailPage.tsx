@@ -113,6 +113,11 @@ const BuildingDetailPage = () => {
     return { ...config, IconComponent };
   };
 
+  // Prikaži prvu sliku iz images niza, ili fallback na image_url
+  const heroImage = building.images && building.images.length > 0 
+    ? building.images[0].imageUrl 
+    : building.image_url;
+
   const formattedDate = new Date(building.dueDate).toLocaleDateString('sr-RS', {
     month: 'long',
     year: 'numeric',
@@ -122,9 +127,9 @@ const BuildingDetailPage = () => {
     <div className="min-h-screen pt-24">
       {/* Hero */}
       <div className="relative h-72 overflow-hidden md:h-96">
-        {building.image_url ? (
+        {heroImage ? (
           <img
-            src={building.image_url}
+            src={heroImage}
             alt={building.title}
             className="h-full w-full object-cover"
           />

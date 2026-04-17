@@ -19,8 +19,17 @@ const InvestorPanel = () => {
   const navigate = useNavigate();
 
   // Hooks
-  const { buildings, loading, fetchBuildings, createBuilding, updateBuilding, deleteBuilding } =
-    useInvestorBuildings();
+  const {
+    buildings,
+    loading,
+    imageLoading,
+    fetchBuildings,
+    createBuilding,
+    updateBuilding,
+    deleteBuilding,
+    uploadBuildingImage,
+    deleteBuildingImage,
+  } = useInvestorBuildings();
   const {
     apartments,
     fetchApartments,
@@ -28,14 +37,14 @@ const InvestorPanel = () => {
     updateApartment,
     deleteApartment,
   } = useInvestorApartments(() => fetchBuildings());
-  const { locations, loading: locationsLoading } = useLocationsList();
+  const { locations } = useLocationsList();
 
   // Local state
   const [expandedBuildingId, setExpandedBuildingId] = useState<string | null>(null);
   const [showBuildingForm, setShowBuildingForm] = useState(false);
-  const [editingBuilding, setEditingBuilding] = useState<Building | null>(null);
+  const [editingBuilding, setEditingBuilding] = useState<Building | undefined>(undefined);
   const [showApartmentForm, setShowApartmentForm] = useState<string | null>(null);
-  const [editingApartment, setEditingApartment] = useState<Apartment | null>(null);
+  const [editingApartment, setEditingApartment] = useState<Apartment | undefined>(undefined);
   const [apartmentViewMode, setApartmentViewMode] = useState<'list' | 'cards'>('list');
   const [submitting, setSubmitting] = useState(false);
 
@@ -69,7 +78,7 @@ const InvestorPanel = () => {
     if (building) {
       setEditingBuilding(building);
     } else {
-      setEditingBuilding(null);
+      setEditingBuilding(undefined);
     }
     setShowBuildingForm(true);
   };
@@ -83,7 +92,7 @@ const InvestorPanel = () => {
 
     if (success) {
       setShowBuildingForm(false);
-      setEditingBuilding(null);
+      setEditingBuilding(undefined);
     }
   };
 
@@ -98,7 +107,7 @@ const InvestorPanel = () => {
     if (apartment) {
       setEditingApartment(apartment);
     } else {
-      setEditingApartment(null);
+      setEditingApartment(undefined);
     }
   };
 
@@ -111,7 +120,7 @@ const InvestorPanel = () => {
 
     if (success) {
       setShowApartmentForm(null);
-      setEditingApartment(null);
+      setEditingApartment(undefined);
     }
   };
 
@@ -161,7 +170,7 @@ const InvestorPanel = () => {
               onSubmit={handleSaveBuilding}
               onCancel={() => {
                 setShowBuildingForm(false);
-                setEditingBuilding(null);
+                setEditingBuilding(undefined);
               }}
               isSubmitting={submitting}
             />
@@ -174,7 +183,7 @@ const InvestorPanel = () => {
               onOpenChange={(open) => {
                 if (!open) {
                   setShowApartmentForm(null);
-                  setEditingApartment(null);
+                  setEditingApartment(undefined);
                 }
               }}
             >
@@ -184,7 +193,7 @@ const InvestorPanel = () => {
                 onSubmit={handleSaveApartment}
                 onCancel={() => {
                   setShowApartmentForm(null);
-                  setEditingApartment(null);
+                  setEditingApartment(undefined);
                 }}
                 isSubmitting={submitting}
               />
@@ -213,6 +222,11 @@ const InvestorPanel = () => {
                   onToggleExpand={() => handleExpandBuilding(building.id)}
                   onEdit={() => handleOpenBuildingForm(building)}
                   onDelete={() => handleDeleteBuilding(building.id)}
+                  onUploadImage={async (file) => {
+                    await uploadBuildingImage(building.id, file);
+                  }}
+                  onDeleteImage={(imageId) => deleteBuildingImage(building.id, imageId)}
+                  imageLoading={imageLoading}
                 >
                   <ApartmentList
                     apartments={apartments[building.id] || []}

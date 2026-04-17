@@ -26,6 +26,15 @@ export interface InvestorInfo {
   isVerified: boolean;
 }
 
+export interface BuildingImage {
+  id: string;
+  buildingId: string;
+  imageUrl: string;
+  publicId: string;
+  displayOrder: number;
+  createdAt: string;
+}
+
 export interface BuildingDetail {
   id: string;
   title: string;
@@ -38,6 +47,7 @@ export interface BuildingDetail {
   updatedAt?: string;
   location?: LocationInfo;
   apartments?: ApartmentDetail[];
+  images?: BuildingImage[];
   investorId?: string;
   investor?: InvestorInfo;
 }

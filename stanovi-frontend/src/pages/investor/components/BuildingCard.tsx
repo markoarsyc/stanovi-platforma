@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Pencil, Trash2, Images } from 'lucide-react';
+import { ImageUpload } from './ImageUpload';
+import { BuildingImageGallery } from './BuildingImageGallery';
 import type { Building } from '@/shared/types/entity/building.entity';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 import type { Location } from '@/shared/types/entity/location.entity';
+import type { BuildingImage } from '@/shared/types/building-detail.types';
 
 interface BuildingCardProps {
-  building: Building & { location: Location; apartments: Apartment[] };
+  building: Building & { location: Location; apartments: Apartment[]; images?: BuildingImage[] };
   isExpanded: boolean;
   onToggleExpand: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onUploadImage?: (file: File) => Promise<void>;
+  onDeleteImage?: (imageId: string) => Promise<void>;
+  imageLoading?: boolean;
   children?: React.ReactNode;
 }
 
@@ -26,11 +32,25 @@ export const BuildingCard: React.FC<BuildingCardProps> = ({
   onToggleExpand,
   onEdit,
   onDelete,
+  onUploadImage,
+  onDeleteImage,
+  imageLoading = false,
   children,
 }) => {
+  const [uploadingFile, setUploadingFile] = useState(false);
   const minPrice = building.apartments.length > 0
     ? Math.min(...building.apartments.map((a) => Number(a.price)))
     : 0;
+
+  const handleImageUpload = async (file: File) => {
+    if (!onUploadImage) return;
+    setUploadingFile(true);
+    try {
+      await onUploadImage(file);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
 
   return (
     <motion.div
@@ -71,13 +91,48 @@ export const BuildingCard: React.FC<BuildingCardProps> = ({
         </div>
       </div>
 
-      {isExpanded && children && (
+      {isExpanded && (
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           className="overflow-hidden border-t border-border"
         >
+          {/* Images Section */}
+          <div className="border-b border-border p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <Images size={18} className="text-primary" />
+              <h4 className="font-display text-lg font-semibold">Slike projekta</h4>
+            </div>
+
+            {/* Upload Section */}
+            {onUploadImage && (
+              <div className="mb-6">
+                <p className="mb-3 text-sm text-muted-foreground">
+                  Dodaj do 10 slika za svoj projekat
+                </p>
+                <ImageUpload
+                  onUploadSuccess={handleImageUpload}
+                  isLoading={uploadingFile || imageLoading}
+                />
+              </div>
+            )}
+
+            {/* Gallery Section */}
+            {building.images && building.images.length > 0 && onDeleteImage ? (
+              <BuildingImageGallery
+                images={building.images}
+                onDelete={onDeleteImage}
+                isLoading={imageLoading}
+              />
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground">Nema uploadovanih slika</p>
+              </div>
+            )}
+          </div>
+
+          {/* Apartments Section */}
           {children}
         </motion.div>
       )}
