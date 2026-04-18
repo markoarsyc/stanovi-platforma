@@ -51,7 +51,7 @@ const InvestorPanel = () => {
   // Auth check
   useEffect(() => {
     if (!authLoading && (!user || !isInvestor)) {
-      navigate('/prijava', { replace: true });
+      navigate('/auth', { replace: true });
     }
   }, [authLoading, user, isInvestor, navigate]);
 
