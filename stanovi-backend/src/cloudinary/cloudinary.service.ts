@@ -53,9 +53,9 @@ export class CloudinaryService {
       });
     } catch (error) {
       if (error instanceof BadRequestException) {
-        throw error;
+        throw new BadRequestException(`Image upload failed: ${error.message}`);
       }
-      throw new BadRequestException(`Image upload failed: ${error.message}`);
+      throw error;
     }
   }
 
@@ -68,8 +68,10 @@ export class CloudinaryService {
         console.warn(`Warning: Cloudinary deletion returned non-ok status for ${publicId}`);
       }
     } catch (error) {
-      console.error(`Failed to delete image from Cloudinary: ${error.message}`);
-      throw new BadRequestException(`Failed to delete image: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        console.error(`Failed to delete image from Cloudinary: ${error.message}`);
+        throw new BadRequestException(`Failed to delete image: ${error.message}`);
+      }
     }
   }
 

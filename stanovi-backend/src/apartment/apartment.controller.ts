@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { Express } from 'express';
+import 'multer';
 import { ApartmentService } from './apartment.service';
 import { CreateApartmentDto, UpdateApartmentDto } from './dto/apartment.dto';
 import { UpdateApartmentImageDto } from './dto/apartment-image.dto';
