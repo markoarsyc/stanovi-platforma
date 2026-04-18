@@ -11,6 +11,7 @@ export interface ApartmentDetail {
   status: ApartmentStatus;
   buildingId: string;
   createdAt?: string;
+  images?: ApartmentImage[];
 }
 
 export interface LocationInfo {
@@ -29,6 +30,15 @@ export interface InvestorInfo {
 export interface BuildingImage {
   id: string;
   buildingId: string;
+  imageUrl: string;
+  publicId: string;
+  displayOrder: number;
+  createdAt: string;
+}
+
+export interface ApartmentImage {
+  id: string;
+  apartmentId: string;
   imageUrl: string;
   publicId: string;
   displayOrder: number;

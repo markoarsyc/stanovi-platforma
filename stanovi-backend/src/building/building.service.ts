@@ -67,7 +67,14 @@ export class BuildingService {
       where: { id },
       include: {
         location: true,
-        apartments: true,
+        apartments: {
+          include: {
+            images: {
+              orderBy: { displayOrder: 'asc' }
+            }
+          },
+          orderBy: { aptNo: 'asc' }
+        },
         images: {
           orderBy: { displayOrder: 'asc' },
         },

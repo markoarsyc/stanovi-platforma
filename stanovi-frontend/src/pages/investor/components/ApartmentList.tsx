@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2, Home, ImageIcon } from 'lucide-react';
+import { Pencil, Trash2, Home, ImageIcon, Images } from 'lucide-react';
 import ApartmentViewToggle from '@/shared/components/ApartmentViewToggle';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 
@@ -10,6 +10,7 @@ interface ApartmentListProps {
   onEdit: (apartment: Apartment) => void;
   onDelete: (id: string) => void;
   onAddNew: () => void;
+  onManageImages?: (apartment: Apartment) => void;
 }
 
 const statusLabelMap: Record<string, string> = {
@@ -24,6 +25,7 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
   onEdit,
   onDelete,
   onAddNew,
+  onManageImages,
 }) => {
   return (
     <div className="p-6">
@@ -85,6 +87,13 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
                   </td>
                   <td className="px-4 py-3 flex items-center gap-1">
                     <button
+                      onClick={() => onManageImages?.(apt)}
+                      className="text-muted-foreground hover:text-primary"
+                      title="Upravljaj slikama"
+                    >
+                      <Images size={14} />
+                    </button>
+                    <button
                       onClick={() => onEdit(apt)}
                       className="text-muted-foreground hover:text-primary"
                       title="Izmeni"
@@ -109,12 +118,27 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
           {apartments.map((apt) => (
             <div key={apt.id} className="overflow-hidden rounded-xl border border-border bg-secondary/30">
               <div className="aspect-[4/3] bg-secondary flex items-center justify-center">
-                <ImageIcon size={40} className="text-muted-foreground/40" />
+                {apt.images?.[0]?.imageUrl ? (
+                  <img
+                    src={apt.images[0].imageUrl}
+                    alt="Plan"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <ImageIcon size={40} className="text-muted-foreground/40" />
+                )}
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-base font-bold text-foreground">Stan {apt.aptNo}</h3>
                   <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => onManageImages?.(apt)}
+                      className="text-muted-foreground hover:text-primary"
+                      title="Upravljaj slikama"
+                    >
+                      <Images size={14} />
+                    </button>
                     <button
                       onClick={() => onEdit(apt)}
                       className="text-muted-foreground hover:text-primary"

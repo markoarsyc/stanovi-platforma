@@ -286,7 +286,15 @@ const BuildingDetailPage = () => {
                       className="cursor-pointer overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg"
                     >
                       <div className="aspect-[4/3] bg-secondary flex items-center justify-center">
-                        <ImageIcon size={40} className="text-muted-foreground/40" />
+                        {apt.images?.[0]?.imageUrl ? (
+                          <img
+                            src={apt.images[0].imageUrl}
+                            alt="Plan"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <ImageIcon size={40} className="text-muted-foreground/40" />
+                        )}
                       </div>
                       <div className="p-4">
                         <div className="flex items-center justify-between">
@@ -336,10 +344,26 @@ const BuildingDetailPage = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2 flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">
-            <ImageIcon size={48} className="text-muted-foreground" />
-            <p className="mt-2 font-body text-sm text-muted-foreground">
-              Plan stana nije dostupan
-            </p>
+            {selectedApt?.images && selectedApt.images.length > 0 ? (
+              <div className="w-full space-y-4">
+                {selectedApt.images.map((img) => (
+                  <div key={img.id} className="rounded-lg overflow-hidden">
+                    <img
+                      src={img.imageUrl}
+                      alt={`Plan apartmana ${selectedApt.aptNo}`}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <>
+                <ImageIcon size={48} className="text-muted-foreground" />
+                <p className="mt-2 font-body text-sm text-muted-foreground">
+                  Plan stana nije dostupan
+                </p>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

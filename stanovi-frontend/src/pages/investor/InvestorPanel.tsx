@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Building2 } from 'lucide-react';
-import { Dialog } from '@/shared/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { useInvestorBuildings } from './hooks/useInvestorBuildings';
 import { useInvestorApartments } from './hooks/useInvestorApartments';
 import { useLocationsList } from './hooks/useLocationsList';
 import { BuildingForm } from './components/BuildingForm';
 import { ApartmentForm } from './components/ApartmentForm';
+import { ApartmentImageGallery } from './components/ApartmentImageGallery';
 import { BuildingCard } from './components/BuildingCard';
 import { ApartmentList } from './components/ApartmentList';
 import type { Building } from '@/shared/types/entity/building.entity';
@@ -47,6 +48,8 @@ const InvestorPanel = () => {
   const [editingApartment, setEditingApartment] = useState<Apartment | undefined>(undefined);
   const [apartmentViewMode, setApartmentViewMode] = useState<'list' | 'cards'>('list');
   const [submitting, setSubmitting] = useState(false);
+  const [showApartmentImages, setShowApartmentImages] = useState(false);
+  const [managingApartment, setManagingApartment] = useState<Apartment | undefined>(undefined);
 
   // Auth check
   useEffect(() => {
@@ -130,6 +133,11 @@ const InvestorPanel = () => {
     }
   };
 
+  const handleManageApartmentImages = (apartment: Apartment) => {
+    setManagingApartment(apartment);
+    setShowApartmentImages(true);
+  };
+
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center pt-24">
@@ -200,6 +208,34 @@ const InvestorPanel = () => {
             </Dialog>
           )}
 
+          {/* Apartment Images Dialog */}
+          {showApartmentImages && managingApartment && (
+            <Dialog
+              open={showApartmentImages}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setShowApartmentImages(false);
+                  setManagingApartment(undefined);
+                }
+              }}
+            >
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="font-display text-xl">
+                    Upravljanje slikama - Stan {managingApartment.aptNo}
+                  </DialogTitle>
+                </DialogHeader>
+                <ApartmentImageGallery
+                  apartmentId={managingApartment.id}
+                  onImageUploadSuccess={() => {
+                    // Refresh the apartment list after image upload/delete
+                    fetchApartments(managingApartment.buildingId);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
+
           {/* Buildings List */}
           <div className="mt-10 space-y-4">
             {loading ? (
@@ -235,6 +271,7 @@ const InvestorPanel = () => {
                     onEdit={(apt) => handleOpenApartmentForm(building.id, apt)}
                     onDelete={(id) => handleDeleteApartment(id, building.id)}
                     onAddNew={() => handleOpenApartmentForm(building.id)}
+                    onManageImages={handleManageApartmentImages}
                   />
                 </BuildingCard>
               ))
