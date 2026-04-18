@@ -38,8 +38,12 @@ export function BuildingImageGallery({
   return (
     <div className="w-full">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-red-800 text-sm">Greška pri brisanju slike</p>
+            <p className="text-xs text-red-700 mt-1">{error}</p>
+          </div>
         </div>
       )}
 
@@ -61,11 +65,11 @@ export function BuildingImageGallery({
                 #{image.displayOrder + 1}
               </div>
 
-              {/* Delete button */}
+              {/* Delete button - Always visible, no opacity hiding */}
               <button
                 onClick={() => handleDelete(image.id)}
                 disabled={deletingId === image.id || isLoading}
-                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:cursor-not-allowed"
+                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 active:bg-red-700 disabled:bg-gray-400 text-white p-2 rounded transition-all hover:scale-110 disabled:cursor-not-allowed z-10"
                 title="Delete image"
               >
                 {deletingId === image.id ? (
@@ -76,7 +80,7 @@ export function BuildingImageGallery({
               </button>
 
               {/* Hover overlay */}
-              <div className="absolute inset-0 rounded-lg bg-black/0 group-hover:bg-black/20 transition-colors" />
+              <div className="absolute inset-0 rounded-lg bg-black/0 hover:bg-black/10 transition-colors" />
             </div>
           ))}
       </div>

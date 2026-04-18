@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Express } from 'express';
 import { BuildingService } from './building.service';
 import { CreateBuildingDto, UpdateBuildingDto } from './dto/building.dto';
 import { UpdateBuildingImageDto } from './dto/building-image.dto';
@@ -74,13 +75,19 @@ export class BuildingController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id/images/:imageId')
-  @Roles(Role.INVESTOR)
+  @Roles(Role.ADMIN, Role.INVESTOR)
   deleteImage(
     @Param('id') buildingId: string,
     @Param('imageId') imageId: string,
     @GetUser() user: ActiveUser,
   ) {
-    return this.buildingService.deleteBuildingImage(buildingId, imageId, user);
+    try {
+      console.log(`[DELETE IMAGE] User ${user.id} (${user.role}) attempting to delete image ${imageId} from building ${buildingId}`);
+      return this.buildingService.deleteBuildingImage(buildingId, imageId, user);
+    } catch (error) {
+      console.error(`[DELETE IMAGE ERROR] Building: ${buildingId}, Image: ${imageId}, User: ${user.id}`, error);
+      throw error;
+    }
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

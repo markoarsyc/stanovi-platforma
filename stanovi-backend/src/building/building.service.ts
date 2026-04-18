@@ -108,6 +108,7 @@ export class BuildingService {
     });
     //Throw 404 if building doesn't exist
     if (!building) {
+      console.error(`[OWNERSHIP VALIDATION] Building ${buildingId} not found`);
       throw new NotFoundException(`Building with ID ${buildingId} not found`);
     }
     //Check if user is admin or the owner of the building, if not throw 403
@@ -118,6 +119,7 @@ export class BuildingService {
       });
       // If no investor found or the building doesn't belong to the investor, throw 403
       if (!investor || building.investorId !== investor.id) {
+        console.error(`[OWNERSHIP VALIDATION DENIED] User ${user.id} investor ${investor?.id} != building investor ${building.investorId}`);
         throw new ForbiddenException('You do not have permission for this building');
       }
     }
@@ -170,6 +172,8 @@ export class BuildingService {
     imageId: string,
     user: ActiveUser,
   ): Promise<void> {
+    console.log(`[DELETE IMAGE] Starting deletion for image ${imageId} from building ${buildingId}`);
+    
     // Validate ownership
     if (user.role !== Role.ADMIN) {
       await this.validateOwnership(buildingId, user);
@@ -181,20 +185,28 @@ export class BuildingService {
     });
 
     if (!buildingImage) {
+      console.error(`[DELETE IMAGE] Image ${imageId} not found in database`);
       throw new NotFoundException('Image not found');
     }
 
     if (buildingImage.buildingId !== buildingId) {
+      console.error(`[DELETE IMAGE] Image ${imageId} belongs to building ${buildingImage.buildingId}, not ${buildingId}`);
       throw new ForbiddenException('Image does not belong to this building');
     }
 
+    console.log(`[DELETE IMAGE] Found image with publicId ${buildingImage.publicId}, proceeding to delete from Cloudinary`);
+    
     // Delete from Cloudinary
     await this.cloudinaryService.deleteImage(buildingImage.publicId);
 
+    console.log(`[DELETE IMAGE] Successfully deleted from Cloudinary, now deleting from database`);
+    
     // Delete from database
     await this.prisma.buildingImage.delete({
       where: { id: imageId },
     });
+    
+    console.log(`[DELETE IMAGE] Successfully deleted image ${imageId} from building ${buildingId}`);
   }
 
   async getBuildingImages(buildingId: string): Promise<BuildingImageResponseDto[]> {

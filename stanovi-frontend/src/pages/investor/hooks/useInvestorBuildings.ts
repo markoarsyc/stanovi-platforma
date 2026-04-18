@@ -114,7 +114,9 @@ export const useInvestorBuildings = () => {
       try {
         setImageLoading(true);
         setImageError(null);
+        console.log(`[DELETE IMAGE] Starting delete request for image ${imageId} from building ${buildingId}`);
         await buildingsService.deleteBuildingImage(buildingId, imageId);
+        console.log(`[DELETE IMAGE] Successfully deleted image ${imageId}`);
         toast.success('Slika obrisana!');
 
         // Update local state by removing the image
@@ -129,9 +131,12 @@ export const useInvestorBuildings = () => {
           )
         );
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Greška pri brisanju slike';
-        setImageError(message);
-        toast.error(message);
+        const statusCode = (err as any)?.response?.status || 'unknown';
+        const errorMessage = (err as any)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri brisanju slike');
+        const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
+        console.error(`[DELETE IMAGE ERROR] Status: ${statusCode}, Message: ${errorMessage}`, err);
+        setImageError(detailedMessage);
+        toast.error(detailedMessage);
         throw err;
       } finally {
         setImageLoading(false);
