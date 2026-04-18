@@ -26,7 +26,7 @@ const statusLabelMap: Record<string, string> = {
   COMPLETED: 'Završen',
 };
 
-export const BuildingCard: React.FC<BuildingCardProps> = ({
+export const BuildingCardInvestor: React.FC<BuildingCardProps> = ({
   building,
   isExpanded,
   onToggleExpand,

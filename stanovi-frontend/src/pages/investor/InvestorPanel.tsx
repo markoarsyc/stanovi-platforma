@@ -10,7 +10,7 @@ import { useLocationsList } from './hooks/useLocationsList';
 import { BuildingForm } from './components/BuildingForm';
 import { ApartmentForm } from './components/ApartmentForm';
 import { ApartmentImageGallery } from './components/ApartmentImageGallery';
-import { BuildingCard } from './components/BuildingCard';
+import { BuildingCardInvestor } from './components/BuildingCard';
 import { ApartmentList } from './components/ApartmentList';
 import type { Building } from '@/shared/types/entity/building.entity';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
@@ -251,7 +251,7 @@ const InvestorPanel = () => {
               </div>
             ) : (
               buildings.map((building) => (
-                <BuildingCard
+                <BuildingCardInvestor
                   key={building.id}
                   building={building}
                   isExpanded={expandedBuildingId === building.id}
@@ -273,7 +273,7 @@ const InvestorPanel = () => {
                     onAddNew={() => handleOpenApartmentForm(building.id)}
                     onManageImages={handleManageApartmentImages}
                   />
-                </BuildingCard>
+                </BuildingCardInvestor>
               ))
             )}
           </div>
