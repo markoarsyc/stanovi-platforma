@@ -350,7 +350,7 @@ const BuildingDetailPage = () => {
                   <div key={img.id} className="rounded-lg overflow-hidden">
                     <img
                       src={img.imageUrl}
-                      alt={`Plan apartmana ${selectedApt.aptNo}`}
+                      alt={`Plan stana ${selectedApt.aptNo}`}
                       className="w-full h-auto object-cover"
                     />
                   </div>

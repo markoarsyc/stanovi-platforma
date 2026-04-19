@@ -40,7 +40,7 @@ export class BuildingController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.INVESTOR)
+  @Roles(Role.INVESTOR)
   update(@Param('id') id: string, @Body() dto: UpdateBuildingDto, @GetUser() user: ActiveUser) {
     return this.buildingService.update(id, dto, user);
   }

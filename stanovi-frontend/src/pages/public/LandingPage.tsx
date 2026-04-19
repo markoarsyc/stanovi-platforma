@@ -30,7 +30,6 @@ const LandingPage = () => {
   const [buildings, setBuildings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Dohvatanje pravih podataka sa backend-a
   useEffect(() => {
     const fetchBuildings = async () => {
       try {
@@ -46,6 +45,11 @@ const LandingPage = () => {
 
     fetchBuildings();
   }, []);
+
+  
+  const handleDeleteBuilding = (id: string) => {
+    setBuildings(prev => prev.filter((b: any) => b.id !== id));
+  }
 
   return (
     <div className="min-h-screen">
@@ -156,7 +160,7 @@ const LandingPage = () => {
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {buildings.length > 0 ? (
                 buildings.map((b: any) => (
-                  <BuildingCard key={b.id} building={b} />
+                  <BuildingCard key={b.id} building={b} onDelete={handleDeleteBuilding} />
                 ))
               ) : (
                 <div className="col-span-full py-20 text-center">

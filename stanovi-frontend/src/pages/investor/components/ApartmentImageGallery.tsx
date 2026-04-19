@@ -61,7 +61,7 @@ export function ApartmentImageGallery({
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Upload size={16} />
-        <h4 className="font-display text-sm font-semibold text-foreground">Slike apartmana</h4>
+        <h4 className="font-display text-sm font-semibold text-foreground">Slike stana</h4>
       </div>
 
       <ImageUpload onUploadSuccess={handleImageUpload} isLoading={imageLoading} />
@@ -78,7 +78,7 @@ export function ApartmentImageGallery({
           <div className="w-6 h-6 border-3 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : images.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Nema dodanih slika za ovaj apartman.</p>
+        <p className="text-sm text-muted-foreground">Nema dodanih slika za ovaj stan.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {images.map((image) => (

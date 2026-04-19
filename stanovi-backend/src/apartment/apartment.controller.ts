@@ -33,13 +33,13 @@ export class ApartmentController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.INVESTOR)
+  @Roles(Role.INVESTOR)
   update(@Param('id') id: string, @Body() dto: UpdateApartmentDto, @GetUser() user: ActiveUser) {
     return this.apartmentService.update(id, dto, user);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.INVESTOR)
+  @Roles(Role.INVESTOR)
   delete(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.apartmentService.delete(id, user);
   }
@@ -49,7 +49,7 @@ export class ApartmentController {
   // ============================================
 
   @Post(':id/images')
-  @Roles(Role.INVESTOR, Role.ADMIN)
+  @Roles(Role.INVESTOR)
   @UseInterceptors(FileInterceptor('image'))
   uploadImage(
     @Param('id') apartmentId: string,
@@ -71,7 +71,7 @@ export class ApartmentController {
   }
 
   @Delete(':id/images/:imageId')
-  @Roles(Role.ADMIN, Role.INVESTOR)
+  @Roles(Role.INVESTOR)
   deleteImage(
     @Param('id') apartmentId: string,
     @Param('imageId') imageId: string,
@@ -87,7 +87,7 @@ export class ApartmentController {
   }
 
   @Patch(':id/images/:imageId')
-  @Roles(Role.INVESTOR, Role.ADMIN)
+  @Roles(Role.INVESTOR)
   reorderImages(
     @Param('id') apartmentId: string,
     @Param('imageId') imageId: string,
