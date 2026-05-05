@@ -7,10 +7,11 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import type { ActiveUser } from '../auth/interfaces/active-user.interface';
+import { RequestVerificationDto } from './dto/request-verification.dto';
 
 @Controller('investors')
 export class InvestorController {
-  constructor(private readonly investorService: InvestorService) {}
+  constructor(private readonly investorService: InvestorService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -43,5 +44,10 @@ export class InvestorController {
   @Roles(Role.ADMIN, Role.INVESTOR)
   delete(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.investorService.delete(id, user);
+  }
+
+  @Post(':id/request-verification')
+  requestVerification(@Param('id') id: string, @Body() dto: RequestVerificationDto) {
+    return this.investorService.requestVerification(id, dto);
   }
 }
