@@ -49,7 +49,16 @@ services:
       KAFKA_BROKERCONNECT: "kafka:29092"
     depends_on:
       - kafka
-
+    
+  kafka-consumer:
+    build: ./kafka-consumer
+    container_name: stanovi_consumer
+    restart: always
+    depends_on:
+      - kafka
+      - postgres
+    env_file:
+      - ./kafka-consumer/.env
 
 volumes:
   postgres_data:
