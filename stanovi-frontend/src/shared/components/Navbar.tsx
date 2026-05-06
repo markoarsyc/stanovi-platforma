@@ -27,6 +27,7 @@ const Navbar = () => {
     { label: "Oglasi", path: "/oglasi" },
     // Dinamički dodajemo linkove za investitore
     ...(isInvestor ? [{ label: "Moji projekti", path: "/investor" }] : []),
+    ...(isAuthenticated ? [{ label: "Profil", path: "/profil" }] : []),
   ];
 
   return (
@@ -52,8 +53,6 @@ const Navbar = () => {
           
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-               {/* Opciono: Mali indikator ko je ulogovan */}
-               <span className="text-xs text-muted-foreground hidden lg:block">{user?.email}</span>
                <button
                 onClick={handleLogout}
                 className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2 font-body text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"

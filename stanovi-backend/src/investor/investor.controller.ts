@@ -32,6 +32,13 @@ export class InvestorController {
     return this.investorService.findOne(id);
   }
 
+  @Get('user/:userId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INVESTOR)
+  findByUserId(@Param('userId') userId: string) {
+    return this.investorService.findByUserId(userId);
+  }
+
   @Patch(':id/verify')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

@@ -5,6 +5,7 @@ import AuthPage from '../pages/auth/AuthPage';
 import Listings from '../pages/public/Listings';
 import BuildingDetailPage from '../pages/public/BuildingDetailPage';
 import InvestorPanel from '../pages/investor/InvestorPanel';
+import ProfilePage from '@/pages/public/ProfilePage';
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ export const router = createBrowserRouter([
         path: '/investor',
         element: <InvestorPanel />,
       },
+      {
+        path: '/profil',
+        element: <ProfilePage />,
+      }
     ],
   },
 ]);
