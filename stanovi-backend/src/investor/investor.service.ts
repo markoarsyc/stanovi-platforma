@@ -53,13 +53,6 @@ export class InvestorService {
     return investor;
   }
 
-  async verifyInvestor(id: string) {
-    return this.prisma.investor.update({
-      where: { id },
-      data: { isVerified: true }
-    });
-  }
-
   async delete(id: string, user: ActiveUser) {
     const investor = await this.prisma.investor.findUnique({ where: { id } });
 
@@ -72,18 +65,93 @@ export class InvestorService {
     return this.prisma.investor.delete({ where: { id } });
   }
 
+  //Verification request methods
+  async requestVerification(id: string, dto: RequestVerificationDto) {
 
-async requestVerification(id: string, dto: RequestVerificationDto) {
+    const event = {
+      eventId: uuidv4(),
+      eventType: 'INVESTOR_VERIFICATION_REQUESTED',
+      timestamp: new Date().toISOString(),
+      entityId: id,
+      payload: {
+        companyName: dto.companyName,
+        tin: dto.tin,
+        requestedAt: new Date().toISOString(),
+      },
+    };
 
+    try {
+      await this.kafkaService.sendEvent(
+        'investor-verification-events',
+        event,
+        id
+      );
+
+      return {
+        message: 'Verification request sent',
+      };
+
+    } catch (error) {
+      console.error('Kafka error:', error);
+      throw new Error('Kafka send failed');
+    }
+  }
+
+  async getVerificationRequests() {
+    return this.prisma.verificationRequest.findMany({
+      include: { investor: true }
+    });
+  }
+
+  async handleVerificationRequest(requestId: string, isApproved: boolean) {
+  const request = await this.prisma.verificationRequest.findUnique({
+    where: { id: requestId },
+    include: { investor: true },
+  });
+
+  if (!request) {
+    throw new NotFoundException('Verification request not found');
+  }
+
+  const updatedRequest = await this.prisma.$transaction(async (tx) => {
+
+    // 1. Update VerificationRequest status
+    const verificationRequest = await tx.verificationRequest.update({
+      where: { id: requestId },
+      data: {
+        status: isApproved ? 'APPROVED' : 'REJECTED',
+      },
+    });
+
+    // 2. Update Investor verification status
+    const updatedInvestor = await tx.investor.update({
+      where: { id: request.investorId },
+      data: {
+        isVerified: Boolean(isApproved),
+      },
+    });
+
+    return {
+      verificationRequest,
+      updatedInvestor,
+    };
+  });
+
+  // 3. Send Kafka event AFTER successful transaction
   const event = {
     eventId: uuidv4(),
-    eventType: 'INVESTOR_VERIFICATION_REQUESTED',
+    eventType: isApproved
+      ? 'INVESTOR_VERIFICATION_APPROVED'
+      : 'INVESTOR_VERIFICATION_REJECTED',
     timestamp: new Date().toISOString(),
-    entityId: id,
+    entityId: request.investorId,
     payload: {
-      companyName: dto.companyName,
-      tin: dto.tin,
-      requestedAt: new Date().toISOString(),
+      verificationRequestId: request.id,
+      investorId: request.investorId,
+      companyName: request.companyName,
+      tin: request.tin,
+      status: isApproved ? 'APPROVED' : 'REJECTED',
+      processedAt: new Date().toISOString(),
     },
   };
 
@@ -91,16 +159,13 @@ async requestVerification(id: string, dto: RequestVerificationDto) {
     await this.kafkaService.sendEvent(
       'investor-verification-events',
       event,
-      id
+      request.investorId
     );
-
-    return {
-      message: 'Verification request sent',
-    };
-
   } catch (error) {
-    console.error('Kafka error:', error);
-    throw new Error('Kafka send failed');
+    console.error('Kafka event send failed:', error);
   }
+
+  return updatedRequest.verificationRequest;
 }
+
 }

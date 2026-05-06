@@ -104,19 +104,26 @@ async function run() {
                 );
 
                 // 2. INSERT VERIFICATION REQUEST
+                if (
+                    event.eventType === 'INVESTOR_VERIFICATION_APPROVED' ||
+                    event.eventType === 'INVESTOR_VERIFICATION_REJECTED'
+                ) {
+                    console.log('Verification processed event stored');
+                }
+
                 if (event.eventType === 'INVESTOR_VERIFICATION_REQUESTED') {
                     await pgClient.query(
                         `
-            INSERT INTO "VerificationRequest"(
-                "id",
-                "investorId",
-                "companyName",
-                "tin",
-                "status",
-                "createdAt"
-            )
-            VALUES(gen_random_uuid(), $1, $2, $3, $4, NOW())
-        `,
+                        INSERT INTO "VerificationRequest"(
+                            "id",
+                            "investorId",
+                            "companyName",
+                            "tin",
+                            "status",
+                            "createdAt"
+                        )
+                        VALUES(gen_random_uuid(), $1, $2, $3, $4, NOW())
+                    `,
                         [
                             event.entityId,
                             event.payload.companyName,

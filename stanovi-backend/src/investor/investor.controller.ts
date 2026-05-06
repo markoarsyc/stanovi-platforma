@@ -27,6 +27,13 @@ export class InvestorController {
     return this.investorService.findAll();
   }
 
+  @Get('verification-requests')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  getVerificationRequests() {
+    return this.investorService.getVerificationRequests();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.investorService.findOne(id);
@@ -39,13 +46,6 @@ export class InvestorController {
     return this.investorService.findByUserId(userId);
   }
 
-  @Patch(':id/verify')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  verify(@Param('id') id: string) {
-    return this.investorService.verifyInvestor(id);
-  }
-
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INVESTOR)
@@ -56,5 +56,13 @@ export class InvestorController {
   @Post(':id/request-verification')
   requestVerification(@Param('id') id: string, @Body() dto: RequestVerificationDto) {
     return this.investorService.requestVerification(id, dto);
+  }
+
+
+  @Patch('verification-requests/:requestId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  handleVerificationRequest(@Param('requestId') requestId: string, @Body() isApproved: boolean) {
+    return this.investorService.handleVerificationRequest(requestId, isApproved);
   }
 }
