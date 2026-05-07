@@ -15,4 +15,14 @@ export const requestInvestorVerification = async (investorId: string, { companyN
   return response.data;
 };
 
+export const getVerificationRequests = async () => {
+  const response = await api.get('/investors/verification-requests');
+  return response.data;
+};
+
+export const handleVerificationRequest = async (requestId: string, isApproved: boolean) => {
+  const response = await api.patch(`/investors/verification-requests/${requestId}`, { isApproved });
+  return response.data;
+};
+
 

@@ -62,7 +62,10 @@ export class InvestorController {
   @Patch('verification-requests/:requestId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  handleVerificationRequest(@Param('requestId') requestId: string, @Body() isApproved: boolean) {
+  handleVerificationRequest(
+    @Param('requestId') requestId: string,
+    @Body('isApproved') isApproved: boolean
+  ) {
     return this.investorService.handleVerificationRequest(requestId, isApproved);
   }
 }

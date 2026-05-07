@@ -6,6 +6,7 @@ import Listings from '../pages/public/Listings';
 import BuildingDetailPage from '../pages/public/BuildingDetailPage';
 import InvestorPanel from '../pages/investor/InvestorPanel';
 import ProfilePage from '@/pages/public/ProfilePage';
+import AdminPanel from '@/pages/admin/AdminPanel';
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
       {
         path: '/profil',
         element: <ProfilePage />,
+      },
+      {
+        path: '/admin',
+        element: <AdminPanel />,
       }
     ],
   },

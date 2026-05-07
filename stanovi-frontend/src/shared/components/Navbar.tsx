@@ -28,6 +28,7 @@ const Navbar = () => {
     // Dinamički dodajemo linkove za investitore
     ...(isInvestor ? [{ label: "Moji projekti", path: "/investor" }] : []),
     ...(isAuthenticated ? [{ label: "Profil", path: "/profil" }] : []),
+    ...(isAuthenticated && user?.role === Role.ADMIN ? [{ label: "Admin Panel", path: "/admin" }] : []),
   ];
 
   return (
