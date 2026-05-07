@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { toast } from "sonner";
-// Pretpostavljam da ćeš ove funkcije dodati u investor.service.ts
 import { getVerificationRequests, handleVerificationRequest } from '@/api/services/investor.service';
 
 interface VerificationRequest {
@@ -54,7 +53,6 @@ const AdminPanel = () => {
     toast.promise(promise, {
       loading: approve ? 'Odobravanje...' : 'Odbijanje...',
       success: () => {
-        // Lokalno ažuriramo listu nakon uspeha
         setRequests(prev => prev.map(req => 
           req.id === requestId 
             ? { ...req, status: approve ? 'APPROVED' : 'REJECTED' } 
