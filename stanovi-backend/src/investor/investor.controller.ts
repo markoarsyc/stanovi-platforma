@@ -7,10 +7,11 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import type { ActiveUser } from '../auth/interfaces/active-user.interface';
+import { RequestVerificationDto } from './dto/request-verification.dto';
 
 @Controller('investors')
 export class InvestorController {
-  constructor(private readonly investorService: InvestorService) {}
+  constructor(private readonly investorService: InvestorService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,16 +27,23 @@ export class InvestorController {
     return this.investorService.findAll();
   }
 
+  @Get('verification-requests')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  getVerificationRequests() {
+    return this.investorService.getVerificationRequests();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.investorService.findOne(id);
   }
 
-  @Patch(':id/verify')
+  @Get('user/:userId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  verify(@Param('id') id: string) {
-    return this.investorService.verifyInvestor(id);
+  @Roles(Role.ADMIN, Role.INVESTOR)
+  findByUserId(@Param('userId') userId: string) {
+    return this.investorService.findByUserId(userId);
   }
 
   @Delete(':id')
@@ -43,5 +51,21 @@ export class InvestorController {
   @Roles(Role.ADMIN, Role.INVESTOR)
   delete(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.investorService.delete(id, user);
+  }
+
+  @Post(':id/request-verification')
+  requestVerification(@Param('id') id: string, @Body() dto: RequestVerificationDto) {
+    return this.investorService.requestVerification(id, dto);
+  }
+
+
+  @Patch('verification-requests/:requestId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  handleVerificationRequest(
+    @Param('requestId') requestId: string,
+    @Body('isApproved') isApproved: boolean
+  ) {
+    return this.investorService.handleVerificationRequest(requestId, isApproved);
   }
 }

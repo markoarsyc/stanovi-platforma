@@ -27,6 +27,12 @@ enum ApartmentStatus {
   RESERVED
 }
 
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 //
 // MODELS
 //
@@ -67,6 +73,7 @@ model Investor {
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   buildings     Building[]
+  verificationRequests VerificationRequest[]
 }
 
 model Location {
@@ -142,3 +149,25 @@ model Apartment {
   @@unique([buildingId, aptNo])
   @@index([buildingId])
 }
+//Kafka events
+model Event {
+  eventId   String   @id @default(uuid())
+  eventType String
+  entityId  String
+  timestamp DateTime
+  payload   Json
+}
+
+model VerificationRequest {
+  id          String   @id @default(uuid())
+  investorId  String
+  companyName String
+  tin         String
+  status      VerificationStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+
+  investor    Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@index([investorId])
+}
+

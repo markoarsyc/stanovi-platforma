@@ -13,6 +13,7 @@ import {
   Mail,
   Phone,
   Zap,
+  BadgeCheck,
 } from 'lucide-react';
 import { getBuildingById } from '@/api/services/buildings.service';
 import { getInvestorInfo } from '@/api/services/investor.service';
@@ -369,76 +370,84 @@ const BuildingDetailPage = () => {
       </Dialog>
 
       {/* Investor contact dialog */}
-      <Dialog open={showInvestor} onOpenChange={setShowInvestor}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-display text-2xl">
-              Kontakt investitora
-            </DialogTitle>
-            <DialogDescription className="font-body">
-              Informacije o investitoru za projekat {building?.title}
-            </DialogDescription>
-          </DialogHeader>
-          {investor && (
-            <div className="mt-2 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                  <User size={20} className="text-primary" />
-                </div>
-                <div>
-                  <p className="font-body text-xs text-muted-foreground">
-                    Naziv
-                  </p>
-                  <p className="font-body font-semibold text-foreground">
-                    {investor.companyName}
-                  </p>
-                </div>
-              </div>
-              {investor.contactEmail && (
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                    <Mail size={20} className="text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-body text-xs text-muted-foreground">
-                      Email
-                    </p>
-                    <a
-                      href={`mailto:${investor.contactEmail}`}
-                      className="font-body font-semibold text-foreground hover:text-primary"
-                    >
-                      {investor.contactEmail}
-                    </a>
-                  </div>
-                </div>
-              )}
-              {investor.contactPhone && (
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                    <Phone size={20} className="text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-body text-xs text-muted-foreground">
-                      Telefon
-                    </p>
-                    <a
-                      href={`tel:${investor.contactPhone}`}
-                      className="font-body font-semibold text-foreground hover:text-primary"
-                    >
-                      {investor.contactPhone}
-                    </a>
-                  </div>
-                </div>
-              )}
-              {!investor.contactEmail && !investor.contactPhone && (
-                <p className="font-body text-sm text-muted-foreground">
-                  Kontakt informacije nisu dostupne.
-                </p>
+<Dialog open={showInvestor} onOpenChange={setShowInvestor}>
+  <DialogContent className="max-w-md">
+    <DialogHeader>
+      <DialogTitle className="font-display text-2xl">
+        Kontakt investitora
+      </DialogTitle>
+      <DialogDescription className="font-body">
+        Informacije o investitoru za projekat {building?.title}
+      </DialogDescription>
+    </DialogHeader>
+    {investor && (
+      <div className="mt-2 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+            <User size={20} className="text-primary" />
+          </div>
+          <div>
+            <p className="font-body text-xs text-muted-foreground">
+              Naziv
+            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-body font-semibold text-foreground">
+                {investor.companyName}
+              </p>
+              {investor.isVerified && (
+                <BadgeCheck size={18} className="text-blue-500" />
               )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+
+        {investor.contactEmail && (
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Mail size={20} className="text-primary" />
+            </div>
+            <div>
+              <p className="font-body text-xs text-muted-foreground">
+                Email
+              </p>
+              <a
+                href={`mailto:${investor.contactEmail}`}
+                className="font-body font-semibold text-foreground hover:text-primary"
+              >
+                {investor.contactEmail}
+              </a>
+            </div>
+          </div>
+        )}
+
+        {investor.contactPhone && (
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Phone size={20} className="text-primary" />
+            </div>
+            <div>
+              <p className="font-body text-xs text-muted-foreground">
+                Telefon
+              </p>
+              <a
+                href={`tel:${investor.contactPhone}`}
+                className="font-body font-semibold text-foreground hover:text-primary"
+              >
+                {investor.contactPhone}
+              </a>
+            </div>
+          </div>
+        )}
+
+        {!investor.contactEmail && !investor.contactPhone && (
+          <p className="font-body text-sm text-muted-foreground">
+            Kontakt informacije nisu dostupne.
+          </p>
+        )}
+      </div>
+    )}
+  </DialogContent>
+</Dialog>
     </div>
   );
 };

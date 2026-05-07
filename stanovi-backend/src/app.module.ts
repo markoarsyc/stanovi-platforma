@@ -9,6 +9,7 @@ import { BuyerModule } from './buyer/buyer.module';
 import { BuildingModule } from './building/building.module';
 import { ApartmentModule } from './apartment/apartment.module';
 import { LocationModule } from './location/location.module';
+import { KafkaModule } from './kafka/kafka.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { LocationModule } from './location/location.module';
     BuildingModule,
     ApartmentModule,
     LocationModule,
+    KafkaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
