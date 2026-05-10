@@ -1,29 +1,12 @@
 import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateBuyerDto, UpdateBuyerDto } from './dto/buyer.dto';
+import { UpdateBuyerDto } from './dto/buyer.dto';
 import { Role } from '@prisma/client';
 import { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Injectable()
 export class BuyerService {
   constructor(private prisma: PrismaService) {}
-
-  async create(dto: CreateBuyerDto, user: ActiveUser) {
-    const existing = await this.prisma.buyer.findUnique({
-      where: { userId: user.id },
-    });
-
-    if (existing) {
-      throw new ConflictException('Buyer profile already exists for this user.');
-    }
-
-    return this.prisma.buyer.create({
-      data: {
-        ...dto,
-        userId: user.id,
-      },
-    });
-  }
 
   async findAll() {
     return this.prisma.buyer.findMany();

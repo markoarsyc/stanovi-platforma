@@ -1,6 +1,5 @@
-import { Controller, Get, Post, Body, Param, Patch, UseGuards, Delete } from '@nestjs/common';
+import { Controller, Get, Body, Param, Patch, UseGuards, Delete, Post } from '@nestjs/common';
 import { InvestorService } from './investor.service';
-import { CreateInvestorDto } from './dto/investor.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -12,13 +11,6 @@ import { RequestVerificationDto } from './dto/request-verification.dto';
 @Controller('investors')
 export class InvestorController {
   constructor(private readonly investorService: InvestorService) { }
-
-  @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.INVESTOR)
-  create(@Body() dto: CreateInvestorDto, @GetUser() user: ActiveUser) {
-    return this.investorService.create(dto, user);
-  }
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
