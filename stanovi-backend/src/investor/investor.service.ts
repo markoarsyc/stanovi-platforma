@@ -1,6 +1,5 @@
 import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateInvestorDto } from './dto/investor.dto';
 import { ActiveUser } from '../auth/interfaces/active-user.interface';
 import { Role } from '@prisma/client';
 import { RequestVerificationDto } from './dto/request-verification.dto';
@@ -10,23 +9,6 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class InvestorService {
   constructor(private prisma: PrismaService, private kafkaService: KafkaService) { }
-
-  async create(dto: CreateInvestorDto, user: ActiveUser) {
-    const existing = await this.prisma.investor.findUnique({
-      where: { userId: user.id }
-    });
-
-    if (existing) {
-      throw new ConflictException('Investor profile already exists for this user');
-    }
-
-    return this.prisma.investor.create({
-      data: {
-        ...dto,
-        userId: user.id
-      }
-    });
-  }
 
   async findAll() {
     return this.prisma.investor.findMany({

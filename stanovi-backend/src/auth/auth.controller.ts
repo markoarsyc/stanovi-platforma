@@ -2,6 +2,8 @@ import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { RegisterBuyerDto } from './dto/register-buyer.dto';
+import { RegisterInvestorDto } from './dto/register-investor.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
@@ -16,6 +18,16 @@ export class AuthController {
     @Post('register')
     register(@Body() dto: RegisterDto) {
         return this.authService.register(dto);
+    }
+
+    @Post('register-buyer')
+    registerBuyer(@Body() dto: RegisterBuyerDto) {
+        return this.authService.registerBuyer(dto);
+    }
+
+    @Post('register-investor')
+    registerInvestor(@Body() dto: RegisterInvestorDto) {
+        return this.authService.registerInvestor(dto);
     }
 
     @Post('login')
