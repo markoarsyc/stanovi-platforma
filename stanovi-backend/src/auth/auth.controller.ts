@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBuyerDto } from './dto/register-buyer.dto';
 import { RegisterInvestorDto } from './dto/register-investor.dto';
@@ -14,11 +13,6 @@ import { Role } from '.prisma/client';
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }
-
-    @Post('register')
-    register(@Body() dto: RegisterDto) {
-        return this.authService.register(dto);
-    }
 
     @Post('register-buyer')
     registerBuyer(@Body() dto: RegisterBuyerDto) {

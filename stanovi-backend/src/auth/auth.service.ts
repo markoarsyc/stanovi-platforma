@@ -1,5 +1,4 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBuyerDto } from './dto/register-buyer.dto';
 import { RegisterInvestorDto } from './dto/register-investor.dto';
@@ -14,28 +13,6 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
-
-  async register(dto: RegisterDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
-
-    if (existingUser) {
-      throw new BadRequestException('Email already in use');
-    }
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        passwordHash: hashedPassword,
-        role: dto.role ?? Role.BUYER,
-      },
-    });
-
-    return this.generateToken(user.id, user.email, user.role);
-  }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
