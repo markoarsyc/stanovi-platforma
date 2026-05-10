@@ -60,7 +60,25 @@ const AuthPage = () => {
           password: formData.password,
         });
       } else {
-        authResponse = await authService.register(formData, role);
+        // Registracija - koristi atomske endpointe
+        if (role === Role.BUYER) {
+          authResponse = await authService.registerBuyer({
+            email: formData.email,
+            password: formData.password,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+          });
+        } else {
+          authResponse = await authService.registerInvestor({
+            email: formData.email,
+            password: formData.password,
+            companyName: formData.companyName,
+            tin: formData.tin,
+            contactEmail: formData.contactEmail,
+            contactPhone: formData.contactPhone,
+          });
+        }
       }
       contextLogin(authResponse);
       navigate("/");
@@ -145,7 +163,7 @@ const AuthPage = () => {
               ) : (
                 <>
                   <IconInput icon={Building2} name="companyName" placeholder="Naziv firme" required onChange={handleChange} />
-                  <IconInput icon={Hash} name="tin" placeholder="PIB" required onChange={handleChange} />
+                  <IconInput icon={Hash} name="tin" placeholder="PIB (opciono)" onChange={handleChange} />
                   <IconInput icon={Mail} name="contactEmail" type="email" placeholder="Email firme" required onChange={handleChange} />
                   <IconInput icon={Phone} name="contactPhone" placeholder="Telefon firme" required onChange={handleChange} />
                 </>
@@ -154,7 +172,7 @@ const AuthPage = () => {
           )}
 
           <IconInput icon={Mail} name="email" type="email" placeholder="Email adresa" required onChange={handleChange} />
-          <IconInput icon={Lock} name="password" type="password" placeholder="Lozinka" required onChange={handleChange} />
+          <IconInput icon={Lock} name="password" type="password" placeholder="Lozinka" minLength={6} required onChange={handleChange} />
 
           <button
             type="submit"
@@ -171,6 +189,17 @@ const AuthPage = () => {
             type="button"
             onClick={() => {
               setMode(mode === "login" ? "register" : "login");
+              setFormData({
+                email: "",
+                password: "",
+                firstName: "",
+                lastName: "",
+                companyName: "",
+                tin: "",
+                phone: "",
+                contactEmail: "",
+                contactPhone: "",
+              });
               setError(""); 
             }}
             className="font-semibold text-primary hover:underline transition-all"
