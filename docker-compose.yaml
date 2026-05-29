@@ -4,15 +4,15 @@ services:
     container_name: stanovi_postgres
     restart: always
     environment:
-      POSTGRES_DB: stanovi_db
-      POSTGRES_USER: stanovi_user
-      POSTGRES_PASSWORD: stanovi_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT_EXTERNAL}:${POSTGRES_PORT_INTERNAL}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U stanovi_user -d stanovi_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,10 +21,10 @@ services:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: stanovi_zookeeper
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
+      ZOOKEEPER_TICK_TIME: ${ZOOKEEPER_TICK_TIME}
     ports:
-      - "2181:2181"
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -32,18 +32,18 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
-      - "9093:9093"
+      - "${KAFKA_PORT_INTERNAL}:${KAFKA_PORT_INTERNAL}"
+      - "${KAFKA_PORT_EXTERNAL}:${KAFKA_PORT_EXTERNAL}"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:9093
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_LISTENERS: ${KAFKA_LISTENERS}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 9092 || exit 1"]
+      test: ["CMD-SHELL", "nc -z localhost ${KAFKA_PORT_INTERNAL} || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,9 +54,9 @@ services:
     container_name: stanovi_kafdrop
     restart: always
     ports:
-      - "9000:9000"
+      - "${KAFDROP_PORT}:9000"
     environment:
-      KAFKA_BROKERCONNECT: "kafka:9092"
+      KAFKA_BROKERCONNECT: "${KAFKA_BROKERCONNECT}"
     depends_on:
       kafka:
         condition: service_healthy
@@ -68,7 +68,7 @@ services:
     container_name: stanovi_api
     restart: always
     ports:
-      - "3000:3000"
+      - "${API_PORT}:${API_PORT}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,17 +76,17 @@ services:
         condition: service_healthy
     # Prioritet: environment direktno definisan ovde uvek "gazi" sve ostalo
     environment:
-      DATABASE_URL: "postgresql://stanovi_user:stanovi_password@postgres:5432/stanovi_db?schema=public"
-      KAFKA_BROKERS: "kafka:9092"
-      KAFKA_CLIENT_ID: "stanovi-api"
-      JWT_SECRET: "${JWT_SECRET:-supersecretkey}"
-      PORT: "3000"
+      DATABASE_URL: "${DATABASE_URL}"
+      KAFKA_BROKERS: "${KAFKA_BROKERS}"
+      KAFKA_CLIENT_ID: "${KAFKA_CLIENT_ID}"
+      JWT_SECRET: "${JWT_SECRET}"
+      PORT: "${PORT}"
       CLOUDINARY_CLOUD_NAME: "${CLOUDINARY_CLOUD_NAME}"
       CLOUDINARY_API_KEY: "${CLOUDINARY_API_KEY}"
       CLOUDINARY_API_SECRET: "${CLOUDINARY_API_SECRET}"
-      CLOUDINARY_UPLOAD_FOLDER: "${CLOUDINARY_UPLOAD_FOLDER:-stanovi-platforma/buildings}"
+      CLOUDINARY_UPLOAD_FOLDER: "${CLOUDINARY_UPLOAD_FOLDER}"
     command: >
-      sh -c "DATABASE_URL='postgresql://stanovi_user:stanovi_password@postgres:5432/stanovi_db?schema=public' npx prisma migrate deploy && node dist/src/main"
+      sh -c "DATABASE_URL='${DATABASE_URL}' npx prisma migrate deploy && node dist/src/main"
     
   kafka-consumer:
     build: ./kafka-consumer
@@ -101,8 +101,8 @@ services:
       - ./kafka-consumer/.env
     environment:
       # Osiguraj da i consumer gađa pravi host za bazu
-      DATABASE_URL: "postgresql://stanovi_user:stanovi_password@postgres:5432/stanovi_db?schema=public"
-      KAFKA_BROKERS: "kafka:9092"
+      DATABASE_URL: "${DATABASE_URL}"
+      KAFKA_BROKERS: "${KAFKA_BROKERS}"
 
 volumes:
   postgres_data:
