@@ -31,7 +31,11 @@ async function main() {
   ];
 
   for (const location of locations) {
-    await prisma.location.create({ data: location });
+    await prisma.location.upsert({
+      where: { id: location.id },
+      update: { name: location.name },
+      create: { id: location.id, name: location.name },
+    });
   }
 
   const count = await prisma.location.count();
