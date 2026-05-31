@@ -1,5 +1,6 @@
 name: Stanovi Platforma CI
 
+
 on:
   push:
     branches:
@@ -13,11 +14,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Preuzimanje koda (Checkout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Korišćenje predefinisane akcije za Node
       - name: Podešavanje Node.js okruženja
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
@@ -45,10 +46,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Preuzimanje koda (Checkout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Podešavanje Node.js okruženja
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
@@ -69,10 +70,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Preuzimanje koda (Checkout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Podešavanje Node.js okruženja
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
