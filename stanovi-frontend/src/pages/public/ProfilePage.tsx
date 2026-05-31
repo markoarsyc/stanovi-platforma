@@ -52,7 +52,8 @@ const Profile = () => {
       toast.success("Zahtev za verifikaciju je uspešno poslat!");
       setIsModalOpen(false);
     } catch (error) {
-      const errorMsg = (error as Record<string, unknown>)?.response?.data?.message || "Došlo je do greške.";
+      const axiosErr = error as { response?: { data?: { message?: string } } } | Error;
+      const errorMsg = (axiosErr as { response?: { data?: { message?: string } } })?.response?.data?.message || "Došlo je do greške.";
       toast.error(String(errorMsg));
     } finally {
       setIsSubmitting(false);

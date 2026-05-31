@@ -88,9 +88,10 @@ const InvestorPanel = () => {
 
   const handleSaveBuilding = async (data: Record<string, unknown>) => {
     setSubmitting(true);
+    const buildingData = data as Omit<Building, 'id'>;
     const success = editingBuilding
-      ? await updateBuilding(editingBuilding.id, data)
-      : await createBuilding(data);
+      ? await updateBuilding(editingBuilding.id, buildingData)
+      : await createBuilding(buildingData);
     setSubmitting(false);
 
     if (success) {
@@ -116,9 +117,10 @@ const InvestorPanel = () => {
 
   const handleSaveApartment = async (data: Record<string, unknown>) => {
     setSubmitting(true);
+    const apartmentData = data as Omit<Apartment, 'id'>;
     const success = editingApartment && showApartmentForm
-      ? await updateApartment(editingApartment.id, showApartmentForm, data)
-      : await createApartment(data);
+      ? await updateApartment(editingApartment.id, showApartmentForm, apartmentData)
+      : await createApartment(apartmentData);
     setSubmitting(false);
 
     if (success) {

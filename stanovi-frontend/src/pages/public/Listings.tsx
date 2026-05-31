@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Home } from "lucide-react";
+import type { Building } from "@/shared/types/entity/building.entity";
 import { getBuildings } from "../../api/services/buildings.service"; // Prilagodi putanju
 import BuildingCard from "../../features/buildings/BuildingCard"; // Prilagodi putanju
 
 const Listings = () => {
-  const [buildings, setBuildings] = useState([]);
+  const [buildings, setBuildings] = useState<Building[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +28,7 @@ const Listings = () => {
   }, []);
 
   const handleDeleteBuilding = (id: string) => {
-    setBuildings(prev => prev.filter((b: Record<string, unknown>) => b.id !== id));
+    setBuildings(prev => prev.filter((b) => b.id !== id));
   }
 
   return (
@@ -61,9 +62,15 @@ const Listings = () => {
             </div>
           ) : (
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {buildings.map((building: Record<string, unknown>) => (
-                <BuildingCard key={building.id as string} building={building} onDelete={handleDeleteBuilding} />
-              ))}
+              {buildings.map((building) => {
+                const buildingData = {
+                  ...building,
+                  description: building.description ?? undefined
+                };
+                return (
+                  <BuildingCard key={building.id} building={buildingData} onDelete={handleDeleteBuilding} />
+                );
+              })}
             </div>
           )}
         </div>

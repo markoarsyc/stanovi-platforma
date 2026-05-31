@@ -83,7 +83,8 @@ const AuthPage = () => {
       contextLogin(authResponse);
       navigate("/");
     } catch (err) {
-      const message = (err as Record<string, unknown>)?.response?.data?.message || "Došlo je do greške";
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      const message = axiosErr?.response?.data?.message || "Došlo je do greške";
       setError(Array.isArray(message) ? (message as string[])[0] : String(message));
     } finally {
       setLoading(false);

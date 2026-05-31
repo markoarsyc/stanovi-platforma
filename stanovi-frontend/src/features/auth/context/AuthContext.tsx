@@ -32,9 +32,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const decoded = jwtDecode(t) as Record<string, unknown>;
       return {
-        id: decoded.sub,
-        email: decoded.email,
-        role: decoded.role,
+        id: decoded.sub as string,
+        email: decoded.email as string,
+        role: decoded.role as typeof Role[keyof typeof Role],
       };
     } catch {
       return null;
