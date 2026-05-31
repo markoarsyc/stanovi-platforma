@@ -1,0 +1,80 @@
+name: Stanovi Platforma CI
+
+# 1. Okidači (Triggers)
+on:
+  # Okida se kada se Pull Request uspešno spoji (merge-uje) u master granu
+  push:
+    branches:
+      - master
+  # Omogućava ručno pokretanje workflow-a iz GitHub interfejsa
+  workflow_dispatch:
+
+jobs:
+  # JOB 1: Paralelni posao za build-ovanje React Frontend-a
+  build-frontend:
+    runs-on: windows-latest
+    steps:
+      # Korišćenje predefinisane akcije za preuzimanje koda
+      - name: Preuzimanje koda (Checkout)
+        uses: actions/checkout@v4
+
+      # Korišćenje predefinisane akcije za podešavanje Node.js okruženja
+      - name: Podešavanje Node.js okruženja
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './stanovi-frontend/package-lock.json'
+
+      - name: Instalacija zavisnosti za Frontend
+        run: |
+          cd stanovi-frontend
+          npm ci
+
+      - name: Build React aplikacije
+        id: frontend_build
+        run: |
+          cd stanovi-frontend
+          npm run build
+
+  # JOB 2: Paralelni posao za build-ovanje NestJS Backend-a
+  build-backend:
+    runs-on: windows-latest
+    steps:
+      - name: Preuzimanje koda (Checkout)
+        uses: actions/checkout@v4
+
+      - name: Podešavanje Node.js okruženja
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './stanovi-backend/package-lock.json'
+
+      - name: Instalacija zavisnosti za Backend
+        run: |
+          cd stanovi-backend
+          npm ci
+
+      - name: Generisanje Prisma klijenta
+        run: |
+          cd stanovi-backend
+          npx prisma generate
+        continue-on-error: true
+
+      - name: Build NestJS aplikacije
+        id: backend_build
+        run: |
+          cd stanovi-backend
+          npm run build
+
+  # JOB 3: Sekvencijalni posao koji čeka da se prva dva uspešno završe
+  verifikacija-sistema:
+    runs-on: windows-latest
+    # Ključna reč 'needs' definiše sekvencijalnost (ovaj posao čeka uspešan završetak prethodna dva)
+    needs: [build-frontend, build-backend]
+    steps:
+      - name: Potvrda uspešnosti CI procesa
+        run: |
+          Write-Output "Uspesno izvrsen build i backend-a i frontend-a!"
+          Write-Output "Aplikacija je spremna za dalju fazu isporuke."
