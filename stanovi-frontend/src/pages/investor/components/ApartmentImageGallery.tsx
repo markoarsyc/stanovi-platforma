@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Trash2, Upload, AlertCircle } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { useInvestorApartmentImages } from '../hooks/useInvestorApartmentImages';
@@ -18,11 +18,7 @@ export function ApartmentImageGallery({
   const { imageLoading, imageError, uploadApartmentImage, deleteApartmentImage, getApartmentImages } =
     useInvestorApartmentImages();
 
-  useEffect(() => {
-    loadImages();
-  }, [apartmentId]);
-
-  const loadImages = async () => {
+  const loadImages = useCallback(async () => {
     setLocalLoading(true);
     try {
       console.log(`[APARTMENT IMAGE GALLERY] Loading images for apartment ${apartmentId}`);
@@ -32,7 +28,11 @@ export function ApartmentImageGallery({
     } finally {
       setLocalLoading(false);
     }
-  };
+  }, [apartmentId, getApartmentImages]);
+
+  useEffect(() => {
+    loadImages();
+  }, [apartmentId, loadImages]);
 
   const handleImageUpload = async (file: File) => {
     const success = await uploadApartmentImage(apartmentId, file);

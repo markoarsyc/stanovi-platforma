@@ -131,8 +131,8 @@ export const useInvestorBuildings = () => {
           )
         );
       } catch (err) {
-        const statusCode = (err as any)?.response?.status || 'unknown';
-        const errorMessage = (err as any)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri brisanju slike');
+        const statusCode = (err as Record<string, unknown>)?.response?.status || 'unknown';
+        const errorMessage = (err as Record<string, unknown>)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri brisanju slike');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
         console.error(`[DELETE IMAGE ERROR] Status: ${statusCode}, Message: ${errorMessage}`, err);
         setImageError(detailedMessage);

@@ -18,8 +18,8 @@ export const useInvestorApartmentImages = () => {
         toast.success('Plan arhitekture dodan!');
         return true;
       } catch (err) {
-        const statusCode = (err as any)?.response?.status || 'unknown';
-        const errorMessage = (err as any)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri dodavanju plana');
+        const statusCode = (err as Record<string, unknown>)?.response?.status || 'unknown';
+        const errorMessage = (err as Record<string, unknown>)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri dodavanju plana');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
         console.error(`[UPLOAD APARTMENT IMAGE ERROR] Status: ${statusCode}, Message: ${errorMessage}`, err);
         setImageError(detailedMessage);
@@ -43,8 +43,8 @@ export const useInvestorApartmentImages = () => {
         toast.success('Plan obrisan!');
         return true;
       } catch (err) {
-        const statusCode = (err as any)?.response?.status || 'unknown';
-        const errorMessage = (err as any)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri brisanju plana');
+        const statusCode = (err as Record<string, unknown>)?.response?.status || 'unknown';
+        const errorMessage = (err as Record<string, unknown>)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri brisanju plana');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
         console.error(`[DELETE APARTMENT IMAGE ERROR] Status: ${statusCode}, Message: ${errorMessage}`, err);
         setImageError(detailedMessage);
@@ -67,8 +67,8 @@ export const useInvestorApartmentImages = () => {
         console.log(`[GET APARTMENT IMAGES] Successfully fetched ${images.length} images`);
         return images;
       } catch (err) {
-        const statusCode = (err as any)?.response?.status || 'unknown';
-        const errorMessage = (err as any)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri učitavanju planova');
+        const statusCode = (err as Record<string, unknown>)?.response?.status || 'unknown';
+        const errorMessage = (err as Record<string, unknown>)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri učitavanju planova');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
         console.error(`[GET APARTMENT IMAGES ERROR] Status: ${statusCode}`, err);
         setImageError(detailedMessage);
@@ -91,8 +91,8 @@ export const useInvestorApartmentImages = () => {
         console.log(`[REORDER APARTMENT IMAGES] Successfully reordered`);
         toast.success('Redosled promenjen!');
       } catch (err) {
-        const statusCode = (err as any)?.response?.status || 'unknown';
-        const errorMessage = (err as any)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri promenji redosleda');
+        const statusCode = (err as Record<string, unknown>)?.response?.status || 'unknown';
+        const errorMessage = (err as Record<string, unknown>)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri promenji redosleda');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
         console.error(`[REORDER APARTMENT IMAGES ERROR]`, err);
         setImageError(detailedMessage);

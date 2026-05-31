@@ -48,7 +48,7 @@ const LandingPage = () => {
 
   
   const handleDeleteBuilding = (id: string) => {
-    setBuildings(prev => prev.filter((b: any) => b.id !== id));
+    setBuildings(prev => prev.filter((b: Record<string, unknown>) => b.id !== id));
   }
 
   return (
@@ -159,8 +159,8 @@ const LandingPage = () => {
           ) : (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {buildings.length > 0 ? (
-                buildings.map((b: any) => (
-                  <BuildingCard key={b.id} building={b} onDelete={handleDeleteBuilding} />
+                buildings.map((b: Record<string, unknown>) => (
+                  <BuildingCard key={b.id as string} building={b} onDelete={handleDeleteBuilding} />
                 ))
               ) : (
                 <div className="col-span-full py-20 text-center">

@@ -63,7 +63,7 @@ const InvestorPanel = () => {
     if (user && isInvestor) {
       fetchBuildings();
     }
-  }, [user, isInvestor]);
+  }, [user, isInvestor, fetchBuildings]);
 
   // Handlers
   const handleExpandBuilding = (buildingId: string) => {
@@ -86,7 +86,7 @@ const InvestorPanel = () => {
     setShowBuildingForm(true);
   };
 
-  const handleSaveBuilding = async (data: any) => {
+  const handleSaveBuilding = async (data: Record<string, unknown>) => {
     setSubmitting(true);
     const success = editingBuilding
       ? await updateBuilding(editingBuilding.id, data)
@@ -114,7 +114,7 @@ const InvestorPanel = () => {
     }
   };
 
-  const handleSaveApartment = async (data: any) => {
+  const handleSaveApartment = async (data: Record<string, unknown>) => {
     setSubmitting(true);
     const success = editingApartment && showApartmentForm
       ? await updateApartment(editingApartment.id, showApartmentForm, data)

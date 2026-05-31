@@ -27,7 +27,7 @@ const Listings = () => {
   }, []);
 
   const handleDeleteBuilding = (id: string) => {
-    setBuildings(prev => prev.filter((b: any) => b.id !== id));
+    setBuildings(prev => prev.filter((b: Record<string, unknown>) => b.id !== id));
   }
 
   return (
@@ -61,8 +61,8 @@ const Listings = () => {
             </div>
           ) : (
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {buildings.map((building: any) => (
-                <BuildingCard key={building.id} building={building} onDelete={handleDeleteBuilding} />
+              {buildings.map((building: Record<string, unknown>) => (
+                <BuildingCard key={building.id as string} building={building} onDelete={handleDeleteBuilding} />
               ))}
             </div>
           )}
