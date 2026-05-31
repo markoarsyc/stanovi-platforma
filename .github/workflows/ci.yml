@@ -25,10 +25,11 @@ jobs:
             ./stanovi-backend/package-lock.json
             ./stanovi-frontend/package-lock.json
 
-      - name: Provera Backend koda (ESLint)
+      - name: Provera Backend koda (Generisanje Prisma klijenta + ESLint)
         run: |
           cd stanovi-backend
           npm ci
+          npx prisma generate
           npm run lint
         continue-on-error: false
 
@@ -36,7 +37,8 @@ jobs:
         run: |
           cd stanovi-frontend
           npm ci
-        continue-on-error: true
+          npm run lint
+        continue-on-error: false 
 
   # 2. JOB: Paralelni build Frontend-a
   build-frontend:
@@ -85,7 +87,7 @@ jobs:
         run: |
           cd stanovi-backend
           npx prisma generate
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Build NestJS aplikacije
         run: |
