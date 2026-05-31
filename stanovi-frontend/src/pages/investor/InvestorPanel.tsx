@@ -16,7 +16,7 @@ import type { Building } from '@/shared/types/entity/building.entity';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 
 const InvestorPanel = () => {
-  const { user, loading: authLoading, isInvestor } = useAuth();
+  const { user, isInvestor } = useAuth();
   const navigate = useNavigate();
 
   // Hooks
@@ -53,10 +53,10 @@ const InvestorPanel = () => {
 
   // Auth check
   useEffect(() => {
-    if (!authLoading && (!user || !isInvestor)) {
+    if (!user || !isInvestor) {
       navigate('/auth', { replace: true });
     }
-  }, [authLoading, user, isInvestor, navigate]);
+  }, [user, isInvestor, navigate]);
 
   // Fetch buildings on mount
   useEffect(() => {
@@ -137,14 +137,6 @@ const InvestorPanel = () => {
     setManagingApartment(apartment);
     setShowApartmentImages(true);
   };
-
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center pt-24">
-        <p className="text-muted-foreground">Učitavanje...</p>
-      </div>
-    );
-  }
 
   if (!user || !isInvestor) {
     return null;

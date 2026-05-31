@@ -1,5 +1,5 @@
 import api from '../axios';
-import type { Apartment, ApartmentImage } from '@/shared/types/building-detail.types';
+import type { ApartmentDetail, ApartmentImage } from '@/shared/types/building-detail.types';
 
 export const getApartmentsByBuildingId = async (buildingId: string) => {
   const response = await api.get(`/apartments`, {
@@ -13,12 +13,12 @@ export const getApartmentById = async (id: string) => {
   return response.data;
 };
 
-export const createApartment = async (data: Omit<Apartment, 'id'>) => {
+export const createApartment = async (data: Omit<ApartmentDetail, 'id'>) => {
   const response = await api.post('/apartments', data);
   return response.data;
 };
 
-export const updateApartment = async (id: string, data: Partial<Omit<Apartment, 'id'>>) => {
+export const updateApartment = async (id: string, data: Partial<Omit<ApartmentDetail, 'id'>>) => {
   const response = await api.patch(`/apartments/${id}`, data);
   return response.data;
 };
