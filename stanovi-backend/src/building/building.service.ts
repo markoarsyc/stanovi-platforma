@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBuildingDto, UpdateBuildingDto } from './dto/building.dto';
 import { BuildingImageResponseDto } from './dto/building-image.dto';
@@ -8,12 +14,13 @@ import { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Injectable()
 export class BuildingService {
+  private readonly logger = new Logger(BuildingService.name);
   private readonly MAX_IMAGES_PER_BUILDING = 10;
 
   constructor(
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
-  ) { }
+  ) {}
 
   async create(dto: CreateBuildingDto, user: ActiveUser) {
     const investor = await this.prisma.investor.findUnique({
@@ -70,17 +77,17 @@ export class BuildingService {
         apartments: {
           include: {
             images: {
-              orderBy: { displayOrder: 'asc' }
-            }
+              orderBy: { displayOrder: 'asc' },
+            },
           },
-          orderBy: { aptNo: 'asc' }
+          orderBy: { aptNo: 'asc' },
         },
         images: {
           orderBy: { displayOrder: 'asc' },
         },
         investor: {
-          select: { companyName: true, contactEmail: true }
-        }
+          select: { companyName: true, contactEmail: true },
+        },
       },
     });
 
@@ -115,7 +122,9 @@ export class BuildingService {
     });
     //Throw 404 if building doesn't exist
     if (!building) {
-      console.error(`[OWNERSHIP VALIDATION] Building ${buildingId} not found`);
+      this.logger.error(
+        `[OWNERSHIP VALIDATION] Building ${buildingId} not found`,
+      );
       throw new NotFoundException(`Building with ID ${buildingId} not found`);
     }
     //Check if user is admin or the owner of the building, if not throw 403
@@ -126,8 +135,12 @@ export class BuildingService {
       });
       // If no investor found or the building doesn't belong to the investor, throw 403
       if (!investor || building.investorId !== investor.id) {
-        console.error(`[OWNERSHIP VALIDATION DENIED] User ${user.id} investor ${investor?.id} != building investor ${building.investorId}`);
-        throw new ForbiddenException('You do not have permission for this building');
+        this.logger.error(
+          `[OWNERSHIP VALIDATION DENIED] User ${user.id} investor ${investor?.id} != building investor ${building.investorId}`,
+        );
+        throw new ForbiddenException(
+          'You do not have permission for this building',
+        );
       }
     }
     // If the user is an admin or the owner, return the building
@@ -159,7 +172,10 @@ export class BuildingService {
     const { url, publicId } = await this.cloudinaryService.uploadImage(file);
 
     // Calculate next displayOrder
-    const maxOrder = Math.max(...existingImages.map(img => img.displayOrder), -1);
+    const maxOrder = Math.max(
+      ...existingImages.map((img) => img.displayOrder),
+      -1,
+    );
 
     // Save to database
     const buildingImage = await this.prisma.buildingImage.create({
@@ -179,8 +195,10 @@ export class BuildingService {
     imageId: string,
     user: ActiveUser,
   ): Promise<void> {
-    console.log(`[DELETE IMAGE] Starting deletion for image ${imageId} from building ${buildingId}`);
-    
+    console.log(
+      `[DELETE IMAGE] Starting deletion for image ${imageId} from building ${buildingId}`,
+    );
+
     // Validate ownership
     if (user.role !== Role.ADMIN) {
       await this.validateOwnership(buildingId, user);
@@ -197,26 +215,36 @@ export class BuildingService {
     }
 
     if (buildingImage.buildingId !== buildingId) {
-      console.error(`[DELETE IMAGE] Image ${imageId} belongs to building ${buildingImage.buildingId}, not ${buildingId}`);
+      console.error(
+        `[DELETE IMAGE] Image ${imageId} belongs to building ${buildingImage.buildingId}, not ${buildingId}`,
+      );
       throw new ForbiddenException('Image does not belong to this building');
     }
 
-    console.log(`[DELETE IMAGE] Found image with publicId ${buildingImage.publicId}, proceeding to delete from Cloudinary`);
-    
+    console.log(
+      `[DELETE IMAGE] Found image with publicId ${buildingImage.publicId}, proceeding to delete from Cloudinary`,
+    );
+
     // Delete from Cloudinary
     await this.cloudinaryService.deleteImage(buildingImage.publicId);
 
-    console.log(`[DELETE IMAGE] Successfully deleted from Cloudinary, now deleting from database`);
-    
+    console.log(
+      `[DELETE IMAGE] Successfully deleted from Cloudinary, now deleting from database`,
+    );
+
     // Delete from database
     await this.prisma.buildingImage.delete({
       where: { id: imageId },
     });
-    
-    console.log(`[DELETE IMAGE] Successfully deleted image ${imageId} from building ${buildingId}`);
+
+    console.log(
+      `[DELETE IMAGE] Successfully deleted image ${imageId} from building ${buildingId}`,
+    );
   }
 
-  async getBuildingImages(buildingId: string): Promise<BuildingImageResponseDto[]> {
+  async getBuildingImages(
+    buildingId: string,
+  ): Promise<BuildingImageResponseDto[]> {
     // Check if building exists
     const building = await this.prisma.building.findUnique({
       where: { id: buildingId },
@@ -231,7 +259,7 @@ export class BuildingService {
       orderBy: { displayOrder: 'asc' },
     });
 
-    return images.map(img => this.mapToResponseDto(img));
+    return images.map((img) => this.mapToResponseDto(img));
   }
 
   async reorderBuildingImages(
@@ -250,12 +278,14 @@ export class BuildingService {
     });
 
     const imageIdSet = new Set(imageIds);
-    const existingIdSet = new Set(images.map(img => img.id));
+    const existingIdSet = new Set(images.map((img) => img.id));
 
     // Check if all provided IDs exist and belong to this building
     for (const id of imageIdSet) {
       if (!existingIdSet.has(id)) {
-        throw new BadRequestException('One or more image IDs do not belong to this building');
+        throw new BadRequestException(
+          'One or more image IDs do not belong to this building',
+        );
       }
     }
 

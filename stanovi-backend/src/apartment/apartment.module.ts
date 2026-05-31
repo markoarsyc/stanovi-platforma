@@ -7,6 +7,6 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
   imports: [CloudinaryModule],
   providers: [ApartmentService],
   controllers: [ApartmentController],
-  exports: [ApartmentService]
+  exports: [ApartmentService],
 })
 export class ApartmentModule {}

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBuyerDto } from './dto/register-buyer.dto';
@@ -8,31 +8,31 @@ import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
 import type { ActiveUser } from './interfaces/active-user.interface';
 import { GetUser } from './decorators/get-user.decorator';
-import { Role } from '.prisma/client';
+import { Role } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
-    @Post('register-buyer')
-    registerBuyer(@Body() dto: RegisterBuyerDto) {
-        return this.authService.registerBuyer(dto);
-    }
+  @Post('register-buyer')
+  registerBuyer(@Body() dto: RegisterBuyerDto) {
+    return this.authService.registerBuyer(dto);
+  }
 
-    @Post('register-investor')
-    registerInvestor(@Body() dto: RegisterInvestorDto) {
-        return this.authService.registerInvestor(dto);
-    }
+  @Post('register-investor')
+  registerInvestor(@Body() dto: RegisterInvestorDto) {
+    return this.authService.registerInvestor(dto);
+  }
 
-    @Post('login')
-    login(@Body() dto: LoginDto) {
-        return this.authService.login(dto);
-    }
+  @Post('login')
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
 
-    @Get('me')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.INVESTOR, Role.BUYER)
-    getProfile(@GetUser() user: ActiveUser) {
-        return user;
-    }
+  @Get('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.INVESTOR, Role.BUYER)
+  getProfile(@GetUser() user: ActiveUser) {
+    return user;
+  }
 }

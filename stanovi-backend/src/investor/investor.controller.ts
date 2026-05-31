@@ -1,4 +1,13 @@
-import { Controller, Get, Body, Param, Patch, UseGuards, Delete, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Param,
+  Patch,
+  UseGuards,
+  Delete,
+  Post,
+} from '@nestjs/common';
 import { InvestorService } from './investor.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -10,7 +19,7 @@ import { RequestVerificationDto } from './dto/request-verification.dto';
 
 @Controller('investors')
 export class InvestorController {
-  constructor(private readonly investorService: InvestorService) { }
+  constructor(private readonly investorService: InvestorService) {}
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -46,18 +55,23 @@ export class InvestorController {
   }
 
   @Post(':id/request-verification')
-  requestVerification(@Param('id') id: string, @Body() dto: RequestVerificationDto) {
+  requestVerification(
+    @Param('id') id: string,
+    @Body() dto: RequestVerificationDto,
+  ) {
     return this.investorService.requestVerification(id, dto);
   }
-
 
   @Patch('verification-requests/:requestId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   handleVerificationRequest(
     @Param('requestId') requestId: string,
-    @Body('isApproved') isApproved: boolean
+    @Body('isApproved') isApproved: boolean,
   ) {
-    return this.investorService.handleVerificationRequest(requestId, isApproved);
+    return this.investorService.handleVerificationRequest(
+      requestId,
+      isApproved,
+    );
   }
 }

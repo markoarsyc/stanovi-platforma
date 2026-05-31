@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express } from 'express';
 import { BuildingService } from './building.service';
@@ -10,9 +21,12 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Role } from '@prisma/client';
 import type { ActiveUser } from '../auth/interfaces/active-user.interface';
+import { Logger } from '@nestjs/common';
 
 @Controller('buildings')
 export class BuildingController {
+  private readonly logger = new Logger(BuildingController.name);
+
   constructor(private readonly buildingService: BuildingService) {}
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
@@ -41,7 +55,11 @@ export class BuildingController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
   @Roles(Role.INVESTOR)
-  update(@Param('id') id: string, @Body() dto: UpdateBuildingDto, @GetUser() user: ActiveUser) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateBuildingDto,
+    @GetUser() user: ActiveUser,
+  ) {
     return this.buildingService.update(id, dto, user);
   }
 
@@ -82,10 +100,19 @@ export class BuildingController {
     @GetUser() user: ActiveUser,
   ) {
     try {
-      console.log(`[DELETE IMAGE] User ${user.id} (${user.role}) attempting to delete image ${imageId} from building ${buildingId}`);
-      return this.buildingService.deleteBuildingImage(buildingId, imageId, user);
+      this.logger.log(
+        `[DELETE IMAGE] User ${user.id} (${user.role}) attempting to delete image ${imageId} from building ${buildingId}`,
+      );
+      return this.buildingService.deleteBuildingImage(
+        buildingId,
+        imageId,
+        user,
+      );
     } catch (error) {
-      console.error(`[DELETE IMAGE ERROR] Building: ${buildingId}, Image: ${imageId}, User: ${user.id}`, error);
+      this.logger.error(
+        `[DELETE IMAGE ERROR] Building: ${buildingId}, Image: ${imageId}, User: ${user.id}`,
+        error,
+      );
       throw error;
     }
   }
@@ -99,6 +126,10 @@ export class BuildingController {
     @Body() dto: UpdateBuildingImageDto,
     @GetUser() user: ActiveUser,
   ) {
-    return this.buildingService.reorderBuildingImages(buildingId, [imageId], user);
+    return this.buildingService.reorderBuildingImages(
+      buildingId,
+      [imageId],
+      user,
+    );
   }
 }

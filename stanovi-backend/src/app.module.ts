@@ -26,7 +26,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     ApartmentModule,
     LocationModule,
     KafkaModule,
-    CloudinaryModule
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

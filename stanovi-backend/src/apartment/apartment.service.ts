@@ -1,7 +1,13 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApartmentDto, UpdateApartmentDto } from './dto/apartment.dto';
-import { ApartmentImageResponseDto, UpdateApartmentImageDto } from './dto/apartment-image.dto';
+import { ApartmentImageResponseDto } from './dto/apartment-image.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { Role } from '@prisma/client';
 import { ActiveUser } from '../auth/interfaces/active-user.interface';
@@ -14,7 +20,7 @@ export class ApartmentService {
   constructor(
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
-  ) { }
+  ) {}
 
   async create(dto: CreateApartmentDto, user: ActiveUser) {
     await this.validateBuildingOwnership(dto.buildingId, user);
@@ -29,7 +35,9 @@ export class ApartmentService {
     });
 
     if (existing) {
-      throw new ConflictException(`Apartment ${dto.aptNo} already exists in this building`);
+      throw new ConflictException(
+        `Apartment ${dto.aptNo} already exists in this building`,
+      );
     }
 
     return this.prisma.apartment.create({ data: dto });
@@ -38,11 +46,11 @@ export class ApartmentService {
   async findAll(buildingId?: string) {
     return this.prisma.apartment.findMany({
       where: buildingId ? { buildingId } : {},
-      include: { 
+      include: {
         building: { select: { title: true } },
         images: {
-          orderBy: { displayOrder: 'asc' }
-        }
+          orderBy: { displayOrder: 'asc' },
+        },
       },
     });
   }
@@ -50,11 +58,11 @@ export class ApartmentService {
   async findOne(id: string) {
     const apartment = await this.prisma.apartment.findUnique({
       where: { id },
-      include: { 
+      include: {
         building: true,
         images: {
-          orderBy: { displayOrder: 'asc' }
-        }
+          orderBy: { displayOrder: 'asc' },
+        },
       },
     });
 
@@ -89,7 +97,10 @@ export class ApartmentService {
     return this.prisma.apartment.delete({ where: { id } });
   }
 
-  private async validateBuildingOwnership(buildingId: string, user: ActiveUser) {
+  private async validateBuildingOwnership(
+    buildingId: string,
+    user: ActiveUser,
+  ) {
     if (user.role === Role.ADMIN) return;
 
     // Find investor profile associated with the user
@@ -111,7 +122,9 @@ export class ApartmentService {
     }
     // If building doesn't belong to investor, deny access
     if (building.investorId !== investor.id) {
-      throw new ForbiddenException('You do not have permission for apartments in this building');
+      throw new ForbiddenException(
+        'You do not have permission for apartments in this building',
+      );
     }
   }
 
@@ -142,7 +155,10 @@ export class ApartmentService {
     const { url, publicId } = await this.cloudinaryService.uploadImage(file);
 
     // Calculate next displayOrder
-    const maxOrder = Math.max(...existingImages.map(img => img.displayOrder), -1);
+    const maxOrder = Math.max(
+      ...existingImages.map((img) => img.displayOrder),
+      -1,
+    );
 
     // Save to database
     const apartmentImage = await this.prisma.apartmentImage.create({
@@ -162,8 +178,10 @@ export class ApartmentService {
     imageId: string,
     user: ActiveUser,
   ): Promise<void> {
-    console.log(`[DELETE APARTMENT IMAGE] Starting deletion for image ${imageId} from apartment ${apartmentId}`);
-    
+    console.log(
+      `[DELETE APARTMENT IMAGE] Starting deletion for image ${imageId} from apartment ${apartmentId}`,
+    );
+
     // Validate ownership
     await this.validateApartmentOwnership(apartmentId, user);
 
@@ -173,31 +191,43 @@ export class ApartmentService {
     });
 
     if (!apartmentImage) {
-      console.error(`[DELETE APARTMENT IMAGE] Image ${imageId} not found in database`);
+      console.error(
+        `[DELETE APARTMENT IMAGE] Image ${imageId} not found in database`,
+      );
       throw new NotFoundException('Image not found');
     }
 
     if (apartmentImage.apartmentId !== apartmentId) {
-      console.error(`[DELETE APARTMENT IMAGE] Image ${imageId} belongs to apartment ${apartmentImage.apartmentId}, not ${apartmentId}`);
+      console.error(
+        `[DELETE APARTMENT IMAGE] Image ${imageId} belongs to apartment ${apartmentImage.apartmentId}, not ${apartmentId}`,
+      );
       throw new ForbiddenException('Image does not belong to this apartment');
     }
 
-    console.log(`[DELETE APARTMENT IMAGE] Found image with publicId ${apartmentImage.publicId}, proceeding to delete from Cloudinary`);
-    
+    console.log(
+      `[DELETE APARTMENT IMAGE] Found image with publicId ${apartmentImage.publicId}, proceeding to delete from Cloudinary`,
+    );
+
     // Delete from Cloudinary
     await this.cloudinaryService.deleteImage(apartmentImage.publicId);
 
-    console.log(`[DELETE APARTMENT IMAGE] Successfully deleted from Cloudinary, now deleting from database`);
-    
+    console.log(
+      `[DELETE APARTMENT IMAGE] Successfully deleted from Cloudinary, now deleting from database`,
+    );
+
     // Delete from database
     await this.prisma.apartmentImage.delete({
       where: { id: imageId },
     });
-    
-    console.log(`[DELETE APARTMENT IMAGE] Successfully deleted image ${imageId} from apartment ${apartmentId}`);
+
+    console.log(
+      `[DELETE APARTMENT IMAGE] Successfully deleted image ${imageId} from apartment ${apartmentId}`,
+    );
   }
 
-  async getApartmentImages(apartmentId: string): Promise<ApartmentImageResponseDto[]> {
+  async getApartmentImages(
+    apartmentId: string,
+  ): Promise<ApartmentImageResponseDto[]> {
     // Check if apartment exists
     const apartment = await this.prisma.apartment.findUnique({
       where: { id: apartmentId },
@@ -212,7 +242,7 @@ export class ApartmentService {
       orderBy: { displayOrder: 'asc' },
     });
 
-    return images.map(img => this.mapApartmentImageToResponseDto(img));
+    return images.map((img) => this.mapApartmentImageToResponseDto(img));
   }
 
   async reorderApartmentImages(
@@ -229,12 +259,14 @@ export class ApartmentService {
     });
 
     const imageIdSet = new Set(imageIds);
-    const existingIdSet = new Set(images.map(img => img.id));
+    const existingIdSet = new Set(images.map((img) => img.id));
 
     // Check if all provided IDs exist and belong to this apartment
     for (const id of imageIdSet) {
       if (!existingIdSet.has(id)) {
-        throw new BadRequestException('One or more image IDs do not belong to this apartment');
+        throw new BadRequestException(
+          'One or more image IDs do not belong to this apartment',
+        );
       }
     }
 
@@ -247,7 +279,10 @@ export class ApartmentService {
     }
   }
 
-  private async validateApartmentOwnership(apartmentId: string, user: ActiveUser) {
+  private async validateApartmentOwnership(
+    apartmentId: string,
+    user: ActiveUser,
+  ) {
     // Admins can access any apartment's images
     if (user.role === Role.ADMIN) return;
 
@@ -272,12 +307,18 @@ export class ApartmentService {
 
     // Check: User's investor owns the building that contains this apartment
     if (apartment.building.investorId !== investor.id) {
-      console.error(`[APARTMENT IMAGE ACCESS DENIED] Investor ${investor.id} does not own apartment ${apartmentId} (building owner: ${apartment.building.investorId})`);
-      throw new ForbiddenException('You do not have permission for images of this apartment');
+      console.error(
+        `[APARTMENT IMAGE ACCESS DENIED] Investor ${investor.id} does not own apartment ${apartmentId} (building owner: ${apartment.building.investorId})`,
+      );
+      throw new ForbiddenException(
+        'You do not have permission for images of this apartment',
+      );
     }
   }
 
-  private mapApartmentImageToResponseDto(apartmentImage: any): ApartmentImageResponseDto {
+  private mapApartmentImageToResponseDto(
+    apartmentImage: any,
+  ): ApartmentImageResponseDto {
     return {
       id: apartmentImage.id,
       apartmentId: apartmentImage.apartmentId,
