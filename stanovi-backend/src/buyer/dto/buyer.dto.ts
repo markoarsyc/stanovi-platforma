@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUUID, IsPhoneNumber, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreateBuyerDto {
   @IsString()
@@ -11,7 +11,7 @@ export class CreateBuyerDto {
 
   @IsString()
   @IsNotEmpty()
-  phone: string; 
+  phone: string;
 }
 
 export class UpdateBuyerDto {
