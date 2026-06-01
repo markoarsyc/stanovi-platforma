@@ -3,7 +3,8 @@ import { requestInterceptor, requestErrorHandler } from './interceptors/request.
 import { responseInterceptor, responseErrorHandler } from './interceptors/response.interceptor';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  // Ako postoji varijabla koristi je, ako ne (u prod), koristi relativni "/api" preko Nginx-a
+  baseURL: import.meta.env.VITE_API_URL || '/api', 
   headers: {
     'Content-Type': 'application/json',
   },
