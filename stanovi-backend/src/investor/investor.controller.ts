@@ -54,24 +54,24 @@ export class InvestorController {
     return this.investorService.delete(id, user);
   }
 
-  @Post(':id/request-verification')
-  requestVerification(
-    @Param('id') id: string,
-    @Body() dto: RequestVerificationDto,
-  ) {
-    return this.investorService.requestVerification(id, dto);
-  }
+  // @Post(':id/request-verification')
+  // requestVerification(
+  //   @Param('id') id: string,
+  //   @Body() dto: RequestVerificationDto,
+  // ) {
+  //   return this.investorService.requestVerification(id, dto);
+  // }
 
-  @Patch('verification-requests/:requestId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  handleVerificationRequest(
-    @Param('requestId') requestId: string,
-    @Body('isApproved') isApproved: boolean,
-  ) {
-    return this.investorService.handleVerificationRequest(
-      requestId,
-      isApproved,
-    );
-  }
+  // @Patch('verification-requests/:requestId')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(Role.ADMIN)
+  // handleVerificationRequest(
+  //   @Param('requestId') requestId: string,
+  //   @Body('isApproved') isApproved: boolean,
+  // ) {
+  //   return this.investorService.handleVerificationRequest(
+  //     requestId,
+  //     isApproved,
+  //   );
+  // }
 }
