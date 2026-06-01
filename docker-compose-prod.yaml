@@ -1,0 +1,53 @@
+name: indigobelgrade-prod
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: stanovi_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - stanovi-network
+
+  api:
+    image: indigobelgrade/stanovi-api:latest 
+    container_name: stanovi_api
+    restart: always
+    expose:
+      - "3000"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=3000
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - CLOUDINARY_UPLOAD_FOLDER=${CLOUDINARY_UPLOAD_FOLDER}
+    networks:
+      - stanovi-network
+
+  frontend:
+    image: indigobelgrade/stanovi-frontend:latest
+    container_name: stanovi_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - stanovi-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  stanovi-network:
+    driver: bridge
