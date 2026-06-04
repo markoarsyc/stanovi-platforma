@@ -149,14 +149,6 @@ model Apartment {
   @@unique([buildingId, aptNo])
   @@index([buildingId])
 }
-//Kafka events
-model Event {
-  eventId   String   @id @default(uuid())
-  eventType String
-  entityId  String
-  timestamp DateTime
-  payload   Json
-}
 
 model VerificationRequest {
   id          String   @id @default(uuid())

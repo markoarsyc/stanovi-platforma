@@ -21,68 +21,6 @@ services:
     networks:
       - stanovi-network
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: stanovi_zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
-      ZOOKEEPER_TICK_TIME: ${ZOOKEEPER_TICK_TIME}
-    ports:
-      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost ${ZOOKEEPER_CLIENT_PORT} || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
-    networks:
-      - stanovi-network
-
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    container_name: stanovi_kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "${KAFKA_PORT_INTERNAL}:${KAFKA_PORT_INTERNAL}"
-      - "${KAFKA_PORT_EXTERNAL}:${KAFKA_PORT_EXTERNAL}"
-    environment:
-      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
-      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
-      KAFKA_LISTENERS: ${KAFKA_LISTENERS}
-      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
-      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost ${KAFKA_PORT_INTERNAL} || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 25s
-    networks:
-      - stanovi-network
-
-  kafdrop:
-    image: obsidiandynamics/kafdrop
-    container_name: stanovi_kafdrop
-    restart: always
-    ports:
-      - "${KAFDROP_PORT}:9000"
-    environment:
-      KAFKA_BROKERCONNECT: "${KAFKA_BROKERCONNECT}"
-    depends_on:
-      kafka:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/health || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    networks:
-      - stanovi-network
-
   api:
     build: 
       context: ./stanovi-backend
@@ -94,12 +32,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      kafka:
-        condition: service_healthy
     environment:
       DATABASE_URL: "${DATABASE_URL}"
-      KAFKA_BROKERS: "${KAFKA_BROKERS}"
-      KAFKA_CLIENT_ID: "${KAFKA_CLIENT_ID}"
       JWT_SECRET: "${JWT_SECRET}"
       PORT: "${PORT}"
       CLOUDINARY_CLOUD_NAME: "${CLOUDINARY_CLOUD_NAME}"
@@ -138,33 +72,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-    networks:
-      - stanovi-network
-
-  kafka-consumer:
-    build: ./kafka-consumer
-    container_name: stanovi_consumer
-    restart: always
-    depends_on:
-      kafka:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'node consumer.js' || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    environment:
-      DATABASE_URL: "${DATABASE_URL}"
-      KAFKA_BROKERS: "${KAFKA_BROKERS}"
-      KAFKA_GROUP_ID: "${KAFKA_GROUP_ID}"
-      POSTGRES_HOST: "${POSTGRES_HOST}"
-      POSTGRES_PORT: "${POSTGRES_PORT}"
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_DB: "${POSTGRES_DB}"
     networks:
       - stanovi-network
 
