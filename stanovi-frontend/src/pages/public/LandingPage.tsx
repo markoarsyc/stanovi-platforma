@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Building2, Shield, TrendingUp } from "lucide-react";
+import type { Building } from "@/shared/types/entity/building.entity";
 
 // Importi tvojih resursa i servisa
 import heroBelgrade from "../../shared/assets/hero-belgrade.jpg"; 
@@ -27,7 +28,7 @@ const features = [
 ];
 
 const LandingPage = () => {
-  const [buildings, setBuildings] = useState([]);
+  const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -48,7 +49,7 @@ const LandingPage = () => {
 
   
   const handleDeleteBuilding = (id: string) => {
-    setBuildings(prev => prev.filter((b: any) => b.id !== id));
+    setBuildings(prev => prev.filter((b) => b.id !== id));
   }
 
   return (
@@ -159,9 +160,15 @@ const LandingPage = () => {
           ) : (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {buildings.length > 0 ? (
-                buildings.map((b: any) => (
-                  <BuildingCard key={b.id} building={b} onDelete={handleDeleteBuilding} />
-                ))
+                buildings.map((b) => {
+                  const buildingData = {
+                    ...b,
+                    description: b.description ?? undefined
+                  };
+                  return (
+                    <BuildingCard key={b.id} building={buildingData} onDelete={handleDeleteBuilding} />
+                  );
+                })
               ) : (
                 <div className="col-span-full py-20 text-center">
                   <p className="font-body text-lg text-muted-foreground">

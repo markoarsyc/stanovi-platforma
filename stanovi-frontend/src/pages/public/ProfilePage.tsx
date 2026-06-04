@@ -51,8 +51,10 @@ const Profile = () => {
       await requestInvestorVerification(profile.id, formData);
       toast.success("Zahtev za verifikaciju je uspešno poslat!");
       setIsModalOpen(false);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Došlo je do greške.");
+    } catch (error) {
+      const axiosErr = error as { response?: { data?: { message?: string } } } | Error;
+      const errorMsg = (axiosErr as { response?: { data?: { message?: string } } })?.response?.data?.message || "Došlo je do greške.";
+      toast.error(String(errorMsg));
     } finally {
       setIsSubmitting(false);
     }

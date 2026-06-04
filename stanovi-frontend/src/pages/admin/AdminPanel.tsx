@@ -30,7 +30,7 @@ const AdminPanel = () => {
     try {
       const data = await getVerificationRequests();
       setRequests(data);
-    } catch (error) {
+    } catch {
       toast.error("Greška pri učitavanju zahteva");
     } finally {
       setLoading(false);

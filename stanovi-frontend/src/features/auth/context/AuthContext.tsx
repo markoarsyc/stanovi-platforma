@@ -21,8 +21,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedToken = localStorage.getItem('auth_token');
     if (savedToken) {
       try {
-        const decoded: any = jwtDecode(savedToken);
-        return { id: decoded.sub, email: decoded.email, role: decoded.role };
+        const decoded = jwtDecode(savedToken) as Record<string, unknown>;
+        return { id: decoded.sub as string, email: decoded.email as string, role: decoded.role as typeof Role[keyof typeof Role] };
       } catch { return null; }
     }
     return null;
@@ -30,11 +30,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const getUserFromToken = (t: string): AuthUser | null => {
     try {
-      const decoded: any = jwtDecode(t);
+      const decoded = jwtDecode(t) as Record<string, unknown>;
       return {
-        id: decoded.sub,
-        email: decoded.email,
-        role: decoded.role,
+        id: decoded.sub as string,
+        email: decoded.email as string,
+        role: decoded.role as typeof Role[keyof typeof Role],
       };
     } catch {
       return null;
@@ -69,7 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
+// eslint-disable-next-line react-refresh/only-export-components
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;

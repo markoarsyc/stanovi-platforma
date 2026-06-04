@@ -15,7 +15,7 @@ const iconInputClass =
 const IconInput = ({
   icon: Icon,
   ...props
-}: { icon: any } & React.InputHTMLAttributes<HTMLInputElement>) => (
+}: { icon: React.ComponentType<{ size?: number; className?: string }> } & React.InputHTMLAttributes<HTMLInputElement>) => (
   <div className="relative w-full">
     <Icon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
     <input className={iconInputClass} {...props} />
@@ -82,9 +82,10 @@ const AuthPage = () => {
       }
       contextLogin(authResponse);
       navigate("/");
-    } catch (err: any) {
-      const message = err.response?.data?.message || "Došlo je do greške";
-      setError(Array.isArray(message) ? message[0] : message);
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      const message = axiosErr?.response?.data?.message || "Došlo je do greške";
+      setError(Array.isArray(message) ? (message as string[])[0] : String(message));
     } finally {
       setLoading(false);
     }

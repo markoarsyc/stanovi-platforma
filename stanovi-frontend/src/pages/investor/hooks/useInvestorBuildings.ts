@@ -131,8 +131,9 @@ export const useInvestorBuildings = () => {
           )
         );
       } catch (err) {
-        const statusCode = (err as any)?.response?.status || 'unknown';
-        const errorMessage = (err as any)?.response?.data?.message || (err instanceof Error ? err.message : 'Greška pri brisanju slike');
+        const axiosErr = err as { response?: { status?: number; data?: { message?: string } } } | Error;
+        const statusCode = (axiosErr as { response?: { status?: number } })?.response?.status || 'unknown';
+        const errorMessage = (axiosErr as { response?: { data?: { message?: string } } })?.response?.data?.message || (axiosErr instanceof Error ? axiosErr.message : 'Greška pri brisanju slike');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
         console.error(`[DELETE IMAGE ERROR] Status: ${statusCode}, Message: ${errorMessage}`, err);
         setImageError(detailedMessage);

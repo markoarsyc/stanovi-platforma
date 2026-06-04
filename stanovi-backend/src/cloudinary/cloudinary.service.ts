@@ -10,7 +10,8 @@ interface UploadResponse {
 export class CloudinaryService {
   private readonly ALLOWED_MIMETYPES = ['image/jpeg', 'image/png'];
   private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  private readonly UPLOAD_FOLDER = process.env.CLOUDINARY_UPLOAD_FOLDER || 'stanovi-platforma/buildings';
+  private readonly UPLOAD_FOLDER =
+    process.env.CLOUDINARY_UPLOAD_FOLDER || 'stanovi-platforma/buildings';
 
   async uploadImage(file: Express.Multer.File): Promise<UploadResponse> {
     // Validacija veličine
@@ -39,7 +40,11 @@ export class CloudinaryService {
           },
           (error, result) => {
             if (error) {
-              reject(new BadRequestException(`Cloudinary upload failed: ${error.message}`));
+              reject(
+                new BadRequestException(
+                  `Cloudinary upload failed: ${error.message}`,
+                ),
+              );
             } else if (result) {
               resolve({
                 url: result.secure_url,
@@ -65,12 +70,18 @@ export class CloudinaryService {
       const result = await cloudinary.uploader.destroy(publicId);
 
       if (result.result !== 'ok') {
-        console.warn(`Warning: Cloudinary deletion returned non-ok status for ${publicId}`);
+        console.warn(
+          `Warning: Cloudinary deletion returned non-ok status for ${publicId}`,
+        );
       }
     } catch (error) {
       if (error instanceof BadRequestException) {
-        console.error(`Failed to delete image from Cloudinary: ${error.message}`);
-        throw new BadRequestException(`Failed to delete image: ${error.message}`);
+        console.error(
+          `Failed to delete image from Cloudinary: ${error.message}`,
+        );
+        throw new BadRequestException(
+          `Failed to delete image: ${error.message}`,
+        );
       }
     }
   }

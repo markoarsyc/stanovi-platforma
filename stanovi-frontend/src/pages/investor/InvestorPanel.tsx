@@ -16,7 +16,7 @@ import type { Building } from '@/shared/types/entity/building.entity';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 
 const InvestorPanel = () => {
-  const { user, loading: authLoading, isInvestor } = useAuth();
+  const { user, isInvestor } = useAuth();
   const navigate = useNavigate();
 
   // Hooks
@@ -53,17 +53,17 @@ const InvestorPanel = () => {
 
   // Auth check
   useEffect(() => {
-    if (!authLoading && (!user || !isInvestor)) {
+    if (!user || !isInvestor) {
       navigate('/auth', { replace: true });
     }
-  }, [authLoading, user, isInvestor, navigate]);
+  }, [user, isInvestor, navigate]);
 
   // Fetch buildings on mount
   useEffect(() => {
     if (user && isInvestor) {
       fetchBuildings();
     }
-  }, [user, isInvestor]);
+  }, [user, isInvestor, fetchBuildings]);
 
   // Handlers
   const handleExpandBuilding = (buildingId: string) => {
@@ -86,11 +86,12 @@ const InvestorPanel = () => {
     setShowBuildingForm(true);
   };
 
-  const handleSaveBuilding = async (data: any) => {
+  const handleSaveBuilding = async (data: Record<string, unknown>) => {
     setSubmitting(true);
+    const buildingData = data as Omit<Building, 'id'>;
     const success = editingBuilding
-      ? await updateBuilding(editingBuilding.id, data)
-      : await createBuilding(data);
+      ? await updateBuilding(editingBuilding.id, buildingData)
+      : await createBuilding(buildingData);
     setSubmitting(false);
 
     if (success) {
@@ -114,11 +115,12 @@ const InvestorPanel = () => {
     }
   };
 
-  const handleSaveApartment = async (data: any) => {
+  const handleSaveApartment = async (data: Record<string, unknown>) => {
     setSubmitting(true);
+    const apartmentData = data as Omit<Apartment, 'id'>;
     const success = editingApartment && showApartmentForm
-      ? await updateApartment(editingApartment.id, showApartmentForm, data)
-      : await createApartment(data);
+      ? await updateApartment(editingApartment.id, showApartmentForm, apartmentData)
+      : await createApartment(apartmentData);
     setSubmitting(false);
 
     if (success) {
@@ -137,14 +139,6 @@ const InvestorPanel = () => {
     setManagingApartment(apartment);
     setShowApartmentImages(true);
   };
-
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center pt-24">
-        <p className="text-muted-foreground">Učitavanje...</p>
-      </div>
-    );
-  }
 
   if (!user || !isInvestor) {
     return null;

@@ -1,4 +1,4 @@
-import type { InternalAxiosRequestConfig } from 'axios';
+import type { InternalAxiosRequestConfig, AxiosError } from 'axios';
 
 export const requestInterceptor = (config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem('auth_token');
@@ -10,6 +10,6 @@ export const requestInterceptor = (config: InternalAxiosRequestConfig) => {
   return config;
 };
 
-export const requestErrorHandler = (error: any) => {
+export const requestErrorHandler = (error: AxiosError | Error) => {
   return Promise.reject(error);
 };

@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsInt,
+  IsDateString,
+} from 'class-validator';
 import { BuildingStatus } from '@prisma/client';
 
 export class CreateBuildingDto {
@@ -27,21 +34,27 @@ export class CreateBuildingDto {
 }
 
 export class UpdateBuildingDto {
-  @IsString() @IsOptional()
+  @IsString()
+  @IsOptional()
   title?: string;
 
-  @IsString() @IsOptional()
+  @IsString()
+  @IsOptional()
   address?: string;
 
-  @IsString() @IsOptional()
+  @IsString()
+  @IsOptional()
   description?: string;
 
-  @IsDateString() @IsOptional()
+  @IsDateString()
+  @IsOptional()
   dueDate?: Date;
 
-  @IsEnum(BuildingStatus) @IsOptional()
+  @IsEnum(BuildingStatus)
+  @IsOptional()
   status?: BuildingStatus;
 
-  @IsInt() @IsOptional()
+  @IsInt()
+  @IsOptional()
   locationId?: number;
 }

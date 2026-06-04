@@ -1,4 +1,12 @@
-import { Controller, Get, Patch, Param, Delete, UseGuards, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Body,
+} from '@nestjs/common';
 import { BuyerService } from './buyer.service';
 import { UpdateBuyerDto } from './dto/buyer.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,7 +35,11 @@ export class BuyerController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.BUYER)
-  update(@Param('id') id: string, @Body() dto: UpdateBuyerDto, @GetUser() user: ActiveUser) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateBuyerDto,
+    @GetUser() user: ActiveUser,
+  ) {
     return this.buyerService.update(id, dto, user);
   }
 

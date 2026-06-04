@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  UseGuards,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import 'multer';
 import { ApartmentService } from './apartment.service';
@@ -34,7 +46,11 @@ export class ApartmentController {
 
   @Patch(':id')
   @Roles(Role.INVESTOR)
-  update(@Param('id') id: string, @Body() dto: UpdateApartmentDto, @GetUser() user: ActiveUser) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateApartmentDto,
+    @GetUser() user: ActiveUser,
+  ) {
     return this.apartmentService.update(id, dto, user);
   }
 
@@ -57,10 +73,19 @@ export class ApartmentController {
     @GetUser() user: ActiveUser,
   ) {
     try {
-      console.log(`[UPLOAD APARTMENT IMAGE] User ${user.id} (${user.role}) uploading image for apartment ${apartmentId}`);
-      return this.apartmentService.uploadApartmentImage(apartmentId, file, user);
+      console.log(
+        `[UPLOAD APARTMENT IMAGE] User ${user.id} (${user.role}) uploading image for apartment ${apartmentId}`,
+      );
+      return this.apartmentService.uploadApartmentImage(
+        apartmentId,
+        file,
+        user,
+      );
     } catch (error) {
-      console.error(`[UPLOAD APARTMENT IMAGE ERROR] Apartment: ${apartmentId}, User: ${user.id}`, error);
+      console.error(
+        `[UPLOAD APARTMENT IMAGE ERROR] Apartment: ${apartmentId}, User: ${user.id}`,
+        error,
+      );
       throw error;
     }
   }
@@ -78,10 +103,19 @@ export class ApartmentController {
     @GetUser() user: ActiveUser,
   ) {
     try {
-      console.log(`[DELETE APARTMENT IMAGE] User ${user.id} (${user.role}) attempting to delete image ${imageId} from apartment ${apartmentId}`);
-      return this.apartmentService.deleteApartmentImage(apartmentId, imageId, user);
+      console.log(
+        `[DELETE APARTMENT IMAGE] User ${user.id} (${user.role}) attempting to delete image ${imageId} from apartment ${apartmentId}`,
+      );
+      return this.apartmentService.deleteApartmentImage(
+        apartmentId,
+        imageId,
+        user,
+      );
     } catch (error) {
-      console.error(`[DELETE APARTMENT IMAGE ERROR] Apartment: ${apartmentId}, Image: ${imageId}, User: ${user.id}`, error);
+      console.error(
+        `[DELETE APARTMENT IMAGE ERROR] Apartment: ${apartmentId}, Image: ${imageId}, User: ${user.id}`,
+        error,
+      );
       throw error;
     }
   }
@@ -94,6 +128,10 @@ export class ApartmentController {
     @Body() dto: UpdateApartmentImageDto,
     @GetUser() user: ActiveUser,
   ) {
-    return this.apartmentService.reorderApartmentImages(apartmentId, [imageId], user);
+    return this.apartmentService.reorderApartmentImages(
+      apartmentId,
+      [imageId],
+      user,
+    );
   }
 }

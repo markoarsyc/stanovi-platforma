@@ -1,0 +1,148 @@
+name: CI/CD pipeline
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+jobs:
+  # 1. KORAK: Linter
+  lint-code:
+    name: 🔍 1. Provera kvaliteta koda (Linting)
+    runs-on: windows-latest
+    steps:
+      - name: Preuzimanje koda (Checkout)
+        uses: actions/checkout@v5
+
+      - name: Podešavanje Node.js okruženja
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            ./stanovi-backend/package-lock.json
+            ./stanovi-frontend/package-lock.json
+
+      - name: Provera Backend koda
+        run: |
+          cd stanovi-backend
+          npm ci
+          npx prisma generate
+          npm run lint
+
+      - name: Provera Frontend koda
+        run: |
+          cd stanovi-frontend
+          npm ci
+          npm run lint
+
+  # ==========================================
+  # FRONTEND PIPELINE
+  # ==========================================
+
+  build-frontend:
+    name: 🧪 2a. Provera Frontend Kompilacije
+    runs-on: windows-latest
+    needs: lint-code
+    steps:
+      - name: Preuzimanje koda (Checkout)
+        uses: actions/checkout@v5
+
+      - name: Podešavanje Node.js okruženja
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './stanovi-frontend/package-lock.json'
+
+      - name: Instalacija i Build React aplikacije
+        run: |
+          cd stanovi-frontend
+          npm ci
+          npm run build
+
+  deploy-frontend:
+    name: 🐳 3a. Deploy Frontend na Azure
+    runs-on: ubuntu-latest
+    needs: build-frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./stanovi-frontend
+          push: true
+          tags: indigobelgrade/stanovi-frontend:latest
+          build-args: |
+            VITE_API_URL=https://indigobelgrade-api-h4hkfzaydvdwe3ac.swedencentral-01.azurewebsites.net/api
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'indigobelgrade-client'
+          publish-profile: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
+          images: 'indigobelgrade/stanovi-frontend:latest'
+
+  # ==========================================
+  # BACKEND PIPELINE
+  # ==========================================
+
+  build-backend:
+    name: 🧪 2b. Provera Backend Kompilacije
+    runs-on: windows-latest
+    needs: lint-code
+    steps:
+      - name: Preuzimanje koda (Checkout)
+        uses: actions/checkout@v5
+
+      - name: Podešavanje Node.js okruženja
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './stanovi-backend/package-lock.json'
+
+      - name: Instalacija, Prisma i Build NestJS aplikacije
+        run: |
+          cd stanovi-backend
+          npm ci
+          npx prisma generate
+          npm run build
+
+  deploy-backend:
+    name: 🐳 3b. Deploy Backend na Azure
+    runs-on: ubuntu-latest
+    needs: build-backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./stanovi-backend
+          push: true
+          tags: indigobelgrade/stanovi-api:latest
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'indigobelgrade-api'
+          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          images: 'indigobelgrade/stanovi-api:latest'

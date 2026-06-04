@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBuyerDto } from './dto/register-buyer.dto';
 import { RegisterInvestorDto } from './dto/register-investor.dto';
@@ -66,7 +70,11 @@ export class AuthService {
       return { user, buyer };
     });
 
-    return this.generateToken(result.user.id, result.user.email, result.user.role);
+    return this.generateToken(
+      result.user.id,
+      result.user.email,
+      result.user.role,
+    );
   }
 
   async registerInvestor(dto: RegisterInvestorDto) {
@@ -104,7 +112,11 @@ export class AuthService {
       return { user, investor };
     });
 
-    return this.generateToken(result.user.id, result.user.email, result.user.role);
+    return this.generateToken(
+      result.user.id,
+      result.user.email,
+      result.user.role,
+    );
   }
 
   private generateToken(userId: string, email: string, role: string) {
