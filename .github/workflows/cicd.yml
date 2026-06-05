@@ -10,7 +10,7 @@ on:
 jobs:
   # 1. KORAK: Linter
   lint-code:
-    name: 🔍 1. Provera kvaliteta koda (Linting)
+    name: Linting
     runs-on: windows-latest
     steps:
       - name: Preuzimanje koda (Checkout)
@@ -43,7 +43,7 @@ jobs:
   # ==========================================
 
   build-frontend:
-    name: 🧪 2a. Provera Frontend Kompilacije
+    name: Build Frontend
     runs-on: windows-latest
     needs: lint-code
     steps:
@@ -64,7 +64,7 @@ jobs:
           npm run build
 
   deploy-frontend:
-    name: 🐳 3a. Deploy Frontend na Azure
+    name: Deploy Frontend
     runs-on: ubuntu-latest
     needs: build-frontend
     steps:
@@ -98,7 +98,7 @@ jobs:
   # ==========================================
 
   build-backend:
-    name: 🧪 2b. Provera Backend Kompilacije
+    name: Build Backend
     runs-on: windows-latest
     needs: lint-code
     steps:
@@ -120,7 +120,7 @@ jobs:
           npm run build
 
   deploy-backend:
-    name: 🐳 3b. Deploy Backend na Azure
+    name: Deploy Backend
     runs-on: ubuntu-latest
     needs: build-backend
     steps:
