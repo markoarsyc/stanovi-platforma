@@ -1,6 +1,9 @@
 name: stanovi_platforma
 
 services:
+  # ==========================================
+  # SERVIS 1: Baza Podataka (PostgreSQL)
+  # ==========================================
   postgres:
     image: postgres:16
     container_name: stanovi_postgres
@@ -21,14 +24,18 @@ services:
     networks:
       - stanovi-network
 
+  # ==========================================
+  # SERVIS 2: Backend (NestJS u DEV modu)
+  # ==========================================
   api:
     build: 
       context: ./stanovi-backend
       dockerfile: Dockerfile
+      target: builder
     container_name: stanovi_api
     restart: always
     ports:
-      - "${API_PORT}:${API_PORT}"
+      - "${API_PORT}:${PORT}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,39 +48,48 @@ services:
       CLOUDINARY_API_SECRET: "${CLOUDINARY_API_SECRET}"
       CLOUDINARY_UPLOAD_FOLDER: "${CLOUDINARY_UPLOAD_FOLDER}"
     volumes:
-      - ./stanovi-backend/dist:/app/dist:ro
+      - ./stanovi-backend:/app
+      - /app/node_modules
     healthcheck:
       test: ["CMD-SHELL", "node -e \"const http = require('http'); const req = http.get('http://localhost:${PORT}/api', (res) => { process.exit(res.statusCode === 200 || res.statusCode === 404 ? 0 : 1); }); req.on('error', () => process.exit(1));\""]
       interval: 15s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 40s
     networks:
       - stanovi-network
     command: >
-      sh -c "DATABASE_URL='${DATABASE_URL}' npx prisma migrate deploy && npx prisma db seed && node dist/src/main"
+      sh -c "npx prisma migrate deploy && npx prisma db seed && npm run start:dev"
 
+  # ==========================================
+  # SERVIS 3: Frontend (Vite/React u DEV modu)
+  # ==========================================
   frontend:
     build:
       context: ./stanovi-frontend
       dockerfile: Dockerfile
+      target: build
       args:
         VITE_API_URL: "http://localhost:${API_PORT}/api"
     container_name: stanovi_frontend
     restart: always
     ports:
-      - "${FRONTEND_PORT}:80"
+      - "${FRONTEND_PORT}:5173"
     depends_on:
       api:
         condition: service_healthy
+    volumes:
+      - ./stanovi-frontend:/app
+      - /app/node_modules
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:80/ || wget --spider -q http://localhost:80/ || exit 1"]
+      test: ["CMD-SHELL", "node -e \"const http = require('http'); const req = http.get('http://localhost:5173', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));\""]
       interval: 20s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 20s
     networks:
       - stanovi-network
+    command: npm run dev -- --host
 
 volumes:
   postgres_data:

@@ -49,14 +49,18 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
   const [formData, setFormData] = useState(
     building
       ? {
-          title: building.title,
-          locationId: building.locationId,
-          address: building.address,
-          description: building.description || '',
-          dueDate: utcDateTimeToLocalDateString(building.dueDate),
-          status: building.status,
-        }
+        title: building.title,
+        locationId: building.locationId,
+        address: building.address,
+        description: building.description || '',
+        dueDate: utcDateTimeToLocalDateString(building.dueDate),
+        status: building.status,
+      }
       : emptyFormData
+  );
+
+  const [dateInputType, setDateInputType] = useState<'text' | 'date'>(
+    building ? 'date' : 'text'
   );
 
   const today = useMemo(() => {
@@ -76,7 +80,7 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.title || !formData.locationId || !formData.address || !formData.dueDate) {
       alert('Popunite sva obavezna polja');
@@ -155,11 +159,18 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
 
         <input
           className={inputClass}
-          type="date"
+          type={dateInputType}
           name="dueDate"
           value={formData.dueDate}
           onChange={handleChange}
+          onFocus={() => setDateInputType('date')}
+          onBlur={(e) => {
+            if (!e.target.value) {
+              setDateInputType('text');
+            }
+          }}
           min={today}
+          placeholder="Rok završetka"
           required
         />
 
