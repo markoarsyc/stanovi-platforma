@@ -6,6 +6,7 @@ import { useAuth } from "@/features/auth/context/AuthContext";
 import { getInvestorInfoByUserId, requestInvestorVerification } from '@/api/services/investor.service';
 import type { Investor } from "@/shared/types/entity/investor.entity";
 import { toast } from "sonner";
+import { Input, Button } from "@/shared/components/ui";
 
 const Profile = () => {
   const { user, isInvestor, isAuthenticated } = useAuth();
@@ -121,14 +122,10 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Dugme za otvaranje modala */}
           {!profile?.isVerified && (
-            <button
-              onClick={handleOpenModal}
-              className="mt-8 inline-flex items-center gap-2 rounded-lg bg-gradient-indigo px-6 py-3 font-body text-sm font-semibold text-primary-foreground shadow-indigo transition-all hover:scale-105 active:scale-95"
-            >
+            <Button onClick={handleOpenModal} className="mt-8">
               <BadgeCheck size={18} /> Verifikuj investitorski profil
-            </button>
+            </Button>
           )}
         </motion.div>
       </div>
@@ -163,34 +160,28 @@ const Profile = () => {
               <form onSubmit={handleSubmitVerification} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-muted-foreground ml-1">Naziv kompanije</label>
-                  <input
+                  <Input
                     required
                     type="text"
                     value={formData.companyName}
                     onChange={(e) => setFormData({...formData, companyName: e.target.value})}
-                    className="w-full rounded-lg border border-border bg-background/50 px-4 py-3 text-sm focus:border-primary focus:outline-none transition-colors"
                     placeholder="Npr. Invest d.o.o."
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-muted-foreground ml-1">PIB (TIN)</label>
-                  <input
+                  <Input
                     required
                     type="text"
                     value={formData.tin}
                     onChange={(e) => setFormData({...formData, tin: e.target.value})}
-                    className="w-full rounded-lg border border-border bg-background/50 px-4 py-3 text-sm focus:border-primary focus:outline-none transition-colors"
                     placeholder="Unesite PIB vaše kompanije"
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full mt-4 rounded-lg bg-gradient-indigo py-3 font-semibold text-primary-foreground shadow-indigo transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
-                >
+                <Button type="submit" disabled={isSubmitting} fullWidth className="mt-4">
                   {isSubmitting ? "Slanje..." : "Pošalji zahtev za verifikaciju"}
-                </button>
+                </Button>
               </form>
             </motion.div>
           </div>

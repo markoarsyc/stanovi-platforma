@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ShieldCheck, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  Building2, 
+import {
+  ShieldCheck,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { toast } from "sonner";
 import { getVerificationRequests, handleVerificationRequest } from '@/api/services/investor.service';
+import { verificationStatusConfig } from "@/shared/constants/statusConfig";
+import { formatDate } from "@/shared/utils/format";
 
 interface VerificationRequest {
   id: string;
@@ -150,7 +152,7 @@ const AdminPanel = () => {
                           {req.tin}
                         </td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">
-                          {new Date(req.createdAt).toLocaleDateString('sr-RS')}
+                          {formatDate(req.createdAt, { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </td>
                         <td className="px-6 py-4">
                           <StatusBadge status={req.status} />
@@ -202,17 +204,10 @@ const StatCard = ({ label, value, icon }: { label: string, value: number, icon: 
 );
 
 const StatusBadge = ({ status }: { status: VerificationRequest['status'] }) => {
-  const styles = {
-    PENDING: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    APPROVED: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    REJECTED: "bg-red-500/10 text-red-500 border-red-500/20",
-  };
-
-  const labels = { PENDING: "Na čekanju", APPROVED: "Odobren", REJECTED: "Odbijen" };
-
+  const config = verificationStatusConfig[status];
   return (
-    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${styles[status]}`}>
-      {labels[status]}
+    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${config.badgeClassName}`}>
+      {config.label}
     </span>
   );
 };

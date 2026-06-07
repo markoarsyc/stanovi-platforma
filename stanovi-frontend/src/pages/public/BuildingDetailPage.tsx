@@ -6,13 +6,10 @@ import {
   Calendar,
   Home,
   ArrowLeft,
-  CheckCircle,
-  Clock,
   ImageIcon,
   User,
   Mail,
   Phone,
-  Zap,
   BadgeCheck,
 } from 'lucide-react';
 import { getBuildingById } from '@/api/services/buildings.service';
@@ -29,15 +26,9 @@ import type {
   BuildingDetail,
   ApartmentDetail,
   InvestorInfo,
-  ApartmentStatus,
 } from '@/shared/types/building-detail.types';
-import { statusConfig } from '@/shared/types/building-detail.types';
-
-const iconMap = {
-  Clock: Clock,
-  Zap: Zap,
-  CheckCircle: CheckCircle,
-} as const;
+import { apartmentStatusConfig } from '@/shared/constants/statusConfig';
+import { formatDate, formatPrice } from '@/shared/utils/format';
 
 const BuildingDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -108,21 +99,11 @@ const BuildingDetailPage = () => {
     );
   }
 
-  const getApartmentStatusConfig = (status: ApartmentStatus) => {
-    const config = statusConfig[status];
-    const IconComponent = config && iconMap[config.icon as keyof typeof iconMap];
-    return { ...config, IconComponent };
-  };
-
-  // Prikaži prvu sliku iz images niza, ili fallback na image_url
-  const heroImage = building.images && building.images.length > 0 
-    ? building.images[0].imageUrl 
+  const heroImage = building.images && building.images.length > 0
+    ? building.images[0].imageUrl
     : building.image_url;
 
-  const formattedDate = new Date(building.dueDate).toLocaleDateString('sr-RS', {
-    month: 'long',
-    year: 'numeric',
-  });
+  const formattedDate = formatDate(building.dueDate);
 
   return (
     <div className="min-h-screen pt-24">
@@ -235,7 +216,8 @@ const BuildingDetailPage = () => {
                   </thead>
                   <tbody>
                     {apartments.map((apt) => {
-                      const config = getApartmentStatusConfig(apt.status);
+                      const config = apartmentStatusConfig[apt.status];
+                      const StatusIcon = config.icon;
                       return (
                         <tr
                           key={apt.id}
@@ -255,15 +237,13 @@ const BuildingDetailPage = () => {
                             {Number(apt.area)} m²
                           </td>
                           <td className="px-5 py-4 font-body text-sm font-semibold text-accent">
-                            €{Number(apt.price).toLocaleString()}
+                            {formatPrice(apt.price)}
                           </td>
                           <td className="px-5 py-4">
                             <span
-                              className={`inline-flex items-center gap-1 font-body text-sm font-medium ${config.className}`}
+                              className={`inline-flex items-center gap-1 font-body text-sm font-medium ${config.textClassName}`}
                             >
-                              {config.IconComponent && (
-                                <config.IconComponent size={14} />
-                              )}
+                              <StatusIcon size={14} />
                               {config.label}
                             </span>
                           </td>
@@ -277,7 +257,8 @@ const BuildingDetailPage = () => {
               // Cards view
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {apartments.map((apt) => {
-                  const config = getApartmentStatusConfig(apt.status);
+                  const config = apartmentStatusConfig[apt.status];
+                  const StatusIcon = config.icon;
                   return (
                     <motion.div
                       key={apt.id}
@@ -303,11 +284,9 @@ const BuildingDetailPage = () => {
                             Stan {apt.aptNo}
                           </h3>
                           <span
-                            className={`inline-flex items-center gap-1 font-body text-xs font-medium ${config.className}`}
+                            className={`inline-flex items-center gap-1 font-body text-xs font-medium ${config.textClassName}`}
                           >
-                            {config.IconComponent && (
-                              <config.IconComponent size={12} />
-                            )}
+                            <StatusIcon size={12} />
                             {config.label}
                           </span>
                         </div>
@@ -316,7 +295,7 @@ const BuildingDetailPage = () => {
                           {Number(apt.area)} m²
                         </p>
                         <p className="mt-2 font-body text-lg font-semibold text-accent">
-                          €{Number(apt.price).toLocaleString()}
+                          {formatPrice(apt.price)}
                         </p>
                       </div>
                     </motion.div>
@@ -339,9 +318,9 @@ const BuildingDetailPage = () => {
               Stan br. {selectedApt?.aptNo} — {selectedApt?.rooms}-soban
             </DialogTitle>
             <DialogDescription className="font-body">
-              Sprat {selectedApt?.floor}. · {Number(selectedApt?.area)} m² ·
-              €{Number(selectedApt?.price).toLocaleString()} ·{' '}
-              {selectedApt && getApartmentStatusConfig(selectedApt.status).label}
+              Sprat {selectedApt?.floor}. · {Number(selectedApt?.area)} m² ·{' '}
+              {selectedApt ? formatPrice(selectedApt.price) : ''} ·{' '}
+              {selectedApt && apartmentStatusConfig[selectedApt.status].label}
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2 flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">

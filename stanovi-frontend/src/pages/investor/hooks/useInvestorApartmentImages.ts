@@ -13,9 +13,7 @@ export const useInvestorApartmentImages = () => {
       try {
         setImageLoading(true);
         setImageError(null);
-        console.log(`[UPLOAD APARTMENT IMAGE] Starting upload for apartment ${apartmentId}`);
-        const image = await apartmentsService.uploadApartmentImage(apartmentId, file);
-        console.log(`[UPLOAD APARTMENT IMAGE] Successfully uploaded image ${image.id}`);
+        await apartmentsService.uploadApartmentImage(apartmentId, file);
         toast.success('Plan arhitekture dodan!');
         return true;
       } catch (err) {
@@ -23,7 +21,6 @@ export const useInvestorApartmentImages = () => {
         const statusCode = (axiosErr as AxiosError)?.response?.status || 'unknown';
         const errorMessage = (axiosErr as AxiosError<{ message?: string }>)?.response?.data?.message || (axiosErr instanceof Error ? axiosErr.message : 'Greška pri dodavanju plana');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
-        console.error(`[UPLOAD APARTMENT IMAGE ERROR] Status: ${statusCode}, Message: ${errorMessage}`, err);
         setImageError(detailedMessage);
         toast.error(detailedMessage);
         return false;
@@ -39,9 +36,7 @@ export const useInvestorApartmentImages = () => {
       try {
         setImageLoading(true);
         setImageError(null);
-        console.log(`[DELETE APARTMENT IMAGE] Starting delete request for image ${imageId} from apartment ${apartmentId}`);
         await apartmentsService.deleteApartmentImage(apartmentId, imageId);
-        console.log(`[DELETE APARTMENT IMAGE] Successfully deleted image ${imageId}`);
         toast.success('Plan obrisan!');
         return true;
       } catch (err) {
@@ -49,7 +44,6 @@ export const useInvestorApartmentImages = () => {
         const statusCode = (axiosErr as AxiosError)?.response?.status || 'unknown';
         const errorMessage = (axiosErr as AxiosError<{ message?: string }>)?.response?.data?.message || (axiosErr instanceof Error ? axiosErr.message : 'Greška pri brisanju plana');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
-        console.error(`[DELETE APARTMENT IMAGE ERROR] Status: ${statusCode}, Message: ${errorMessage}`, err);
         setImageError(detailedMessage);
         toast.error(detailedMessage);
         return false;
@@ -65,16 +59,13 @@ export const useInvestorApartmentImages = () => {
       try {
         setImageLoading(true);
         setImageError(null);
-        console.log(`[GET APARTMENT IMAGES] Fetching images for apartment ${apartmentId}`);
         const images = await apartmentsService.getApartmentImages(apartmentId);
-        console.log(`[GET APARTMENT IMAGES] Successfully fetched ${images.length} images`);
         return images;
       } catch (err) {
         const axiosErr = err as AxiosError<{ message?: string }> | Error;
         const statusCode = (axiosErr as AxiosError)?.response?.status || 'unknown';
         const errorMessage = (axiosErr as AxiosError<{ message?: string }>)?.response?.data?.message || (axiosErr instanceof Error ? axiosErr.message : 'Greška pri učitavanju planova');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
-        console.error(`[GET APARTMENT IMAGES ERROR] Status: ${statusCode}`, err);
         setImageError(detailedMessage);
         toast.error(detailedMessage);
         return [];
@@ -90,16 +81,13 @@ export const useInvestorApartmentImages = () => {
       try {
         setImageLoading(true);
         setImageError(null);
-        console.log(`[REORDER APARTMENT IMAGES] Reordering images for apartment ${apartmentId}`);
         await apartmentsService.reorderApartmentImages(apartmentId, imageIds);
-        console.log(`[REORDER APARTMENT IMAGES] Successfully reordered`);
         toast.success('Redosled promenjen!');
       } catch (err) {
         const axiosErr = err as AxiosError<{ message?: string }> | Error;
         const statusCode = (axiosErr as AxiosError)?.response?.status || 'unknown';
         const errorMessage = (axiosErr as AxiosError<{ message?: string }>)?.response?.data?.message || (axiosErr instanceof Error ? axiosErr.message : 'Greška pri promenji redosleda');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
-        console.error(`[REORDER APARTMENT IMAGES ERROR]`, err);
         setImageError(detailedMessage);
         toast.error(detailedMessage);
         throw err;

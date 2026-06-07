@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { MapPin, Home, Calendar, Trash2 } from "lucide-react";
 import { useAuth } from "../auth/context/AuthContext";
 import { deleteBuilding } from "../../api/services/buildings.service";
+import { buildingStatusConfig } from "@/shared/constants/statusConfig";
+import { formatDate } from "@/shared/utils/format";
+import type { BuildingStatus } from "@/shared/types/building-detail.types";
 
 interface BuildingImage {
   id: string;
@@ -26,18 +29,10 @@ interface BuildingCardProps {
   onDelete?: (id: string) => void; // Callback za obaveštavanje roditelja o brisanju
 }
 
-const statusColor: Record<string, string> = {
-  "PLANNED": "bg-accent/20 text-accent",
-  "UNDER_CONSTRUCTION": "bg-primary/20 text-primary",
-  "COMPLETED": "bg-green-500/20 text-green-400",
-};
-
 const BuildingCard = ({ building, onDelete }: BuildingCardProps) => {
   const { isAdmin } = useAuth();
-  const formattedDate = new Date(building.dueDate).toLocaleDateString("sr-RS", {
-    month: "long",
-    year: "numeric",
-  });
+  const formattedDate = formatDate(building.dueDate);
+  const status = buildingStatusConfig[building.status as BuildingStatus];
 
   // Prikaži prvu sliku iz images niza, ili fallback na image_url, ili Home ikonu
   const imageToDisplay = building.images && building.images.length > 0
@@ -95,8 +90,8 @@ const BuildingCard = ({ building, onDelete }: BuildingCardProps) => {
             <Home size={48} className="text-muted-foreground" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent" />
-          <span className={`absolute top-3 right-3 rounded-full px-3 py-1 font-body text-xs font-semibold uppercase ${statusColor[building.status] || "bg-secondary text-muted-foreground"}`}>
-            {building.status.replace("_", " ")}
+          <span className={`absolute top-3 right-3 rounded-full px-3 py-1 font-body text-xs font-semibold uppercase ${status?.badgeClassName ?? "bg-secondary text-muted-foreground"}`}>
+            {status?.label ?? building.status.replace("_", " ")}
           </span>
         </div>
 

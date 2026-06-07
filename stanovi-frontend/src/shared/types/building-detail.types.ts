@@ -62,30 +62,3 @@ export interface BuildingDetail {
   investor?: InvestorInfo;
 }
 
-export const statusConfig = {
-  PLANNED: {
-    label: 'Planirano',
-    icon: 'Clock',
-    className: 'text-accent',
-  },
-  IN_PROGRESS: {
-    label: 'U Izgradnji',
-    icon: 'Zap',
-    className: 'text-primary',
-  },
-  COMPLETED: {
-    label: 'Završeno',
-    icon: 'CheckCircle',
-    className: 'text-green-400',
-  },
-  AVAILABLE: {
-    label: 'Dostupan',
-    icon: 'CheckCircle',
-    className: 'text-green-400',
-  },
-  RESERVED: {
-    label: 'Rezervisan',
-    icon: 'Clock',
-    className: 'text-accent',
-  },
-} as const;

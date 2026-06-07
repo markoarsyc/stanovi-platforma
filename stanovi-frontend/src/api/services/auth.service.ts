@@ -1,4 +1,5 @@
 import api from "../axios";
+import { tokenStorage } from "@/shared/utils/storage";
 
 // Tipovi za odgovor sa servera
 export interface AuthResponse {
@@ -47,7 +48,7 @@ export const authService = {
    * Pomoćna metoda za logout
    */
   logout() {
-    localStorage.removeItem("auth_token");
+    tokenStorage.clear();
     delete api.defaults.headers.common['Authorization'];
   }
 };

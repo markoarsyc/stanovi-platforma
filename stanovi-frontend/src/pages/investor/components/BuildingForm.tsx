@@ -1,26 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
+import { Input, Select, Textarea, Button } from '@/shared/components/ui';
 import type { Building } from '@/shared/types/entity/building.entity';
 import type { Location } from '@/shared/types/entity/location.entity';
 import { BuildingStatus } from '@/shared/types/enums/building-status.enum';
-
-// Helper: Konvertuj UTC DateTime string u lokalni YYYY-MM-DD format
-const utcDateTimeToLocalDateString = (isoString: string | Date): string => {
-  const date = new Date(isoString);
-  const offset = date.getTimezoneOffset(); // minuta
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
-  const year = localDate.getUTCFullYear();
-  const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(localDate.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-// Helper: Konvertuj lokalni YYYY-MM-DD string u UTC midnight DateTime
-const localDateStringToUtcDateTime = (dateStr: string): string => {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const utcDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
-  return utcDate.toISOString();
-};
+import { toInputDate, fromInputDate, todayInputDate } from '@/shared/utils/format';
 
 interface BuildingFormProps {
   building?: Building;
@@ -53,7 +37,7 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
         locationId: building.locationId,
         address: building.address,
         description: building.description || '',
-        dueDate: utcDateTimeToLocalDateString(building.dueDate),
+        dueDate: toInputDate(building.dueDate),
         status: building.status,
       }
       : emptyFormData
@@ -63,10 +47,7 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
     building ? 'date' : 'text'
   );
 
-  const today = useMemo(() => {
-    const date = new Date();
-    return date.toISOString().split('T')[0];
-  }, []);
+  const today = useMemo(() => todayInputDate(), []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -81,29 +62,21 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.title || !formData.locationId || !formData.address || !formData.dueDate) {
       alert('Popunite sva obavezna polja');
       return;
     }
 
-    // Validate dueDate is in future
     if (formData.dueDate < today) {
       alert('Datum mora biti u budućnosti');
       return;
     }
 
-    // Convert local date string to UTC DateTime
-    const dueDateISO = localDateStringToUtcDateTime(formData.dueDate);
-
     onSubmit({
       ...formData,
-      dueDate: dueDateISO,
+      dueDate: fromInputDate(formData.dueDate),
     });
   };
-
-  const inputClass =
-    'w-full rounded-lg border border-border bg-secondary py-3 px-4 font-body text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
 
   return (
     <DialogContent className="max-w-lg">
@@ -113,8 +86,7 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
         </DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <input
-          className={inputClass}
+        <Input
           placeholder="Naziv projekta"
           name="title"
           value={formData.title}
@@ -122,8 +94,7 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
           required
         />
 
-        <select
-          className={inputClass}
+        <Select
           name="locationId"
           value={formData.locationId || ''}
           onChange={handleChange}
@@ -137,10 +108,9 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
               {loc.name}
             </option>
           ))}
-        </select>
+        </Select>
 
-        <input
-          className={inputClass}
+        <Input
           placeholder="Adresa (npr. Kneza Mihaila 5)"
           name="address"
           value={formData.address}
@@ -148,8 +118,7 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
           required
         />
 
-        <textarea
-          className={inputClass}
+        <Textarea
           placeholder="Opis projekta"
           name="description"
           rows={3}
@@ -157,8 +126,7 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
           onChange={handleChange}
         />
 
-        <input
-          className={inputClass}
+        <Input
           type={dateInputType}
           name="dueDate"
           value={formData.dueDate}
@@ -174,8 +142,7 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
           required
         />
 
-        <select
-          className={inputClass}
+        <Select
           name="status"
           value={formData.status}
           onChange={handleChange}
@@ -183,23 +150,15 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
           <option value={BuildingStatus.PLANNED}>Planiran</option>
           <option value={BuildingStatus.IN_PROGRESS}>U izgradnji</option>
           <option value={BuildingStatus.COMPLETED}>Završen</option>
-        </select>
+        </Select>
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-lg bg-gradient-indigo px-6 py-3 font-body text-sm font-semibold text-primary-foreground shadow-indigo disabled:opacity-50"
-          >
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Čuvanje...' : building ? 'Sačuvaj izmene' : 'Sačuvaj projekat'}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-lg border border-border px-6 py-3 font-body text-sm text-muted-foreground hover:bg-secondary"
-          >
+          </Button>
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Otkaži
-          </button>
+          </Button>
         </div>
       </form>
     </DialogContent>

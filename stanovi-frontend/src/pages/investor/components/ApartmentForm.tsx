@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
+import { Input, Select, Button } from '@/shared/components/ui';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 import { ApartmentStatus } from '@/shared/types/enums/apartment-status.enum';
 
@@ -54,13 +55,11 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.aptNo || !formData.floor || !formData.rooms || !formData.area || !formData.price) {
       alert('Popunite sva obavezna polja');
       return;
     }
 
-    // Validate numeric fields
     const floor = Number(formData.floor);
     const rooms = Number(formData.rooms);
     const area = Number(formData.area);
@@ -71,7 +70,6 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
       return;
     }
 
-    // For update, don't include buildingId since it's read-only
     const submitData = apartment
       ? {
           aptNo: formData.aptNo,
@@ -94,9 +92,6 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
     onSubmit(submitData);
   };
 
-  const inputClass =
-    'w-full rounded-lg border border-border bg-secondary py-3 px-4 font-body text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
-
   return (
     <DialogContent className="max-w-md">
       <DialogHeader>
@@ -105,8 +100,7 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
         </DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <input
-          className={inputClass}
+        <Input
           placeholder="Broj stana (npr. 1, 2A, 3B)"
           name="aptNo"
           value={formData.aptNo}
@@ -114,8 +108,7 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
           required
         />
 
-        <input
-          className={inputClass}
+        <Input
           placeholder="Sprat"
           type="number"
           name="floor"
@@ -125,8 +118,7 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
           required
         />
 
-        <input
-          className={inputClass}
+        <Input
           placeholder="Broj soba"
           type="number"
           name="rooms"
@@ -136,8 +128,7 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
           required
         />
 
-        <input
-          className={inputClass}
+        <Input
           placeholder="Površina (m²)"
           type="number"
           name="area"
@@ -148,8 +139,7 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
           required
         />
 
-        <input
-          className={inputClass}
+        <Input
           placeholder="Cena (€)"
           type="number"
           name="price"
@@ -160,23 +150,18 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
           required
         />
 
-        <select
-          className={inputClass}
+        <Select
           name="status"
           value={formData.status}
           onChange={handleChange}
         >
           <option value={ApartmentStatus.AVAILABLE}>Dostupan</option>
           <option value={ApartmentStatus.RESERVED}>Rezervisan</option>
-        </select>
+        </Select>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-lg bg-gradient-indigo py-3 font-body text-sm font-semibold text-primary-foreground shadow-indigo disabled:opacity-50"
-        >
+        <Button type="submit" disabled={isSubmitting} fullWidth>
           {isSubmitting ? 'Čuvanje...' : apartment ? 'Sačuvaj izmene' : 'Dodaj stan'}
-        </button>
+        </Button>
       </form>
     </DialogContent>
   );

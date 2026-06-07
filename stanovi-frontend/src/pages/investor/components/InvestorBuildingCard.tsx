@@ -7,6 +7,8 @@ import type { Building } from '@/shared/types/entity/building.entity';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 import type { Location } from '@/shared/types/entity/location.entity';
 import type { BuildingImage } from '@/shared/types/building-detail.types';
+import { buildingStatusConfig } from '@/shared/constants/statusConfig';
+import { formatPrice } from '@/shared/utils/format';
 
 interface BuildingCardProps {
   building: Building & { location: Location; apartments: Apartment[]; images?: BuildingImage[] };
@@ -19,12 +21,6 @@ interface BuildingCardProps {
   imageLoading?: boolean;
   children?: React.ReactNode;
 }
-
-const statusLabelMap: Record<string, string> = {
-  PLANNED: 'Planiran',
-  IN_PROGRESS: 'U izgradnji',
-  COMPLETED: 'Završen',
-};
 
 export const BuildingCardInvestor: React.FC<BuildingCardProps> = ({
   building,
@@ -62,8 +58,8 @@ export const BuildingCardInvestor: React.FC<BuildingCardProps> = ({
         <div className="flex-1 cursor-pointer" onClick={onToggleExpand}>
           <h3 className="font-display text-xl font-bold text-foreground">{building.title}</h3>
           <p className="font-body text-sm text-muted-foreground">
-            {building.location.name} · {statusLabelMap[building.status]} · od €
-            {minPrice > 0 ? Number(minPrice).toLocaleString() : '0'}
+            {building.location.name} · {buildingStatusConfig[building.status].label} · od{' '}
+            {minPrice > 0 ? formatPrice(minPrice) : '€0'}
           </p>
         </div>
         <div className="flex items-center gap-2">

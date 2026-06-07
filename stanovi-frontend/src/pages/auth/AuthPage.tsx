@@ -5,22 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { Role } from "../../shared/types/enums/role.enum";
 import { authService } from "../../api/services/auth.service";
 import { useAuth } from "../../features/auth/context/AuthContext";
+import { Input, Button, ErrorAlert } from "@/shared/components/ui";
 
 type AuthMode = "login" | "register";
 type UserRole = typeof Role.BUYER | typeof Role.INVESTOR;
-
-const iconInputClass =
-  "w-full rounded-lg border border-border bg-background/50 py-3 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all";
-
-const IconInput = ({
-  icon: Icon,
-  ...props
-}: { icon: React.ComponentType<{ size?: number; className?: string }> } & React.InputHTMLAttributes<HTMLInputElement>) => (
-  <div className="relative w-full">
-    <Icon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-    <input className={iconInputClass} {...props} />
-  </div>
-);
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -116,11 +104,7 @@ const AuthPage = () => {
           </p>
         </div>
 
-        {error && (
-          <div className="mb-6 rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-center text-sm text-destructive">
-            {error}
-          </div>
-        )}
+        {error && <ErrorAlert message={error} className="mb-6" />}
 
         {/* Role Switcher */}
         {mode === "register" && (
@@ -160,32 +144,28 @@ const AuthPage = () => {
               {role === Role.BUYER ? (
                 <>
                   <div className="flex gap-3">
-                    <IconInput icon={User} name="firstName" placeholder="Ime" required onChange={handleChange} />
-                    <IconInput icon={User} name="lastName" placeholder="Prezime" required onChange={handleChange} />
+                    <Input leadingIcon={User} name="firstName" placeholder="Ime" required onChange={handleChange} />
+                    <Input leadingIcon={User} name="lastName" placeholder="Prezime" required onChange={handleChange} />
                   </div>
-                  <IconInput icon={Phone} name="phone" placeholder="Telefon" required onChange={handleChange} />
+                  <Input leadingIcon={Phone} name="phone" placeholder="Telefon" required onChange={handleChange} />
                 </>
               ) : (
                 <>
-                  <IconInput icon={Building2} name="companyName" placeholder="Naziv firme" required onChange={handleChange} />
-                  <IconInput icon={Hash} name="tin" placeholder="PIB (opciono)" onChange={handleChange} />
-                  <IconInput icon={Mail} name="contactEmail" type="email" placeholder="Email firme" required onChange={handleChange} />
-                  <IconInput icon={Phone} name="contactPhone" placeholder="Telefon firme" required onChange={handleChange} />
+                  <Input leadingIcon={Building2} name="companyName" placeholder="Naziv firme" required onChange={handleChange} />
+                  <Input leadingIcon={Hash} name="tin" placeholder="PIB (opciono)" onChange={handleChange} />
+                  <Input leadingIcon={Mail} name="contactEmail" type="email" placeholder="Email firme" required onChange={handleChange} />
+                  <Input leadingIcon={Phone} name="contactPhone" placeholder="Telefon firme" required onChange={handleChange} />
                 </>
               )}
             </motion.div>
           )}
 
-          <IconInput icon={Mail} name="email" type="email" placeholder="Email adresa" required onChange={handleChange} />
-          <IconInput icon={Lock} name="password" type="password" placeholder="Lozinka" minLength={6} required onChange={handleChange} />
+          <Input leadingIcon={Mail} name="email" type="email" placeholder="Email adresa" required onChange={handleChange} />
+          <Input leadingIcon={Lock} name="password" type="password" placeholder="Lozinka" minLength={6} required onChange={handleChange} />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 w-full rounded-lg bg-gradient-indigo py-3.5 text-sm font-semibold text-primary-foreground shadow-indigo transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70"
-          >
+          <Button type="submit" disabled={loading} fullWidth className="mt-2">
             {loading ? "Obrada..." : mode === "login" ? "Prijavi se" : "Registruj se"}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
