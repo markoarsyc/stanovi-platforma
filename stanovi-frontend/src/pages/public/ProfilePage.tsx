@@ -2,62 +2,59 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { BadgeCheck, Mail, Phone, Building2, Hash, ArrowLeft, X } from "lucide-react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { getInvestorInfoByUserId, requestInvestorVerification } from '@/api/services/investor.service';
 import type { Investor } from "@/shared/types/entity/investor.entity";
 import { toast } from "sonner";
-import { Input, Button } from "@/shared/components/ui";
+import { Button } from "@/shared/components/ui";
+import { FormField } from "@/shared/forms";
+import { verificationRequestSchema, type VerificationRequestFormData } from "./verificationSchema";
 
 const Profile = () => {
   const { user, isInvestor, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<Investor | null>(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  
-  // State za modal i formu
+  const [loadingProfile, setLoadingProfile] = useState(isInvestor);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ companyName: "", tin: "" });
+
+  const methods = useForm<VerificationRequestFormData>({
+    resolver: zodResolver(verificationRequestSchema),
+    defaultValues: { companyName: "", tin: "" },
+  });
+  const { isSubmitting } = methods.formState;
 
   useEffect(() => {
-    if (isInvestor && user) {
-      getInvestorInfoByUserId(user.id)
-        .then((data) => {
-          setProfile(data);
-          setFormData({ 
-            companyName: data.companyName || "", 
-            tin: data.tin || "" 
-          });
-          setLoadingProfile(false);
-        })
-        .catch((error) => {
-          console.error("Greška prilikom dohvatanja informacija o investitoru:", error);
-          setLoadingProfile(false);
+    if (!(isInvestor && user)) return;
+    getInvestorInfoByUserId(user.id)
+      .then((data) => {
+        setProfile(data);
+        methods.reset({
+          companyName: data.companyName || "",
+          tin: data.tin || "",
         });
-    } else {
-      setLoadingProfile(false);
-    }
-  }, [isInvestor, user]);
+      })
+      .catch((error) => {
+        console.error("Greška prilikom dohvatanja informacija o investitoru:", error);
+      })
+      .finally(() => setLoadingProfile(false));
+  }, [isInvestor, user, methods]);
 
   if (!isAuthenticated) return <Navigate to="/" replace />;
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => !isSubmitting && setIsModalOpen(false);
 
-  const handleSubmitVerification = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitVerification = async (data: VerificationRequestFormData) => {
     if (!profile?.id) return;
-
-    setIsSubmitting(true);
     try {
-      await requestInvestorVerification(profile.id, formData);
+      await requestInvestorVerification(profile.id, data);
       toast.success("Zahtev za verifikaciju je uspešno poslat!");
       setIsModalOpen(false);
     } catch (error) {
-      const axiosErr = error as { response?: { data?: { message?: string } } } | Error;
-      const errorMsg = (axiosErr as { response?: { data?: { message?: string } } })?.response?.data?.message || "Došlo je do greške.";
+      const axiosErr = error as { response?: { data?: { message?: string } } };
+      const errorMsg = axiosErr?.response?.data?.message || "Došlo je do greške.";
       toast.error(String(errorMsg));
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -157,32 +154,16 @@ const Profile = () => {
               <h3 className="font-display text-2xl text-foreground mb-2">Verifikacija profila</h3>
               <p className="text-sm text-muted-foreground mb-6">Unesite zvanične podatke vaše kompanije za proveru.</p>
 
-              <form onSubmit={handleSubmitVerification} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground ml-1">Naziv kompanije</label>
-                  <Input
-                    required
-                    type="text"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({...formData, companyName: e.target.value})}
-                    placeholder="Npr. Invest d.o.o."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground ml-1">PIB (TIN)</label>
-                  <Input
-                    required
-                    type="text"
-                    value={formData.tin}
-                    onChange={(e) => setFormData({...formData, tin: e.target.value})}
-                    placeholder="Unesite PIB vaše kompanije"
-                  />
-                </div>
+              <FormProvider {...methods}>
+                <form onSubmit={methods.handleSubmit(handleSubmitVerification)} className="space-y-4">
+                  <FormField name="companyName" label="Naziv kompanije" placeholder="Npr. Invest d.o.o." />
+                  <FormField name="tin" label="PIB (TIN)" placeholder="Unesite PIB vaše kompanije" />
 
-                <Button type="submit" disabled={isSubmitting} fullWidth className="mt-4">
-                  {isSubmitting ? "Slanje..." : "Pošalji zahtev za verifikaciju"}
-                </Button>
-              </form>
+                  <Button type="submit" disabled={isSubmitting} fullWidth className="mt-4">
+                    {isSubmitting ? "Slanje..." : "Pošalji zahtev za verifikaciju"}
+                  </Button>
+                </form>
+              </FormProvider>
             </motion.div>
           </div>
         )}

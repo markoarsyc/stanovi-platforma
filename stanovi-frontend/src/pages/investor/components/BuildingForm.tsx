@@ -1,10 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
-import { Input, Select, Textarea, Button } from '@/shared/components/ui';
+import { Button } from '@/shared/components/ui';
+import { FormField, FormSelect, FormTextarea } from '@/shared/forms';
 import type { Building } from '@/shared/types/entity/building.entity';
 import type { Location } from '@/shared/types/entity/location.entity';
 import { BuildingStatus } from '@/shared/types/enums/building-status.enum';
 import { toInputDate, fromInputDate, todayInputDate } from '@/shared/utils/format';
+import { buildingSchema, type BuildingFormData } from './buildingSchema';
 
 interface BuildingFormProps {
   building?: Building;
@@ -14,15 +18,6 @@ interface BuildingFormProps {
   isSubmitting: boolean;
 }
 
-const emptyFormData = {
-  title: '',
-  locationId: 0,
-  address: '',
-  description: '',
-  dueDate: '',
-  status: BuildingStatus.PLANNED,
-};
-
 export const BuildingForm: React.FC<BuildingFormProps> = ({
   building,
   locations,
@@ -30,51 +25,33 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
   onCancel,
   isSubmitting,
 }) => {
-  const [formData, setFormData] = useState(
-    building
+  const methods = useForm<BuildingFormData>({
+    resolver: zodResolver(buildingSchema),
+    defaultValues: building
       ? {
-        title: building.title,
-        locationId: building.locationId,
-        address: building.address,
-        description: building.description || '',
-        dueDate: toInputDate(building.dueDate),
-        status: building.status,
-      }
-      : emptyFormData
-  );
-
-  const [dateInputType, setDateInputType] = useState<'text' | 'date'>(
-    building ? 'date' : 'text'
-  );
+          title: building.title,
+          locationId: building.locationId,
+          address: building.address,
+          description: building.description || '',
+          dueDate: toInputDate(building.dueDate),
+          status: building.status as BuildingStatus,
+        }
+      : {
+          title: '',
+          locationId: 0,
+          address: '',
+          description: '',
+          dueDate: '',
+          status: BuildingStatus.PLANNED,
+        },
+  });
 
   const today = useMemo(() => todayInputDate(), []);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'locationId' ? Number(value) : value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.title || !formData.locationId || !formData.address || !formData.dueDate) {
-      alert('Popunite sva obavezna polja');
-      return;
-    }
-
-    if (formData.dueDate < today) {
-      alert('Datum mora biti u budućnosti');
-      return;
-    }
-
+  const handleValid = (data: BuildingFormData) => {
     onSubmit({
-      ...formData,
-      dueDate: fromInputDate(formData.dueDate),
+      ...data,
+      dueDate: fromInputDate(data.dueDate),
     });
   };
 
@@ -85,82 +62,43 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
           {building ? 'Izmeni projekat' : 'Dodaj novi projekat'}
         </DialogTitle>
       </DialogHeader>
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <Input
-          placeholder="Naziv projekta"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-        />
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(handleValid)} className="mt-4 space-y-4">
+          <FormField name="title" placeholder="Naziv projekta" />
 
-        <Select
-          name="locationId"
-          value={formData.locationId || ''}
-          onChange={handleChange}
-          required
-        >
-          <option value="" disabled>
-            Izaberite opštinu
-          </option>
-          {locations.map((loc) => (
-            <option key={loc.id} value={loc.id}>
-              {loc.name}
+          <FormSelect name="locationId" valueAsNumber>
+            <option value={0} disabled>
+              Izaberite opštinu
             </option>
-          ))}
-        </Select>
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name}
+              </option>
+            ))}
+          </FormSelect>
 
-        <Input
-          placeholder="Adresa (npr. Kneza Mihaila 5)"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          required
-        />
+          <FormField name="address" placeholder="Adresa (npr. Kneza Mihaila 5)" />
 
-        <Textarea
-          placeholder="Opis projekta"
-          name="description"
-          rows={3}
-          value={formData.description}
-          onChange={handleChange}
-        />
+          <FormTextarea name="description" placeholder="Opis projekta" rows={3} />
 
-        <Input
-          type={dateInputType}
-          name="dueDate"
-          value={formData.dueDate}
-          onChange={handleChange}
-          onFocus={() => setDateInputType('date')}
-          onBlur={(e) => {
-            if (!e.target.value) {
-              setDateInputType('text');
-            }
-          }}
-          min={today}
-          placeholder="Rok završetka"
-          required
-        />
+          <FormField name="dueDate" type="date" min={today} placeholder="Rok završetka" />
 
-        <Select
-          name="status"
-          value={formData.status}
-          onChange={handleChange}
-        >
-          <option value={BuildingStatus.PLANNED}>Planiran</option>
-          <option value={BuildingStatus.IN_PROGRESS}>U izgradnji</option>
-          <option value={BuildingStatus.COMPLETED}>Završen</option>
-        </Select>
+          <FormSelect name="status">
+            <option value={BuildingStatus.PLANNED}>Planiran</option>
+            <option value={BuildingStatus.IN_PROGRESS}>U izgradnji</option>
+            <option value={BuildingStatus.COMPLETED}>Završen</option>
+          </FormSelect>
 
-        <div className="flex gap-3">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Čuvanje...' : building ? 'Sačuvaj izmene' : 'Sačuvaj projekat'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Otkaži
-          </Button>
-        </div>
-      </form>
+          <div className="flex gap-3">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Čuvanje...' : building ? 'Sačuvaj izmene' : 'Sačuvaj projekat'}
+            </Button>
+            <Button type="button" variant="secondary" onClick={onCancel}>
+              Otkaži
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </DialogContent>
   );
 };

@@ -2,92 +2,173 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, Building2, Phone, Hash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Role } from "../../shared/types/enums/role.enum";
 import { authService } from "../../api/services/auth.service";
 import { useAuth } from "../../features/auth/context/AuthContext";
-import { Input, Button, ErrorAlert } from "@/shared/components/ui";
+import { Button, ErrorAlert } from "@/shared/components/ui";
+import { FormField } from "@/shared/forms";
+import type { AuthResponse } from "@/features/auth/types";
+import {
+  loginSchema,
+  registerBuyerSchema,
+  registerInvestorSchema,
+  type LoginFormData,
+  type RegisterBuyerFormData,
+  type RegisterInvestorFormData,
+} from "./schemas";
 
 type AuthMode = "login" | "register";
 type UserRole = typeof Role.BUYER | typeof Role.INVESTOR;
 
-const AuthPage = () => {
-  const navigate = useNavigate();
-  const { login: contextLogin } = useAuth();
-  
-  const [mode, setMode] = useState<AuthMode>("login");
-  const [role, setRole] = useState<UserRole>(Role.BUYER);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+const extractError = (err: unknown): string => {
+  const axiosErr = err as { response?: { status?: number; data?: { message?: string | string[] } } };
+  if (axiosErr?.response?.status === 429) return "Previše pokušaja. Pokušajte ponovo za 1 minut.";
+  const message = axiosErr?.response?.data?.message ?? "Došlo je do greške";
+  return Array.isArray(message) ? message[0] : String(message);
+};
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    firstName: "",
-    lastName: "",
-    companyName: "",
-    tin: "",
-    phone: "",
-    contactEmail: "",
-    contactPhone: "",
+const LoginForm: React.FC<{ onAuth: (r: AuthResponse) => void; onError: (msg: string) => void }> = ({
+  onAuth,
+  onError,
+}) => {
+  const methods = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
+  const onValid = async (data: LoginFormData) => {
     try {
-      let authResponse;
-      if (mode === "login") {
-        authResponse = await authService.login({
-          email: formData.email,
-          password: formData.password,
-        });
-      } else {
-        // Registracija - koristi atomske endpointe
-        if (role === Role.BUYER) {
-          authResponse = await authService.registerBuyer({
-            email: formData.email,
-            password: formData.password,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone,
-          });
-        } else {
-          authResponse = await authService.registerInvestor({
-            email: formData.email,
-            password: formData.password,
-            companyName: formData.companyName,
-            tin: formData.tin,
-            contactEmail: formData.contactEmail,
-            contactPhone: formData.contactPhone,
-          });
-        }
-      }
-      contextLogin(authResponse);
-      navigate("/");
+      const res = await authService.login(data);
+      onAuth(res);
     } catch (err) {
-      const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
-      if (axiosErr?.response?.status === 429) {
-        setError("Previše pokušaja. Pokušajte ponovo za 1 minut.");
-      } else {
-        const message = axiosErr?.response?.data?.message || "Došlo je do greške";
-        setError(Array.isArray(message) ? (message as string[])[0] : String(message));
-      }
-    } finally {
-      setLoading(false);
+      onError(extractError(err));
     }
   };
 
   return (
-    // bg-background postavlja istu boju kao na landing stranici
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onValid)} className="space-y-4">
+        <FormField leadingIcon={Mail} name="email" type="email" placeholder="Email adresa" />
+        <FormField leadingIcon={Lock} name="password" type="password" placeholder="Lozinka" />
+        <Button type="submit" fullWidth disabled={methods.formState.isSubmitting} className="mt-2">
+          {methods.formState.isSubmitting ? "Obrada..." : "Prijavi se"}
+        </Button>
+      </form>
+    </FormProvider>
+  );
+};
+
+const RegisterBuyerForm: React.FC<{ onAuth: (r: AuthResponse) => void; onError: (msg: string) => void }> = ({
+  onAuth,
+  onError,
+}) => {
+  const methods = useForm<RegisterBuyerFormData>({
+    resolver: zodResolver(registerBuyerSchema),
+    defaultValues: { email: "", password: "", firstName: "", lastName: "", phone: "" },
+  });
+
+  const onValid = async (data: RegisterBuyerFormData) => {
+    try {
+      const res = await authService.registerBuyer(data);
+      onAuth(res);
+    } catch (err) {
+      onError(extractError(err));
+    }
+  };
+
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onValid)} className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="space-y-4 overflow-hidden"
+        >
+          <div className="flex gap-3">
+            <FormField leadingIcon={User} name="firstName" placeholder="Ime" />
+            <FormField leadingIcon={User} name="lastName" placeholder="Prezime" />
+          </div>
+          <FormField leadingIcon={Phone} name="phone" placeholder="Telefon" />
+        </motion.div>
+        <FormField leadingIcon={Mail} name="email" type="email" placeholder="Email adresa" />
+        <FormField leadingIcon={Lock} name="password" type="password" placeholder="Lozinka" />
+        <Button type="submit" fullWidth disabled={methods.formState.isSubmitting} className="mt-2">
+          {methods.formState.isSubmitting ? "Obrada..." : "Registruj se"}
+        </Button>
+      </form>
+    </FormProvider>
+  );
+};
+
+const RegisterInvestorForm: React.FC<{ onAuth: (r: AuthResponse) => void; onError: (msg: string) => void }> = ({
+  onAuth,
+  onError,
+}) => {
+  const methods = useForm<RegisterInvestorFormData>({
+    resolver: zodResolver(registerInvestorSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      companyName: "",
+      tin: "",
+      contactEmail: "",
+      contactPhone: "",
+    },
+  });
+
+  const onValid = async (data: RegisterInvestorFormData) => {
+    try {
+      const res = await authService.registerInvestor(data);
+      onAuth(res);
+    } catch (err) {
+      onError(extractError(err));
+    }
+  };
+
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onValid)} className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="space-y-4 overflow-hidden"
+        >
+          <FormField leadingIcon={Building2} name="companyName" placeholder="Naziv firme" />
+          <FormField leadingIcon={Hash} name="tin" placeholder="PIB (opciono)" />
+          <FormField leadingIcon={Mail} name="contactEmail" type="email" placeholder="Email firme" />
+          <FormField leadingIcon={Phone} name="contactPhone" placeholder="Telefon firme" />
+        </motion.div>
+        <FormField leadingIcon={Mail} name="email" type="email" placeholder="Email adresa" />
+        <FormField leadingIcon={Lock} name="password" type="password" placeholder="Lozinka" />
+        <Button type="submit" fullWidth disabled={methods.formState.isSubmitting} className="mt-2">
+          {methods.formState.isSubmitting ? "Obrada..." : "Registruj se"}
+        </Button>
+      </form>
+    </FormProvider>
+  );
+};
+
+const AuthPage = () => {
+  const navigate = useNavigate();
+  const { login: contextLogin } = useAuth();
+  const [mode, setMode] = useState<AuthMode>("login");
+  const [role, setRole] = useState<UserRole>(Role.BUYER);
+  const [error, setError] = useState("");
+
+  const handleAuth = (res: AuthResponse) => {
+    contextLogin(res);
+    navigate("/");
+  };
+
+  const toggleMode = () => {
+    setMode((m) => (m === "login" ? "register" : "login"));
+    setError("");
+  };
+
+  return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-24">
-      
-      {/* Glavni kontejner forme sa blagim glass efektom */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -98,23 +179,22 @@ const AuthPage = () => {
             {mode === "login" ? "Prijava" : "Registracija"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {mode === "login" 
-              ? "Pristupite vašem Indigo nalogu" 
+            {mode === "login"
+              ? "Pristupite vašem Indigo nalogu"
               : "Postanite deo Indigo zajednice"}
           </p>
         </div>
 
         {error && <ErrorAlert message={error} className="mb-6" />}
 
-        {/* Role Switcher */}
         {mode === "register" && (
           <div className="mb-6 grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setRole(Role.BUYER)}
               className={`flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all ${
-                role === Role.BUYER 
-                  ? "border-primary bg-primary/10 text-primary" 
+                role === Role.BUYER
+                  ? "border-primary bg-primary/10 text-primary"
                   : "border-border text-muted-foreground hover:bg-secondary"
               }`}
             >
@@ -124,8 +204,8 @@ const AuthPage = () => {
               type="button"
               onClick={() => setRole(Role.INVESTOR)}
               className={`flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all ${
-                role === Role.INVESTOR 
-                  ? "border-primary bg-primary/10 text-primary" 
+                role === Role.INVESTOR
+                  ? "border-primary bg-primary/10 text-primary"
                   : "border-border text-muted-foreground hover:bg-secondary"
               }`}
             >
@@ -134,59 +214,19 @@ const AuthPage = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === "register" && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="space-y-4 overflow-hidden"
-            >
-              {role === Role.BUYER ? (
-                <>
-                  <div className="flex gap-3">
-                    <Input leadingIcon={User} name="firstName" placeholder="Ime" required onChange={handleChange} />
-                    <Input leadingIcon={User} name="lastName" placeholder="Prezime" required onChange={handleChange} />
-                  </div>
-                  <Input leadingIcon={Phone} name="phone" placeholder="Telefon" required onChange={handleChange} />
-                </>
-              ) : (
-                <>
-                  <Input leadingIcon={Building2} name="companyName" placeholder="Naziv firme" required onChange={handleChange} />
-                  <Input leadingIcon={Hash} name="tin" placeholder="PIB (opciono)" onChange={handleChange} />
-                  <Input leadingIcon={Mail} name="contactEmail" type="email" placeholder="Email firme" required onChange={handleChange} />
-                  <Input leadingIcon={Phone} name="contactPhone" placeholder="Telefon firme" required onChange={handleChange} />
-                </>
-              )}
-            </motion.div>
-          )}
-
-          <Input leadingIcon={Mail} name="email" type="email" placeholder="Email adresa" required onChange={handleChange} />
-          <Input leadingIcon={Lock} name="password" type="password" placeholder="Lozinka" minLength={6} required onChange={handleChange} />
-
-          <Button type="submit" disabled={loading} fullWidth className="mt-2">
-            {loading ? "Obrada..." : mode === "login" ? "Prijavi se" : "Registruj se"}
-          </Button>
-        </form>
+        {mode === "login" && <LoginForm onAuth={handleAuth} onError={setError} />}
+        {mode === "register" && role === Role.BUYER && (
+          <RegisterBuyerForm onAuth={handleAuth} onError={setError} />
+        )}
+        {mode === "register" && role === Role.INVESTOR && (
+          <RegisterInvestorForm onAuth={handleAuth} onError={setError} />
+        )}
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
           {mode === "login" ? "Nemaš nalog?" : "Već imaš nalog?"}{" "}
           <button
             type="button"
-            onClick={() => {
-              setMode(mode === "login" ? "register" : "login");
-              setFormData({
-                email: "",
-                password: "",
-                firstName: "",
-                lastName: "",
-                companyName: "",
-                tin: "",
-                phone: "",
-                contactEmail: "",
-                contactPhone: "",
-              });
-              setError(""); 
-            }}
+            onClick={toggleMode}
             className="font-semibold text-primary hover:underline transition-all"
           >
             {mode === "login" ? "Registruj se" : "Prijavi se"}
