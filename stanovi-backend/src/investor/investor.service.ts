@@ -54,9 +54,19 @@ export class InvestorService {
 
   // --- Verification Methods ---
 
-  async requestVerification(id: string, dto: RequestVerificationDto) {
+  async requestVerification(
+    id: string,
+    dto: RequestVerificationDto,
+    user: ActiveUser,
+  ) {
     const investor = await this.prisma.investor.findUnique({ where: { id } });
     if (!investor) throw new NotFoundException('Investor not found');
+
+    if (investor.userId !== user.id) {
+      throw new ForbiddenException(
+        'You can only request verification for your own investor profile',
+      );
+    }
 
     const request = await this.prisma.verificationRequest.create({
       data: {

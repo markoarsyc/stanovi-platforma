@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsInt,
   IsDateString,
+  MaxLength,
 } from 'class-validator';
 import { BuildingStatus } from '@prisma/client';
 
@@ -15,10 +16,12 @@ export class CreateBuildingDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   title: string;
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(300)
   address: string;
 
   @IsString()
@@ -36,10 +39,12 @@ export class CreateBuildingDto {
 export class UpdateBuildingDto {
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   title?: string;
 
   @IsString()
   @IsOptional()
+  @MaxLength(300)
   address?: string;
 
   @IsString()

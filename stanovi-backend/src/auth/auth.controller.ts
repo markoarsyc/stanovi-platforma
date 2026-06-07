@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBuyerDto } from './dto/register-buyer.dto';
@@ -15,16 +16,19 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register-buyer')
+  @UseGuards(ThrottlerGuard)
   registerBuyer(@Body() dto: RegisterBuyerDto) {
     return this.authService.registerBuyer(dto);
   }
 
   @Post('register-investor')
+  @UseGuards(ThrottlerGuard)
   registerInvestor(@Body() dto: RegisterInvestorDto) {
     return this.authService.registerInvestor(dto);
   }
 
   @Post('login')
+  @UseGuards(ThrottlerGuard)
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }

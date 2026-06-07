@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateBuildingDto, UpdateBuildingDto } from './dto/building.dto';
 import { BuildingImageResponseDto } from './dto/building-image.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { Role } from '@prisma/client';
+import { Role, BuildingImage } from '@prisma/client';
 import { ActiveUser } from '../auth/interfaces/active-user.interface';
 
 @Injectable()
@@ -158,11 +158,11 @@ export class BuildingService {
     }
 
     // Check image count limit
-    const existingImages = await this.prisma.buildingImage.findMany({
+    const imageCount = await this.prisma.buildingImage.count({
       where: { buildingId },
     });
 
-    if (existingImages.length >= this.MAX_IMAGES_PER_BUILDING) {
+    if (imageCount >= this.MAX_IMAGES_PER_BUILDING) {
       throw new BadRequestException(
         `Maximum ${this.MAX_IMAGES_PER_BUILDING} images allowed per building`,
       );
@@ -172,10 +172,12 @@ export class BuildingService {
     const { url, publicId } = await this.cloudinaryService.uploadImage(file);
 
     // Calculate next displayOrder
-    const maxOrder = Math.max(
-      ...existingImages.map((img) => img.displayOrder),
-      -1,
-    );
+    const last = await this.prisma.buildingImage.findFirst({
+      where: { buildingId },
+      orderBy: { displayOrder: 'desc' },
+      select: { displayOrder: true },
+    });
+    const nextOrder = (last?.displayOrder ?? -1) + 1;
 
     // Save to database
     const buildingImage = await this.prisma.buildingImage.create({
@@ -183,7 +185,7 @@ export class BuildingService {
         buildingId,
         imageUrl: url,
         publicId,
-        displayOrder: maxOrder + 1,
+        displayOrder: nextOrder,
       },
     });
 
@@ -195,7 +197,7 @@ export class BuildingService {
     imageId: string,
     user: ActiveUser,
   ): Promise<void> {
-    console.log(
+    this.logger.log(
       `[DELETE IMAGE] Starting deletion for image ${imageId} from building ${buildingId}`,
     );
 
@@ -210,25 +212,27 @@ export class BuildingService {
     });
 
     if (!buildingImage) {
-      console.error(`[DELETE IMAGE] Image ${imageId} not found in database`);
+      this.logger.error(
+        `[DELETE IMAGE] Image ${imageId} not found in database`,
+      );
       throw new NotFoundException('Image not found');
     }
 
     if (buildingImage.buildingId !== buildingId) {
-      console.error(
+      this.logger.error(
         `[DELETE IMAGE] Image ${imageId} belongs to building ${buildingImage.buildingId}, not ${buildingId}`,
       );
       throw new ForbiddenException('Image does not belong to this building');
     }
 
-    console.log(
+    this.logger.log(
       `[DELETE IMAGE] Found image with publicId ${buildingImage.publicId}, proceeding to delete from Cloudinary`,
     );
 
     // Delete from Cloudinary
     await this.cloudinaryService.deleteImage(buildingImage.publicId);
 
-    console.log(
+    this.logger.log(
       `[DELETE IMAGE] Successfully deleted from Cloudinary, now deleting from database`,
     );
 
@@ -237,7 +241,7 @@ export class BuildingService {
       where: { id: imageId },
     });
 
-    console.log(
+    this.logger.log(
       `[DELETE IMAGE] Successfully deleted image ${imageId} from building ${buildingId}`,
     );
   }
@@ -298,7 +302,9 @@ export class BuildingService {
     }
   }
 
-  private mapToResponseDto(buildingImage: any): BuildingImageResponseDto {
+  private mapToResponseDto(
+    buildingImage: BuildingImage,
+  ): BuildingImageResponseDto {
     return {
       id: buildingImage.id,
       buildingId: buildingImage.buildingId,

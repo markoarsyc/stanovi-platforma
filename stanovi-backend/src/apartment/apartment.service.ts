@@ -4,17 +4,19 @@ import {
   ConflictException,
   ForbiddenException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApartmentDto, UpdateApartmentDto } from './dto/apartment.dto';
 import { ApartmentImageResponseDto } from './dto/apartment-image.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { Role } from '@prisma/client';
+import { Role, ApartmentImage } from '@prisma/client';
 import { ActiveUser } from '../auth/interfaces/active-user.interface';
 import type { Express } from 'express';
 
 @Injectable()
 export class ApartmentService {
+  private readonly logger = new Logger(ApartmentService.name);
   private readonly MAX_IMAGES_PER_APARTMENT = 10;
 
   constructor(
@@ -141,11 +143,11 @@ export class ApartmentService {
     await this.validateApartmentOwnership(apartmentId, user);
 
     // Check image count limit
-    const existingImages = await this.prisma.apartmentImage.findMany({
+    const imageCount = await this.prisma.apartmentImage.count({
       where: { apartmentId },
     });
 
-    if (existingImages.length >= this.MAX_IMAGES_PER_APARTMENT) {
+    if (imageCount >= this.MAX_IMAGES_PER_APARTMENT) {
       throw new BadRequestException(
         `Maximum ${this.MAX_IMAGES_PER_APARTMENT} images allowed per apartment`,
       );
@@ -155,10 +157,12 @@ export class ApartmentService {
     const { url, publicId } = await this.cloudinaryService.uploadImage(file);
 
     // Calculate next displayOrder
-    const maxOrder = Math.max(
-      ...existingImages.map((img) => img.displayOrder),
-      -1,
-    );
+    const last = await this.prisma.apartmentImage.findFirst({
+      where: { apartmentId },
+      orderBy: { displayOrder: 'desc' },
+      select: { displayOrder: true },
+    });
+    const nextOrder = (last?.displayOrder ?? -1) + 1;
 
     // Save to database
     const apartmentImage = await this.prisma.apartmentImage.create({
@@ -166,7 +170,7 @@ export class ApartmentService {
         apartmentId,
         imageUrl: url,
         publicId,
-        displayOrder: maxOrder + 1,
+        displayOrder: nextOrder,
       },
     });
 
@@ -178,7 +182,7 @@ export class ApartmentService {
     imageId: string,
     user: ActiveUser,
   ): Promise<void> {
-    console.log(
+    this.logger.log(
       `[DELETE APARTMENT IMAGE] Starting deletion for image ${imageId} from apartment ${apartmentId}`,
     );
 
@@ -191,27 +195,27 @@ export class ApartmentService {
     });
 
     if (!apartmentImage) {
-      console.error(
+      this.logger.error(
         `[DELETE APARTMENT IMAGE] Image ${imageId} not found in database`,
       );
       throw new NotFoundException('Image not found');
     }
 
     if (apartmentImage.apartmentId !== apartmentId) {
-      console.error(
+      this.logger.error(
         `[DELETE APARTMENT IMAGE] Image ${imageId} belongs to apartment ${apartmentImage.apartmentId}, not ${apartmentId}`,
       );
       throw new ForbiddenException('Image does not belong to this apartment');
     }
 
-    console.log(
+    this.logger.log(
       `[DELETE APARTMENT IMAGE] Found image with publicId ${apartmentImage.publicId}, proceeding to delete from Cloudinary`,
     );
 
     // Delete from Cloudinary
     await this.cloudinaryService.deleteImage(apartmentImage.publicId);
 
-    console.log(
+    this.logger.log(
       `[DELETE APARTMENT IMAGE] Successfully deleted from Cloudinary, now deleting from database`,
     );
 
@@ -220,7 +224,7 @@ export class ApartmentService {
       where: { id: imageId },
     });
 
-    console.log(
+    this.logger.log(
       `[DELETE APARTMENT IMAGE] Successfully deleted image ${imageId} from apartment ${apartmentId}`,
     );
   }
@@ -307,7 +311,7 @@ export class ApartmentService {
 
     // Check: User's investor owns the building that contains this apartment
     if (apartment.building.investorId !== investor.id) {
-      console.error(
+      this.logger.error(
         `[APARTMENT IMAGE ACCESS DENIED] Investor ${investor.id} does not own apartment ${apartmentId} (building owner: ${apartment.building.investorId})`,
       );
       throw new ForbiddenException(
@@ -317,7 +321,7 @@ export class ApartmentService {
   }
 
   private mapApartmentImageToResponseDto(
-    apartmentImage: any,
+    apartmentImage: ApartmentImage,
   ): ApartmentImageResponseDto {
     return {
       id: apartmentImage.id,

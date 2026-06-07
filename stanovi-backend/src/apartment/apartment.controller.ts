@@ -10,6 +10,7 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import 'multer';
@@ -26,6 +27,8 @@ import type { ActiveUser } from '../auth/interfaces/active-user.interface';
 @Controller('apartments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ApartmentController {
+  private readonly logger = new Logger(ApartmentController.name);
+
   constructor(private readonly apartmentService: ApartmentService) {}
 
   @Post()
@@ -73,7 +76,7 @@ export class ApartmentController {
     @GetUser() user: ActiveUser,
   ) {
     try {
-      console.log(
+      this.logger.log(
         `[UPLOAD APARTMENT IMAGE] User ${user.id} (${user.role}) uploading image for apartment ${apartmentId}`,
       );
       return this.apartmentService.uploadApartmentImage(
@@ -82,7 +85,7 @@ export class ApartmentController {
         user,
       );
     } catch (error) {
-      console.error(
+      this.logger.error(
         `[UPLOAD APARTMENT IMAGE ERROR] Apartment: ${apartmentId}, User: ${user.id}`,
         error,
       );
@@ -103,7 +106,7 @@ export class ApartmentController {
     @GetUser() user: ActiveUser,
   ) {
     try {
-      console.log(
+      this.logger.log(
         `[DELETE APARTMENT IMAGE] User ${user.id} (${user.role}) attempting to delete image ${imageId} from apartment ${apartmentId}`,
       );
       return this.apartmentService.deleteApartmentImage(
@@ -112,7 +115,7 @@ export class ApartmentController {
         user,
       );
     } catch (error) {
-      console.error(
+      this.logger.error(
         `[DELETE APARTMENT IMAGE ERROR] Apartment: ${apartmentId}, Image: ${imageId}, User: ${user.id}`,
         error,
       );

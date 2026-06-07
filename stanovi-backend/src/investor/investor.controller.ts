@@ -1,4 +1,13 @@
-import { Controller, Get, Param, UseGuards, Delete, Post, Body, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Delete,
+  Post,
+  Body,
+  Patch,
+} from '@nestjs/common';
 import { InvestorService } from './investor.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -40,11 +49,14 @@ export class InvestorController {
   }
 
   @Post(':id/request-verification')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.INVESTOR)
   requestVerification(
     @Param('id') id: string,
     @Body() dto: RequestVerificationDto,
+    @GetUser() user: ActiveUser,
   ) {
-    return this.investorService.requestVerification(id, dto);
+    return this.investorService.requestVerification(id, dto, user);
   }
 
   @Get('user/:userId')

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -17,6 +18,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 3 }]),
     PrismaModule,
     AuthModule,
     InvestorModule,
@@ -24,7 +26,6 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     BuildingModule,
     ApartmentModule,
     LocationModule,
-    //KafkaModule,
     CloudinaryModule,
   ],
   controllers: [AppController],

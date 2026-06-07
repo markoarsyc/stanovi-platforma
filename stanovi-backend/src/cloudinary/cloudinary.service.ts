@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { getCloudinary } from './cloudinary.config';
 
 interface UploadResponse {
@@ -6,8 +6,13 @@ interface UploadResponse {
   publicId: string;
 }
 
+interface CloudinaryDestroyResponse {
+  result: string;
+}
+
 @Injectable()
 export class CloudinaryService {
+  private readonly logger = new Logger(CloudinaryService.name);
   private readonly ALLOWED_MIMETYPES = ['image/jpeg', 'image/png'];
   private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   private readonly UPLOAD_FOLDER =
@@ -67,28 +72,23 @@ export class CloudinaryService {
   async deleteImage(publicId: string): Promise<void> {
     try {
       const cloudinary = getCloudinary();
-      const result = await cloudinary.uploader.destroy(publicId);
+      const result = (await cloudinary.uploader.destroy(
+        publicId,
+      )) as CloudinaryDestroyResponse;
 
       if (result.result !== 'ok') {
-        console.warn(
-          `Warning: Cloudinary deletion returned non-ok status for ${publicId}`,
+        throw new BadRequestException(
+          `Cloudinary deletion returned non-ok status for ${publicId}: ${result.result}`,
         );
       }
     } catch (error) {
-      if (error instanceof BadRequestException) {
-        console.error(
-          `Failed to delete image from Cloudinary: ${error.message}`,
-        );
-        throw new BadRequestException(
-          `Failed to delete image: ${error.message}`,
-        );
-      }
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to delete image from Cloudinary: ${message}`);
+      throw error;
     }
   }
 
   async deleteMultipleImages(publicIds: string[]): Promise<void> {
-    for (const publicId of publicIds) {
-      await this.deleteImage(publicId);
-    }
+    await Promise.all(publicIds.map((publicId) => this.deleteImage(publicId)));
   }
 }

@@ -83,9 +83,13 @@ const AuthPage = () => {
       contextLogin(authResponse);
       navigate("/");
     } catch (err) {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      const message = axiosErr?.response?.data?.message || "Došlo je do greške";
-      setError(Array.isArray(message) ? (message as string[])[0] : String(message));
+      const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+      if (axiosErr?.response?.status === 429) {
+        setError("Previše pokušaja. Pokušajte ponovo za 1 minut.");
+      } else {
+        const message = axiosErr?.response?.data?.message || "Došlo je do greške";
+        setError(Array.isArray(message) ? (message as string[])[0] : String(message));
+      }
     } finally {
       setLoading(false);
     }
