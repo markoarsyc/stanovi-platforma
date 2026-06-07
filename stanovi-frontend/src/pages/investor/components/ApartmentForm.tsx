@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
-import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import React from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
+import { Button } from '@/shared/components/ui';
+import { FormField, FormSelect } from '@/shared/forms';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 import { ApartmentStatus } from '@/shared/types/enums/apartment-status.enum';
+import { apartmentSchema, type ApartmentFormData } from './apartmentSchema';
 
 interface ApartmentFormProps {
   buildingId: string;
@@ -11,91 +16,44 @@ interface ApartmentFormProps {
   isSubmitting: boolean;
 }
 
-const emptyFormData = {
-  buildingId: '',
-  aptNo: '',
-  floor: '',
-  rooms: '',
-  area: '',
-  price: '',
-  status: ApartmentStatus.AVAILABLE,
-};
-
 export const ApartmentForm: React.FC<ApartmentFormProps> = ({
   buildingId,
   apartment,
   onSubmit,
   isSubmitting,
 }) => {
-  const [formData, setFormData] = useState(
-    apartment
+  const methods = useForm<ApartmentFormData>({
+    resolver: zodResolver(apartmentSchema),
+    defaultValues: apartment
       ? {
           buildingId: apartment.buildingId,
           aptNo: apartment.aptNo,
-          floor: String(apartment.floor),
-          rooms: String(apartment.rooms),
-          area: String(apartment.area),
-          price: String(apartment.price),
-          status: apartment.status,
-        }
-      : { ...emptyFormData, buildingId }
-  );
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate required fields
-    if (!formData.aptNo || !formData.floor || !formData.rooms || !formData.area || !formData.price) {
-      alert('Popunite sva obavezna polja');
-      return;
-    }
-
-    // Validate numeric fields
-    const floor = Number(formData.floor);
-    const rooms = Number(formData.rooms);
-    const area = Number(formData.area);
-    const price = Number(formData.price);
-
-    if (floor < 0 || rooms <= 0 || area <= 0 || price <= 0) {
-      alert('Proveri unete vrednosti - ne mogu biti 0 ili negativne');
-      return;
-    }
-
-    // For update, don't include buildingId since it's read-only
-    const submitData = apartment
-      ? {
-          aptNo: formData.aptNo,
-          floor,
-          rooms,
-          area,
-          price,
-          status: formData.status,
+          floor: apartment.floor,
+          rooms: apartment.rooms,
+          area: apartment.area,
+          price: apartment.price,
+          status: apartment.status as ApartmentStatus,
         }
       : {
-          buildingId: formData.buildingId,
-          aptNo: formData.aptNo,
-          floor,
-          rooms,
-          area,
-          price,
-          status: formData.status,
-        };
+          buildingId,
+          aptNo: '',
+          floor: 0,
+          rooms: 1,
+          area: 0,
+          price: 0,
+          status: ApartmentStatus.AVAILABLE,
+        },
+  });
 
-    onSubmit(submitData);
+  const handleValid = (data: ApartmentFormData) => {
+    if (apartment) {
+      const { buildingId: _ignore, ...rest } = data;
+      void _ignore;
+      onSubmit(rest);
+    } else {
+      onSubmit(data);
+    }
   };
-
-  const inputClass =
-    'w-full rounded-lg border border-border bg-secondary py-3 px-4 font-body text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
 
   return (
     <DialogContent className="max-w-md">
@@ -104,80 +62,24 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
           {apartment ? 'Izmeni stan' : 'Dodaj stan'}
         </DialogTitle>
       </DialogHeader>
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <input
-          className={inputClass}
-          placeholder="Broj stana (npr. 1, 2A, 3B)"
-          name="aptNo"
-          value={formData.aptNo}
-          onChange={handleChange}
-          required
-        />
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(handleValid)} className="mt-4 space-y-4">
+          <FormField name="aptNo" placeholder="Broj stana (npr. 1, 2A, 3B)" />
+          <FormField name="floor" type="number" min="0" placeholder="Sprat" valueAsNumber />
+          <FormField name="rooms" type="number" min="1" placeholder="Broj soba" valueAsNumber />
+          <FormField name="area" type="number" min="1" step="0.01" placeholder="Površina (m²)" valueAsNumber />
+          <FormField name="price" type="number" min="1" step="0.01" placeholder="Cena (€)" valueAsNumber />
 
-        <input
-          className={inputClass}
-          placeholder="Sprat"
-          type="number"
-          name="floor"
-          min="0"
-          value={formData.floor}
-          onChange={handleChange}
-          required
-        />
+          <FormSelect name="status">
+            <option value={ApartmentStatus.AVAILABLE}>Dostupan</option>
+            <option value={ApartmentStatus.RESERVED}>Rezervisan</option>
+          </FormSelect>
 
-        <input
-          className={inputClass}
-          placeholder="Broj soba"
-          type="number"
-          name="rooms"
-          min="1"
-          value={formData.rooms}
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          className={inputClass}
-          placeholder="Površina (m²)"
-          type="number"
-          name="area"
-          min="1"
-          step="0.01"
-          value={formData.area}
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          className={inputClass}
-          placeholder="Cena (€)"
-          type="number"
-          name="price"
-          min="1"
-          step="0.01"
-          value={formData.price}
-          onChange={handleChange}
-          required
-        />
-
-        <select
-          className={inputClass}
-          name="status"
-          value={formData.status}
-          onChange={handleChange}
-        >
-          <option value={ApartmentStatus.AVAILABLE}>Dostupan</option>
-          <option value={ApartmentStatus.RESERVED}>Rezervisan</option>
-        </select>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-lg bg-gradient-indigo py-3 font-body text-sm font-semibold text-primary-foreground shadow-indigo disabled:opacity-50"
-        >
-          {isSubmitting ? 'Čuvanje...' : apartment ? 'Sačuvaj izmene' : 'Dodaj stan'}
-        </button>
-      </form>
+          <Button type="submit" disabled={isSubmitting} fullWidth>
+            {isSubmitting ? 'Čuvanje...' : apartment ? 'Sačuvaj izmene' : 'Dodaj stan'}
+          </Button>
+        </form>
+      </FormProvider>
     </DialogContent>
   );
 };

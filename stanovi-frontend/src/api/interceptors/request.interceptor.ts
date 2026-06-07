@@ -1,12 +1,13 @@
 import type { InternalAxiosRequestConfig, AxiosError } from 'axios';
+import { tokenStorage } from '@/shared/utils/storage';
 
 export const requestInterceptor = (config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('auth_token');
-  
+  const token = tokenStorage.get();
+
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  
+
   return config;
 };
 

@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../shared/components/Navbar';
+import { Spinner } from '@/shared/components/ui';
 
 const PublicLayout = () => {
   return (
@@ -7,7 +9,15 @@ const PublicLayout = () => {
       <Navbar />
 
       <main className="flex-grow pt-20">
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="flex min-h-[60vh] items-center justify-center">
+              <Spinner size={32} label="Učitavanje..." />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="border-t border-border py-12 bg-card">

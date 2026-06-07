@@ -1,26 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import React, { useMemo } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
+import { Button } from '@/shared/components/ui';
+import { FormField, FormSelect, FormTextarea } from '@/shared/forms';
 import type { Building } from '@/shared/types/entity/building.entity';
 import type { Location } from '@/shared/types/entity/location.entity';
 import { BuildingStatus } from '@/shared/types/enums/building-status.enum';
-
-// Helper: Konvertuj UTC DateTime string u lokalni YYYY-MM-DD format
-const utcDateTimeToLocalDateString = (isoString: string | Date): string => {
-  const date = new Date(isoString);
-  const offset = date.getTimezoneOffset(); // minuta
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
-  const year = localDate.getUTCFullYear();
-  const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(localDate.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-// Helper: Konvertuj lokalni YYYY-MM-DD string u UTC midnight DateTime
-const localDateStringToUtcDateTime = (dateStr: string): string => {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const utcDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
-  return utcDate.toISOString();
-};
+import { toInputDate, fromInputDate, todayInputDate } from '@/shared/utils/format';
+import { buildingSchema, type BuildingFormData } from './buildingSchema';
 
 interface BuildingFormProps {
   building?: Building;
@@ -30,15 +18,6 @@ interface BuildingFormProps {
   isSubmitting: boolean;
 }
 
-const emptyFormData = {
-  title: '',
-  locationId: 0,
-  address: '',
-  description: '',
-  dueDate: '',
-  status: BuildingStatus.PLANNED,
-};
-
 export const BuildingForm: React.FC<BuildingFormProps> = ({
   building,
   locations,
@@ -46,64 +25,35 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
   onCancel,
   isSubmitting,
 }) => {
-  const [formData, setFormData] = useState(
-    building
+  const methods = useForm<BuildingFormData>({
+    resolver: zodResolver(buildingSchema),
+    defaultValues: building
       ? {
-        title: building.title,
-        locationId: building.locationId,
-        address: building.address,
-        description: building.description || '',
-        dueDate: utcDateTimeToLocalDateString(building.dueDate),
-        status: building.status,
-      }
-      : emptyFormData
-  );
+          title: building.title,
+          locationId: building.locationId,
+          address: building.address,
+          description: building.description || '',
+          dueDate: toInputDate(building.dueDate),
+          status: building.status as BuildingStatus,
+        }
+      : {
+          title: '',
+          locationId: 0,
+          address: '',
+          description: '',
+          dueDate: '',
+          status: BuildingStatus.PLANNED,
+        },
+  });
 
-  const [dateInputType, setDateInputType] = useState<'text' | 'date'>(
-    building ? 'date' : 'text'
-  );
+  const today = useMemo(() => todayInputDate(), []);
 
-  const today = useMemo(() => {
-    const date = new Date();
-    return date.toISOString().split('T')[0];
-  }, []);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'locationId' ? Number(value) : value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate required fields
-    if (!formData.title || !formData.locationId || !formData.address || !formData.dueDate) {
-      alert('Popunite sva obavezna polja');
-      return;
-    }
-
-    // Validate dueDate is in future
-    if (formData.dueDate < today) {
-      alert('Datum mora biti u budućnosti');
-      return;
-    }
-
-    // Convert local date string to UTC DateTime
-    const dueDateISO = localDateStringToUtcDateTime(formData.dueDate);
-
+  const handleValid = (data: BuildingFormData) => {
     onSubmit({
-      ...formData,
-      dueDate: dueDateISO,
+      ...data,
+      dueDate: fromInputDate(data.dueDate),
     });
   };
-
-  const inputClass =
-    'w-full rounded-lg border border-border bg-secondary py-3 px-4 font-body text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
 
   return (
     <DialogContent className="max-w-lg">
@@ -112,96 +62,43 @@ export const BuildingForm: React.FC<BuildingFormProps> = ({
           {building ? 'Izmeni projekat' : 'Dodaj novi projekat'}
         </DialogTitle>
       </DialogHeader>
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <input
-          className={inputClass}
-          placeholder="Naziv projekta"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-        />
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(handleValid)} className="mt-4 space-y-4">
+          <FormField name="title" placeholder="Naziv projekta" />
 
-        <select
-          className={inputClass}
-          name="locationId"
-          value={formData.locationId || ''}
-          onChange={handleChange}
-          required
-        >
-          <option value="" disabled>
-            Izaberite opštinu
-          </option>
-          {locations.map((loc) => (
-            <option key={loc.id} value={loc.id}>
-              {loc.name}
+          <FormSelect name="locationId" valueAsNumber>
+            <option value={0} disabled>
+              Izaberite opštinu
             </option>
-          ))}
-        </select>
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name}
+              </option>
+            ))}
+          </FormSelect>
 
-        <input
-          className={inputClass}
-          placeholder="Adresa (npr. Kneza Mihaila 5)"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          required
-        />
+          <FormField name="address" placeholder="Adresa (npr. Kneza Mihaila 5)" />
 
-        <textarea
-          className={inputClass}
-          placeholder="Opis projekta"
-          name="description"
-          rows={3}
-          value={formData.description}
-          onChange={handleChange}
-        />
+          <FormTextarea name="description" placeholder="Opis projekta" rows={3} />
 
-        <input
-          className={inputClass}
-          type={dateInputType}
-          name="dueDate"
-          value={formData.dueDate}
-          onChange={handleChange}
-          onFocus={() => setDateInputType('date')}
-          onBlur={(e) => {
-            if (!e.target.value) {
-              setDateInputType('text');
-            }
-          }}
-          min={today}
-          placeholder="Rok završetka"
-          required
-        />
+          <FormField name="dueDate" type="date" min={today} placeholder="Rok završetka" />
 
-        <select
-          className={inputClass}
-          name="status"
-          value={formData.status}
-          onChange={handleChange}
-        >
-          <option value={BuildingStatus.PLANNED}>Planiran</option>
-          <option value={BuildingStatus.IN_PROGRESS}>U izgradnji</option>
-          <option value={BuildingStatus.COMPLETED}>Završen</option>
-        </select>
+          <FormSelect name="status">
+            <option value={BuildingStatus.PLANNED}>Planiran</option>
+            <option value={BuildingStatus.IN_PROGRESS}>U izgradnji</option>
+            <option value={BuildingStatus.COMPLETED}>Završen</option>
+          </FormSelect>
 
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-lg bg-gradient-indigo px-6 py-3 font-body text-sm font-semibold text-primary-foreground shadow-indigo disabled:opacity-50"
-          >
-            {isSubmitting ? 'Čuvanje...' : building ? 'Sačuvaj izmene' : 'Sačuvaj projekat'}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-lg border border-border px-6 py-3 font-body text-sm text-muted-foreground hover:bg-secondary"
-          >
-            Otkaži
-          </button>
-        </div>
-      </form>
+          <div className="flex gap-3">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Čuvanje...' : building ? 'Sačuvaj izmene' : 'Sačuvaj projekat'}
+            </Button>
+            <Button type="button" variant="secondary" onClick={onCancel}>
+              Otkaži
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </DialogContent>
   );
 };

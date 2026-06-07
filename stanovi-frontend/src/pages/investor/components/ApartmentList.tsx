@@ -2,6 +2,8 @@ import React from 'react';
 import { Pencil, Trash2, Home, ImageIcon, Images } from 'lucide-react';
 import ApartmentViewToggle from '@/shared/components/ApartmentViewToggle';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
+import { apartmentStatusConfig } from '@/shared/constants/statusConfig';
+import { formatPrice } from '@/shared/utils/format';
 
 interface ApartmentListProps {
   apartments: Apartment[];
@@ -12,11 +14,6 @@ interface ApartmentListProps {
   onAddNew: () => void;
   onManageImages?: (apartment: Apartment) => void;
 }
-
-const statusLabelMap: Record<string, string> = {
-  AVAILABLE: 'Dostupan',
-  RESERVED: 'Rezervisan',
-};
 
 export const ApartmentList: React.FC<ApartmentListProps> = ({
   apartments,
@@ -80,10 +77,10 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
                   <td className="px-4 py-3 font-body text-sm text-muted-foreground">{apt.rooms}</td>
                   <td className="px-4 py-3 font-body text-sm text-muted-foreground">{apt.area}</td>
                   <td className="px-4 py-3 font-body text-sm font-semibold text-accent">
-                    €{Number(apt.price).toLocaleString()}
+                    {formatPrice(apt.price)}
                   </td>
                   <td className="px-4 py-3 font-body text-sm text-muted-foreground">
-                    {statusLabelMap[apt.status]}
+                    {apartmentStatusConfig[apt.status].label}
                   </td>
                   <td className="px-4 py-3 flex items-center gap-1">
                     <button
@@ -157,10 +154,10 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
                 </div>
                 <p className="mt-1 font-body text-xs text-muted-foreground">
                   Sprat {apt.floor}. · {apt.rooms} sobe · {apt.area} m² ·{' '}
-                  <span>{statusLabelMap[apt.status]}</span>
+                  <span>{apartmentStatusConfig[apt.status].label}</span>
                 </p>
                 <p className="mt-1 font-body text-sm font-semibold text-accent">
-                  €{Number(apt.price).toLocaleString()}
+                  {formatPrice(apt.price)}
                 </p>
               </div>
             </div>

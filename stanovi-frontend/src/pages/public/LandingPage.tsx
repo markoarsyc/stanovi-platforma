@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Building2, Shield, TrendingUp } from "lucide-react";
 import type { Building } from "@/shared/types/entity/building.entity";
 
-// Importi tvojih resursa i servisa
-import heroBelgrade from "../../shared/assets/hero-belgrade.jpg"; 
+import heroBelgrade from "../../shared/assets/hero-belgrade.jpg";
 import { getBuildings } from "../../api/services/buildings.service";
 import BuildingCard from "../../features/buildings/BuildingCard";
 
@@ -46,11 +45,6 @@ const LandingPage = () => {
 
     fetchBuildings();
   }, []);
-
-  
-  const handleDeleteBuilding = (id: string) => {
-    setBuildings(prev => prev.filter((b) => b.id !== id));
-  }
 
   return (
     <div className="min-h-screen">
@@ -166,7 +160,7 @@ const LandingPage = () => {
                     description: b.description ?? undefined
                   };
                   return (
-                    <BuildingCard key={b.id} building={buildingData} onDelete={handleDeleteBuilding} />
+                    <BuildingCard key={b.id} building={buildingData} />
                   );
                 })
               ) : (

@@ -114,9 +114,7 @@ export const useInvestorBuildings = () => {
       try {
         setImageLoading(true);
         setImageError(null);
-        console.log(`[DELETE IMAGE] Starting delete request for image ${imageId} from building ${buildingId}`);
         await buildingsService.deleteBuildingImage(buildingId, imageId);
-        console.log(`[DELETE IMAGE] Successfully deleted image ${imageId}`);
         toast.success('Slika obrisana!');
 
         // Update local state by removing the image
@@ -135,7 +133,6 @@ export const useInvestorBuildings = () => {
         const statusCode = (axiosErr as { response?: { status?: number } })?.response?.status || 'unknown';
         const errorMessage = (axiosErr as { response?: { data?: { message?: string } } })?.response?.data?.message || (axiosErr instanceof Error ? axiosErr.message : 'Greška pri brisanju slike');
         const detailedMessage = `Greška (${statusCode}): ${errorMessage}`;
-        console.error(`[DELETE IMAGE ERROR] Status: ${statusCode}, Message: ${errorMessage}`, err);
         setImageError(detailedMessage);
         toast.error(detailedMessage);
         throw err;
