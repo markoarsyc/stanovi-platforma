@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { BadgeCheck, Mail, Phone, Building2, Hash, ArrowLeft, X } from "lucide-react";
 import { useForm, FormProvider } from "react-hook-form";
@@ -13,7 +13,7 @@ import { FormField } from "@/shared/forms";
 import { verificationRequestSchema, type VerificationRequestFormData } from "./verificationSchema";
 
 const Profile = () => {
-  const { user, isInvestor, isAuthenticated } = useAuth();
+  const { user, isInvestor } = useAuth();
   const [profile, setProfile] = useState<Investor | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(isInvestor);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,8 +39,6 @@ const Profile = () => {
       })
       .finally(() => setLoadingProfile(false));
   }, [isInvestor, user, methods]);
-
-  if (!isAuthenticated) return <Navigate to="/" replace />;
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => !isSubmitting && setIsModalOpen(false);

@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Building2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
-import { useAuth } from '@/features/auth/context/AuthContext';
 import { useInvestorBuildings } from './hooks/useInvestorBuildings';
 import { useInvestorApartments } from './hooks/useInvestorApartments';
 import { useLocationsList } from './hooks/useLocationsList';
@@ -16,8 +14,6 @@ import type { Building } from '@/shared/types/entity/building.entity';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 
 const InvestorPanel = () => {
-  const { user, isInvestor } = useAuth();
-  const navigate = useNavigate();
 
   // Hooks
   const {
@@ -51,19 +47,9 @@ const InvestorPanel = () => {
   const [showApartmentImages, setShowApartmentImages] = useState(false);
   const [managingApartment, setManagingApartment] = useState<Apartment | undefined>(undefined);
 
-  // Auth check
   useEffect(() => {
-    if (!user || !isInvestor) {
-      navigate('/auth', { replace: true });
-    }
-  }, [user, isInvestor, navigate]);
-
-  // Fetch buildings on mount
-  useEffect(() => {
-    if (user && isInvestor) {
-      fetchBuildings();
-    }
-  }, [user, isInvestor, fetchBuildings]);
+    fetchBuildings();
+  }, [fetchBuildings]);
 
   // Handlers
   const handleExpandBuilding = (buildingId: string) => {
@@ -139,10 +125,6 @@ const InvestorPanel = () => {
     setManagingApartment(apartment);
     setShowApartmentImages(true);
   };
-
-  if (!user || !isInvestor) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen pt-24">

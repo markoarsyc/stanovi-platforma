@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck,
@@ -8,7 +7,6 @@ import {
   XCircle,
   Building2,
 } from "lucide-react";
-import { useAuth } from "@/features/auth/context/AuthContext";
 import { toast } from "sonner";
 import { getVerificationRequests, handleVerificationRequest } from '@/api/services/investor.service';
 import { verificationStatusConfig } from "@/shared/constants/statusConfig";
@@ -24,30 +22,15 @@ interface VerificationRequest {
 }
 
 const AdminPanel = () => {
-  const {isAuthenticated, isAdmin } = useAuth();
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchRequests = async () => {
-    try {
-      const data = await getVerificationRequests();
-      setRequests(data);
-    } catch {
-      toast.error("Greška pri učitavanju zahteva");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (isAdmin) {
-      fetchRequests();
-    }
-  }, [isAdmin]);
-
-  // Zaštita rute
-  if (!isAuthenticated) return <Navigate to="/" replace />;
-  if (!isAdmin) return <Navigate to="/profile" replace />;
+    getVerificationRequests()
+      .then(setRequests)
+      .catch(() => toast.error("Greška pri učitavanju zahteva"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const onHandleRequest = async (requestId: string, approve: boolean) => {
     const promise = handleVerificationRequest(requestId, approve);
