@@ -37,10 +37,10 @@ export const ApartmentForm: React.FC<ApartmentFormProps> = ({
       : {
           buildingId,
           aptNo: '',
-          floor: 0,
-          rooms: 1,
-          area: 0,
-          price: 0,
+          floor: undefined,
+          rooms: undefined,
+          area: undefined,
+          price: undefined,
           status: ApartmentStatus.AVAILABLE,
         },
   });

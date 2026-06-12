@@ -1,12 +1,13 @@
 import api from '../axios';
+import type { Investor } from '@/shared/types/entity/investor.entity';
 
 export const getInvestorInfo = async (investorId: string) => {
   const response = await api.get(`/investors/${investorId}`);
   return response.data;
 };
 
-export const getInvestorInfoByUserId = async (userId: string) => {
-  const response = await api.get(`/investors/user/${userId}`);
+export const getInvestorInfoByUserId = async (userId: string): Promise<Investor> => {
+  const response = await api.get<Investor>(`/investors/user/${userId}`);
   return response.data;
 };
 

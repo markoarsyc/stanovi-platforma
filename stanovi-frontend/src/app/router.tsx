@@ -9,7 +9,7 @@ const AuthPage = lazy(() => import('../pages/auth/AuthPage'));
 const Listings = lazy(() => import('../pages/public/Listings'));
 const BuildingDetailPage = lazy(() => import('../pages/public/BuildingDetailPage'));
 const InvestorPanel = lazy(() => import('../pages/investor/InvestorPanel'));
-const ProfilePage = lazy(() => import('@/pages/public/ProfilePage'));
+const ProfilePage = lazy(() => import('@/pages/public/profile/ProfilePage'));
 const AdminPanel = lazy(() => import('@/pages/admin/AdminPanel'));
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 
