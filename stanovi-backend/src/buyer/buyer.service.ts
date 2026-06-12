@@ -24,6 +24,14 @@ export class BuyerService {
     return buyer;
   }
 
+  async findByUserId(userId: string) {
+    const buyer = await this.prisma.buyer.findUnique({
+      where: { userId },
+    });
+    if (!buyer) throw new NotFoundException('Buyer not found.');
+    return buyer;
+  }
+
   async update(id: string, dto: UpdateBuyerDto, user: ActiveUser) {
     await this.validateOwnership(id, user);
 

@@ -27,6 +27,12 @@ export class BuyerController {
     return this.buyerService.findAll();
   }
 
+  @Get('user/:userId')
+  @Roles(Role.ADMIN, Role.BUYER)
+  findByUserId(@Param('userId') userId: string) {
+    return this.buyerService.findByUserId(userId);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN, Role.BUYER)
   findOne(@Param('id') id: string) {
