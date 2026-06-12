@@ -12,7 +12,7 @@ type IoniconName = keyof typeof Ionicons.glyphMap;
 
 export default function ProfilScreen() {
   const router = useRouter();
-  const { user, isInvestor, logout } = useAuth();
+  const { user, isAuthenticated, isInvestor, logout } = useAuth();
 
   const buyerQuery = useBuyerProfile(user?.id, !isInvestor);
   const investorQuery = useInvestorProfile(user?.id, isInvestor);
@@ -42,6 +42,37 @@ export default function ProfilScreen() {
       },
     ]);
   };
+
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+        <View className="flex-1 items-center justify-center px-8">
+          <Ionicons name="person-circle-outline" size={64} color="#9A9AB0" />
+          <Text className="mt-4 text-center font-display text-h3 text-foreground">
+            Još uvek nemate korisnički nalog?
+          </Text>
+          <Text className="mt-2 text-center font-body text-body-base text-muted">
+            Registrujte se ili prijavite.
+          </Text>
+
+          <View className="mt-8 w-full gap-3">
+            <Pressable
+              onPress={() => router.push('/(auth)/login' as never)}
+              className="h-14 flex-row items-center justify-center gap-2 rounded-full border border-border bg-surface active:opacity-80">
+              <Ionicons name="log-in-outline" size={20} color="hsl(239, 84%, 67%)" />
+              <Text className="font-body-medium text-body-base text-primary">Prijavi se</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/(auth)/register' as never)}
+              className="h-14 flex-row items-center justify-center gap-2 rounded-full border border-border bg-surface active:opacity-80">
+              <Ionicons name="person-add-outline" size={20} color="hsl(239, 84%, 67%)" />
+              <Text className="font-body-medium text-body-base text-primary">Registruj se</Text>
+            </Pressable>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
