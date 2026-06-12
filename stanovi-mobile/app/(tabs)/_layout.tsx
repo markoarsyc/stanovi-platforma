@@ -1,35 +1,26 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { GlassTabBar } from '@/components/GlassTabBar';
+import { useAuth } from '@/lib/auth/AuthContext';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { isInvestor } = useAuth();
 
   return (
     <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+      tabBar={(props) => <GlassTabBar {...props} />}
+      screenOptions={{ headerShown: false }}>
+      <Tabs.Screen name="oglasi" options={{ title: 'Oglasi' }} />
       <Tabs.Screen
-        name="index"
+        name="projekti"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Projekti',
+          // Investor-only: keep it non-navigable for everyone else.
+          // GlassTabBar also hides the button for non-investors.
+          href: isInvestor ? undefined : null,
         }}
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
+      <Tabs.Screen name="profil" options={{ title: 'Profil' }} />
     </Tabs>
   );
 }

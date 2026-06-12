@@ -11,8 +11,7 @@ export default function LandingScreen() {
   const router = useRouter();
 
   const handleListings = () => {
-    // TODO: navigate to the listings screen once it is built (Phase 2+).
-    Alert.alert('Oglasi', 'Oglasi uskoro');
+    router.push('/(tabs)/oglasi' as never);
   };
 
   const handleForgotPassword = () => {

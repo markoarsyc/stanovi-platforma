@@ -59,7 +59,7 @@ export default function LoginScreen() {
     try {
       const { access_token } = await login(values);
       await authLogin(access_token);
-      router.replace('/(tabs)' as never);
+      router.replace('/(tabs)/oglasi' as never);
     } catch (error) {
       setSubmitError(parseError(error));
     } finally {

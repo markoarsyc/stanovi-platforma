@@ -73,7 +73,7 @@ export default function RegisterScreen() {
     try {
       const { access_token } = await registerBuyer(values);
       await login(access_token);
-      router.replace('/(tabs)' as never);
+      router.replace('/(tabs)/oglasi' as never);
     } catch (error) {
       setSubmitError(parseError(error));
     } finally {
@@ -90,7 +90,7 @@ export default function RegisterScreen() {
         tin: values.tin ? values.tin : undefined,
       });
       await login(access_token);
-      router.replace('/(tabs)' as never);
+      router.replace('/(tabs)/oglasi' as never);
     } catch (error) {
       setSubmitError(parseError(error));
     } finally {
