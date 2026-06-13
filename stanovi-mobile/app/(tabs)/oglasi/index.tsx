@@ -1,13 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BuildingCard } from '@/components/BuildingCard';
+import { BuildingFilters } from '@/components/BuildingFilters';
 import { GradientText } from '@/components/ui/GradientText';
+import type { BuildingFilters as BuildingFiltersValue } from '@/lib/api/buildings.service';
 import { useBuildings } from '@/lib/api/useBuildings';
 
 export default function ListingsScreen() {
-  const { data: buildings, isLoading, isError } = useBuildings();
+  const [appliedFilters, setAppliedFilters] = useState<BuildingFiltersValue>({});
+  const [filtersApplied, setFiltersApplied] = useState(false);
+
+  const { data: buildings, isLoading, isError } = useBuildings(appliedFilters);
+
+  const handleApply = (filters: BuildingFiltersValue) => {
+    setFiltersApplied(true);
+    setAppliedFilters(filters);
+  };
+
+  const handleClear = () => {
+    setFiltersApplied(false);
+    setAppliedFilters({});
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -19,34 +35,45 @@ export default function ListingsScreen() {
         </Text>
       </View>
 
-      {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(239, 84%, 67%)" />
-        </View>
-      ) : isError ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Ionicons name="alert-circle-outline" size={48} color="#9A9AB0" />
-          <Text className="mt-3 text-center font-body text-body-base text-muted">
-            Došlo je do greške pri učitavanju projekata.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={buildings}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <BuildingCard building={item} />}
-          contentContainerClassName="px-6 pb-32 pt-3 gap-4"
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
+      <FlatList
+        data={buildings ?? []}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <BuildingCard building={item} />}
+        contentContainerClassName="px-6 pb-32 pt-3 gap-4"
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View className="mb-2">
+            <BuildingFilters
+              onApply={handleApply}
+              onClear={handleClear}
+              filtersApplied={filtersApplied}
+            />
+          </View>
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <View className="mt-24 items-center justify-center">
+              <ActivityIndicator size="large" color="hsl(239, 84%, 67%)" />
+            </View>
+          ) : isError ? (
+            <View className="mt-24 items-center px-8">
+              <Ionicons name="alert-circle-outline" size={48} color="#9A9AB0" />
+              <Text className="mt-3 text-center font-body text-body-base text-muted">
+                Došlo je do greške pri učitavanju projekata.
+              </Text>
+            </View>
+          ) : (
             <View className="mt-24 items-center px-8">
               <Ionicons name="home-outline" size={48} color="#9A9AB0" />
               <Text className="mt-3 text-center font-body text-body-base text-muted">
-                Trenutno nema dostupnih projekata.
+                {filtersApplied
+                  ? 'Nema projekata za zadate filtere.'
+                  : 'Trenutno nema dostupnih projekata.'}
               </Text>
             </View>
-          }
-        />
-      )}
+          )
+        }
+      />
     </SafeAreaView>
   );
 }

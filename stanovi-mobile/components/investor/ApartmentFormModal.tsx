@@ -14,7 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormInput } from '@/components/ui/FormInput';
 import { FormSelect } from '@/components/ui/FormSelect';
@@ -113,21 +113,15 @@ export function ApartmentFormModal({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={handleClose}>
+      <SafeAreaProvider>
       <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
         <KeyboardAvoidingView
           className="flex-1"
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView
-            contentContainerClassName="px-6 pb-10"
+            contentContainerClassName="px-6 pb-10 pt-2"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}>
-            <Pressable
-              onPress={handleClose}
-              hitSlop={12}
-              className="mt-2 h-10 w-10 justify-center">
-              <Ionicons name="arrow-back" size={26} color="hsl(239, 84%, 67%)" />
-            </Pressable>
-
             <Text className="mt-2 text-center font-display text-h2 text-foreground">
               {isEditing ? 'Izmeni stan' : 'Dodaj novi stan'}
             </Text>
@@ -226,6 +220,7 @@ export function ApartmentFormModal({
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   );
 }

@@ -3,6 +3,7 @@ import type { Building } from '@/shared/types/entity/building.entity';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 import type { BuildingImage } from '@/shared/types/building-detail.types';
 import type { Location } from '@/shared/types/entity/location.entity';
+import type { BuildingStatus } from '@/shared/types/enums/building-status.enum';
 
 interface BuildingWithApartments extends Building {
   apartments: Apartment[];
@@ -10,8 +11,21 @@ interface BuildingWithApartments extends Building {
   location: Location;
 }
 
-export const getBuildings = async () => {
-  const response = await api.get('/buildings');
+export interface BuildingFilters {
+  search?: string;
+  locationId?: number;
+  status?: BuildingStatus;
+  sort?: 'newest' | 'oldest';
+}
+
+export const getBuildings = async (filters: BuildingFilters = {}) => {
+  const params: Record<string, string | number> = {};
+  if (filters.search?.trim()) params.search = filters.search.trim();
+  if (filters.locationId) params.locationId = filters.locationId;
+  if (filters.status) params.status = filters.status;
+  if (filters.sort) params.sort = filters.sort;
+
+  const response = await api.get('/buildings', { params });
   return response.data;
 };
 

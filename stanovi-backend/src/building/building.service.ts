@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBuildingDto, UpdateBuildingDto } from './dto/building.dto';
+import { FindBuildingsQueryDto } from './dto/find-buildings-query.dto';
 import { BuildingImageResponseDto } from './dto/building-image.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { Role, BuildingImage } from '@prisma/client';
@@ -36,8 +37,16 @@ export class BuildingService {
     });
   }
 
-  async findAll() {
+  async findAll(query: FindBuildingsQueryDto = {}) {
+    const { search, locationId, status, sort } = query;
     return this.prisma.building.findMany({
+      where: {
+        ...(search && {
+          title: { contains: search, mode: 'insensitive' },
+        }),
+        ...(locationId && { locationId }),
+        ...(status && { status }),
+      },
       include: {
         location: true,
         _count: { select: { apartments: true } },
@@ -45,6 +54,7 @@ export class BuildingService {
           orderBy: { displayOrder: 'asc' },
         },
       },
+      orderBy: { createdAt: sort === 'oldest' ? 'asc' : 'desc' },
     });
   }
 

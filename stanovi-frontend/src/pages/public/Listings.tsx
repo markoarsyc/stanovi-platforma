@@ -1,31 +1,44 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Home } from "lucide-react";
 import type { Building } from "@/shared/types/entity/building.entity";
-import { getBuildings } from "../../api/services/buildings.service"; // Prilagodi putanju
+import { getBuildings, type BuildingFilters } from "../../api/services/buildings.service"; // Prilagodi putanju
 import BuildingCard from "../../features/buildings/BuildingCard"; // Prilagodi putanju
+import ListingsFilters from "./components/ListingsFilters";
 
 const Listings = () => {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filtersApplied, setFiltersApplied] = useState(false);
+
+  const fetchBuildings = useCallback(async (filters: BuildingFilters = {}) => {
+    try {
+      setLoading(true);
+      const data = await getBuildings(filters);
+      setBuildings(data);
+      setError(null);
+    } catch (err) {
+      console.error("Greška pri učitavanju objekata:", err);
+      setError("Došlo je do greške prilikom učitavanja podataka.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchBuildings = async () => {
-      try {
-        setLoading(true);
-        const data = await getBuildings();
-        setBuildings(data);
-      } catch (err) {
-        console.error("Greška pri učitavanju objekata:", err);
-        setError("Došlo je do greške prilikom učitavanja podataka.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBuildings();
-  }, []);
+  }, [fetchBuildings]);
+
+  const handleApply = (filters: BuildingFilters) => {
+    setFiltersApplied(true);
+    fetchBuildings(filters);
+  };
+
+  const handleClear = () => {
+    setFiltersApplied(false);
+    fetchBuildings();
+  };
 
   const handleDeleteBuilding = (id: string) => {
     setBuildings(prev => prev.filter((b) => b.id !== id));
@@ -45,6 +58,13 @@ const Listings = () => {
             </p>
           </motion.div>
 
+          <ListingsFilters
+            onApply={handleApply}
+            onClear={handleClear}
+            filtersApplied={filtersApplied}
+            loading={loading}
+          />
+
           {/* State handling: Loading, Error, Empty, ili Grid */}
           {loading ? (
             <div className="mt-12 text-center">
@@ -58,7 +78,11 @@ const Listings = () => {
           ) : buildings.length === 0 ? (
             <div className="mt-12 flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20">
               <Home size={48} className="text-muted-foreground" />
-              <p className="mt-4 font-body text-muted-foreground">Trenutno nema dostupnih projekata.</p>
+              <p className="mt-4 font-body text-muted-foreground">
+                {filtersApplied
+                  ? "Nema projekata za zadate filtere."
+                  : "Trenutno nema dostupnih projekata."}
+              </p>
             </div>
           ) : (
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">

@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Delete,
+  Query,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -14,6 +15,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express } from 'express';
 import { BuildingService } from './building.service';
 import { CreateBuildingDto, UpdateBuildingDto } from './dto/building.dto';
+import { FindBuildingsQueryDto } from './dto/find-buildings-query.dto';
 import { UpdateBuildingImageDto } from './dto/building-image.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -36,8 +38,8 @@ export class BuildingController {
   }
 
   @Get()
-  findAll() {
-    return this.buildingService.findAll();
+  findAll(@Query() query: FindBuildingsQueryDto) {
+    return this.buildingService.findAll(query);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -1,11 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getBuildingById, getBuildings } from '@/lib/api/buildings.service';
+import {
+  getBuildingById,
+  getBuildings,
+  type BuildingFilters,
+} from '@/lib/api/buildings.service';
 
-export function useBuildings() {
+export function useBuildings(filters: BuildingFilters = {}) {
   return useQuery({
-    queryKey: ['buildings'],
-    queryFn: getBuildings,
+    queryKey: ['buildings', filters],
+    queryFn: () => getBuildings(filters),
   });
 }
 

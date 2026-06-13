@@ -7,8 +7,21 @@ import type {
   InvestorBuilding,
 } from '@/lib/api/types';
 
-export async function getBuildings(): Promise<Building[]> {
-  const { data } = await api.get<Building[]>('/buildings');
+export interface BuildingFilters {
+  search?: string;
+  locationId?: number;
+  status?: BuildingStatus;
+  sort?: 'newest' | 'oldest';
+}
+
+export async function getBuildings(filters: BuildingFilters = {}): Promise<Building[]> {
+  const params: Record<string, string | number> = {};
+  if (filters.search?.trim()) params.search = filters.search.trim();
+  if (filters.locationId) params.locationId = filters.locationId;
+  if (filters.status) params.status = filters.status;
+  if (filters.sort) params.sort = filters.sort;
+
+  const { data } = await api.get<Building[]>('/buildings', { params });
   return data;
 }
 
