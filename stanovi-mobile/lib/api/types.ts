@@ -37,6 +37,8 @@ export interface Building {
   description?: string | null;
   dueDate: string;
   status: BuildingStatus;
+  latitude: number | null;
+  longitude: number | null;
   location: Location;
   images: BuildingImage[];
   _count: { apartments: number };

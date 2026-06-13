@@ -22,6 +22,7 @@ interface AuthContextValue {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isBuyer: boolean;
   isInvestor: boolean;
   isAdmin: boolean;
   login: (accessToken: string) => Promise<void>;
@@ -82,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token,
       isLoading,
       isAuthenticated: !!user,
+      isBuyer: user?.role === 'BUYER',
       isInvestor: user?.role === 'INVESTOR',
       isAdmin: user?.role === 'ADMIN',
       login,

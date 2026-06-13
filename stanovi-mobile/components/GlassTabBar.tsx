@@ -11,6 +11,7 @@ type IoniconName = keyof typeof Ionicons.glyphMap;
 
 const TABS: Record<string, { label: string; icon: IoniconName }> = {
   oglasi: { label: 'Oglasi', icon: 'home-outline' },
+  mapa: { label: 'Mapa', icon: 'map-outline' },
   projekti: { label: 'Projekti', icon: 'business-outline' },
   profil: { label: 'Profil', icon: 'person-outline' },
 };
@@ -20,11 +21,14 @@ const INACTIVE_COLOR = 'rgba(255,255,255,0.7)';
 
 export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { isInvestor } = useAuth();
+  const { isBuyer, isInvestor } = useAuth();
 
-  // Only render routes we have a config for, and hide the investor-only tab.
+  // Only render routes we have a config for; hide the role-restricted tabs.
   const routes = state.routes.filter(
-    (route) => TABS[route.name] && (route.name !== 'projekti' || isInvestor),
+    (route) =>
+      TABS[route.name] &&
+      (route.name !== 'projekti' || isInvestor) &&
+      (route.name !== 'mapa' || isBuyer),
   );
 
   return (
