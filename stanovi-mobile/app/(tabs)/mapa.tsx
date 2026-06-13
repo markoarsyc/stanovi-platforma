@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, Text, View } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatusBadge } from '@/components/StatusBadge';
@@ -53,10 +53,7 @@ export default function MapScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <MapView
-        style={{ flex: 1 }}
-        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-        initialRegion={BELGRADE_REGION}>
+      <MapView style={{ flex: 1 }} initialRegion={BELGRADE_REGION}>
         {/* Note: a MapView onPress to clear `selected` is intentionally omitted —
             on iOS a marker tap also fires the map's onPress, which would clear
             the selection before the card can show. Dismiss via the X button. */}
