@@ -67,6 +67,11 @@ export interface InvestorProfile {
   createdAt: string;
 }
 
+export interface InvestorBuilding extends Omit<Building, '_count'> {
+  locationId: number;
+  apartments: Apartment[];
+}
+
 export interface BuildingDetail {
   id: string;
   title: string;

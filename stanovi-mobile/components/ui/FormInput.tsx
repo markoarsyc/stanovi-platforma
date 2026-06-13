@@ -10,6 +10,9 @@ interface FormInputProps<T extends FieldValues> {
   secureTextEntry?: boolean;
   keyboardType?: KeyboardTypeOptions;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  // When true the field value is coerced to a number (empty string → undefined),
+  // so zod number schemas validate correctly.
+  numeric?: boolean;
 }
 
 export function FormInput<T extends FieldValues>({
@@ -20,6 +23,7 @@ export function FormInput<T extends FieldValues>({
   secureTextEntry,
   keyboardType,
   autoCapitalize = 'none',
+  numeric = false,
 }: FormInputProps<T>) {
   return (
     <Controller
@@ -35,11 +39,18 @@ export function FormInput<T extends FieldValues>({
               className="flex-1 font-body text-body-base text-foreground"
               placeholder={placeholder}
               placeholderTextColor="#9A9AB0"
-              value={value ?? ''}
-              onChangeText={onChange}
+              value={value === undefined || value === null ? '' : String(value)}
+              onChangeText={
+                numeric
+                  ? (text) => {
+                      const cleaned = text.replace(',', '.');
+                      onChange(cleaned === '' ? undefined : Number(cleaned));
+                    }
+                  : onChange
+              }
               onBlur={onBlur}
               secureTextEntry={secureTextEntry}
-              keyboardType={keyboardType}
+              keyboardType={keyboardType ?? (numeric ? 'numeric' : undefined)}
               autoCapitalize={autoCapitalize}
               autoCorrect={false}
             />
