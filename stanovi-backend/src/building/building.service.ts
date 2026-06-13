@@ -10,6 +10,7 @@ import { CreateBuildingDto, UpdateBuildingDto } from './dto/building.dto';
 import { FindBuildingsQueryDto } from './dto/find-buildings-query.dto';
 import { BuildingImageResponseDto } from './dto/building-image.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { GeocodingService } from '../geocoding/geocoding.service';
 import { Role, BuildingImage } from '@prisma/client';
 import { ActiveUser } from '../auth/interfaces/active-user.interface';
 
@@ -21,6 +22,7 @@ export class BuildingService {
   constructor(
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
+    private geocodingService: GeocodingService,
   ) {}
 
   async create(dto: CreateBuildingDto, user: ActiveUser) {
@@ -29,12 +31,24 @@ export class BuildingService {
     });
     if (!investor) throw new ForbiddenException('Investor profile not found');
 
+    const coords = await this.geocodeBuilding(dto.address, dto.locationId);
+
     return this.prisma.building.create({
       data: {
         ...dto,
         investorId: investor.id,
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lng ?? null,
       },
     });
+  }
+
+  private async geocodeBuilding(address: string, locationId: number) {
+    const location = await this.prisma.location.findUnique({
+      where: { id: locationId },
+    });
+    if (!location) return null;
+    return this.geocodingService.geocode(address, location.name);
   }
 
   async findAll(query: FindBuildingsQueryDto = {}) {
@@ -110,10 +124,31 @@ export class BuildingService {
       await this.validateOwnership(id, user);
     }
 
+    const coords = await this.resolveCoordinatesForUpdate(id, dto);
+
     return this.prisma.building.update({
       where: { id },
-      data: dto,
+      data: {
+        ...dto,
+        ...(coords && { latitude: coords.lat, longitude: coords.lng }),
+      },
     });
+  }
+
+  // Re-geocode only when address or location changes, using the effective
+  // (new or existing) values for the unchanged field.
+  private async resolveCoordinatesForUpdate(
+    id: string,
+    dto: UpdateBuildingDto,
+  ) {
+    if (dto.address === undefined && dto.locationId === undefined) return null;
+
+    const current = await this.prisma.building.findUnique({ where: { id } });
+    if (!current) return null;
+
+    const address = dto.address ?? current.address;
+    const locationId = dto.locationId ?? current.locationId;
+    return this.geocodeBuilding(address, locationId);
   }
 
   async delete(id: string, user: ActiveUser) {
