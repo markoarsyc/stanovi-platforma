@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { GradientText } from '@/components/ui/GradientText';
 import { GRADIENT_INDIGO } from '@/constants/gradients';
+import { useAuth } from '@/lib/auth/AuthContext';
 import { setOnboardingComplete } from '@/lib/storage/onboarding';
 
 type Slide = {
@@ -51,6 +52,7 @@ const SLIDES: Slide[] = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const { width } = useWindowDimensions();
   const scrollRef = useRef<React.ComponentRef<typeof Animated.ScrollView>>(null);
   const scrollX = useSharedValue(0);
@@ -64,7 +66,8 @@ export default function OnboardingScreen() {
 
   const finish = async () => {
     await setOnboardingComplete();
-    router.replace('/(auth)' as never);
+    // Logged-in users land straight on the listings; everyone else goes to login.
+    router.replace((isAuthenticated ? '/(tabs)/oglasi' : '/(auth)/login') as never);
   };
 
   const handleNext = () => {

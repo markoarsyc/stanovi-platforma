@@ -114,6 +114,14 @@ export default function ProfilScreen() {
             Odjavi se
           </Text>
         </Pressable>
+
+        {/* About / replay the intro */}
+        <Pressable
+          onPress={() => router.push('/(onboarding)' as never)}
+          className="mt-3 h-14 flex-row items-center justify-center gap-2 rounded-full border border-border bg-surface active:opacity-80">
+          <Ionicons name="information-circle-outline" size={20} color="hsl(239, 84%, 67%)" />
+          <Text className="font-body-medium text-body-base text-primary">O nama</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
