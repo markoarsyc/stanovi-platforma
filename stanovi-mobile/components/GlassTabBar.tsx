@@ -13,6 +13,7 @@ const TABS: Record<string, { label: string; icon: IoniconName }> = {
   oglasi: { label: 'Oglasi', icon: 'home-outline' },
   projekti: { label: 'Projekti', icon: 'business-outline' },
   profil: { label: 'Profil', icon: 'person-outline' },
+  'o-nama': { label: 'O nama', icon: 'information-circle-outline' },
 };
 
 const ACTIVE_COLOR = '#ffffff';
@@ -25,6 +26,10 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   // Only render routes we have a config for, and hide the investor-only tab.
   const routes = state.routes.filter(
     (route) => TABS[route.name] && (route.name !== 'projekti' || isInvestor),
+  );
+  // Ensure "O nama" always appears last regardless of declaration order.
+  routes.sort((a, b) =>
+    a.name === 'o-nama' ? 1 : b.name === 'o-nama' ? -1 : 0,
   );
 
   return (

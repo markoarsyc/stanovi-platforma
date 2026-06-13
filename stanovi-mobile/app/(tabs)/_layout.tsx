@@ -21,6 +21,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen name="profil" options={{ title: 'Profil' }} />
+      <Tabs.Screen name="o-nama" options={{ title: 'O nama' }} />
     </Tabs>
   );
 }
