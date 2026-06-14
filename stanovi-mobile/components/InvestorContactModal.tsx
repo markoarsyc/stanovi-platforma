@@ -1,6 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Linking, Modal, Pressable, Text, View } from 'react-native';
 
+import { GRADIENT_INDIGO } from '@/constants/gradients';
 import type { Investor } from '@/lib/api/types';
 
 interface InvestorContactModalProps {
@@ -27,6 +30,26 @@ export function InvestorContactModal({ investor, visible, onClose }: InvestorCon
             <Pressable onPress={onClose} hitSlop={12}>
               <Ionicons name="close" size={24} color="hsl(230, 25%, 92%)" />
             </Pressable>
+          </View>
+
+          <View className="mt-4 items-center">
+            {investor?.profilePhotoUrl ? (
+              <Image
+                source={{ uri: investor.profilePhotoUrl }}
+                style={{ height: 72, width: 72, borderRadius: 999 }}
+                contentFit="cover"
+              />
+            ) : (
+              <LinearGradient
+                colors={GRADIENT_INDIGO}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ height: 72, width: 72, borderRadius: 999, alignItems: 'center', justifyContent: 'center' }}>
+                <Text className="font-display text-h2 text-white">
+                  {(investor?.companyName?.[0] ?? '?').toUpperCase()}
+                </Text>
+              </LinearGradient>
+            )}
           </View>
 
           <View className="mt-4 flex-row items-center gap-2">

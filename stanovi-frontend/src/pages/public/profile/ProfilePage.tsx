@@ -1,17 +1,42 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, Building2, Hash, BadgeCheck, ShieldCheck, Shield } from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  User,
+  Mail,
+  Phone,
+  Building2,
+  Hash,
+  BadgeCheck,
+  ShieldCheck,
+  Shield,
+  Pencil,
+  Lock,
+} from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { Button, Spinner, ErrorAlert } from '@/shared/components/ui';
+import {
+  uploadBuyerPhoto,
+  deleteBuyerPhoto,
+} from '@/api/services/buyer.service';
+import {
+  uploadInvestorPhoto,
+  deleteInvestorPhoto,
+} from '@/api/services/investor.service';
 import { ProfileHeader } from './ProfileHeader';
 import { InfoRow } from './InfoRow';
 import { VerificationDialog } from './VerificationDialog';
+import { EditBuyerDialog } from './EditBuyerDialog';
+import { EditInvestorDialog } from './EditInvestorDialog';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { useProfile } from './useProfile';
 
 const ProfilePage: React.FC = () => {
   const { user, isInvestor } = useAuth();
   const { buyer, investor, loading, error, refetch } = useProfile();
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isEditOpen, setIsEditOpen] = useState<boolean>(false);
+  const [isPasswordOpen, setIsPasswordOpen] = useState<boolean>(false);
 
   const roleLabel = isInvestor ? 'Investitor' : 'Kupac';
   const displayName = isInvestor
@@ -19,6 +44,42 @@ const ProfilePage: React.FC = () => {
     : buyer
       ? `${buyer.firstName} ${buyer.lastName}`
       : 'Kupac';
+
+  const photoUrl = isInvestor ? investor?.profilePhotoUrl : buyer?.profilePhotoUrl;
+
+  const handlePhotoSelected = async (file: File) => {
+    try {
+      if (isInvestor && investor) {
+        await uploadInvestorPhoto(investor.id, file);
+      } else if (buyer) {
+        await uploadBuyerPhoto(buyer.id, file);
+      } else {
+        return;
+      }
+      toast.success('Profilna slika je ažurirana.');
+      refetch();
+    } catch {
+      toast.error('Greška pri otpremanju slike.');
+    }
+  };
+
+  const handlePhotoRemove = async () => {
+    try {
+      if (isInvestor && investor) {
+        await deleteInvestorPhoto(investor.id);
+      } else if (buyer) {
+        await deleteBuyerPhoto(buyer.id);
+      } else {
+        return;
+      }
+      toast.success('Profilna slika je uklonjena.');
+      refetch();
+    } catch {
+      toast.error('Greška pri uklanjanju slike.');
+    }
+  };
+
+  const canEdit = !loading && !error && (isInvestor ? !!investor : !!buyer);
 
   return (
     <main className="min-h-screen pb-24 pt-32">
@@ -33,6 +94,9 @@ const ProfilePage: React.FC = () => {
             roleLabel={roleLabel}
             fallbackChar={user?.email?.[0] ?? '?'}
             isVerified={isInvestor && investor?.isVerified}
+            photoUrl={photoUrl}
+            onPhotoSelected={canEdit ? handlePhotoSelected : undefined}
+            onPhotoRemove={canEdit ? handlePhotoRemove : undefined}
           />
 
           {loading ? (
@@ -62,24 +126,53 @@ const ProfilePage: React.FC = () => {
             </div>
           )}
 
-          {isInvestor && !loading && !error && investor && !investor.isVerified && (
-            <Button onClick={() => setIsDialogOpen(true)} className="mt-8">
-              <BadgeCheck size={18} /> Verifikuj investitorski profil
-            </Button>
+          {canEdit && (
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button onClick={() => setIsEditOpen(true)}>
+                <Pencil size={18} /> Izmeni profil
+              </Button>
+              <Button variant="secondary" onClick={() => setIsPasswordOpen(true)}>
+                <Lock size={18} /> Promeni lozinku
+              </Button>
+              {isInvestor && investor && !investor.isVerified && (
+                <Button variant="secondary" onClick={() => setIsDialogOpen(true)}>
+                  <BadgeCheck size={18} /> Verifikuj profil
+                </Button>
+              )}
+            </div>
           )}
         </motion.div>
       </div>
 
       {isInvestor && investor && (
-        <VerificationDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          investorId={investor.id}
-          defaultCompanyName={investor.companyName}
-          defaultTin={investor.tin}
+        <>
+          <VerificationDialog
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            investorId={investor.id}
+            defaultCompanyName={investor.companyName}
+            defaultTin={investor.tin}
+            onSuccess={refetch}
+          />
+          <EditInvestorDialog
+            open={isEditOpen}
+            onOpenChange={setIsEditOpen}
+            investor={investor}
+            onSuccess={refetch}
+          />
+        </>
+      )}
+
+      {!isInvestor && buyer && (
+        <EditBuyerDialog
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          buyer={buyer}
           onSuccess={refetch}
         />
       )}
+
+      <ChangePasswordDialog open={isPasswordOpen} onOpenChange={setIsPasswordOpen} />
     </main>
   );
 };

@@ -17,8 +17,12 @@ export class CloudinaryService {
   private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   private readonly UPLOAD_FOLDER =
     process.env.CLOUDINARY_UPLOAD_FOLDER || 'stanovi-platforma/buildings';
+  readonly PROFILE_PHOTO_FOLDER = 'stanovi-platforma/profile-photos';
 
-  async uploadImage(file: Express.Multer.File): Promise<UploadResponse> {
+  async uploadImage(
+    file: Express.Multer.File,
+    folder: string = this.UPLOAD_FOLDER,
+  ): Promise<UploadResponse> {
     // Validacija veličine
     if (file.size > this.MAX_FILE_SIZE) {
       throw new BadRequestException(
@@ -39,7 +43,7 @@ export class CloudinaryService {
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
-            folder: this.UPLOAD_FOLDER,
+            folder,
             resource_type: 'auto',
             quality: 'auto',
           },

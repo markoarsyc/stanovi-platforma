@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBuyerDto } from './dto/register-buyer.dto';
 import { RegisterInvestorDto } from './dto/register-investor.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
@@ -38,5 +39,12 @@ export class AuthController {
   @Roles(Role.INVESTOR, Role.BUYER)
   getProfile(@GetUser() user: ActiveUser) {
     return user;
+  }
+
+  @Patch('password')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.INVESTOR, Role.BUYER)
+  changePassword(@GetUser() user: ActiveUser, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(user.id, dto);
   }
 }

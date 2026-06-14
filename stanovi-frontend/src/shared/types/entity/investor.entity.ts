@@ -6,4 +6,6 @@ export interface Investor {
   contactEmail: string;
   contactPhone: string;
   isVerified: boolean;
+  profilePhotoUrl?: string | null;
+  profilePhotoPublicId?: string | null;
 }

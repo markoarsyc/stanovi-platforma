@@ -51,12 +51,14 @@ model User {
 }
 
 model Buyer {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  firstName String
-  lastName  String
-  phone     String
-  createdAt DateTime @default(now())
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  firstName            String
+  lastName             String
+  phone                String
+  profilePhotoUrl      String?
+  profilePhotoPublicId String?
+  createdAt            DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 }
@@ -69,6 +71,8 @@ model Investor {
   contactEmail  String
   contactPhone  String
   isVerified    Boolean  @default(false)
+  profilePhotoUrl      String?
+  profilePhotoPublicId String?
   createdAt     DateTime @default(now())
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Restrict)

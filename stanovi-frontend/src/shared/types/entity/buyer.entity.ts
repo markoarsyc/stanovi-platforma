@@ -4,5 +4,7 @@ export interface Buyer {
   firstName: string;
   lastName: string;
   phone: string;
+  profilePhotoUrl?: string | null;
+  profilePhotoPublicId?: string | null;
   createdAt: Date | string;
 }

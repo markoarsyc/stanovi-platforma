@@ -49,6 +49,20 @@ export const InvestorContactDialog: React.FC<InvestorContactDialogProps> = ({
       </DialogHeader>
       {investor && (
         <div className="mt-2 space-y-4">
+          <div className="flex justify-center pb-2">
+            {investor.profilePhotoUrl ? (
+              <img
+                src={investor.profilePhotoUrl}
+                alt={investor.companyName}
+                className="h-20 w-20 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-indigo text-2xl font-bold text-primary-foreground">
+                {(investor.companyName?.[0] ?? '?').toUpperCase()}
+              </div>
+            )}
+          </div>
+
           <ContactRow
             icon={<User size={20} className="text-primary" />}
             label="Naziv"

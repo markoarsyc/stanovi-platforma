@@ -3,12 +3,16 @@ import {
   Get,
   Param,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   Delete,
   Post,
   Body,
   Patch,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { InvestorService } from './investor.service';
+import { UpdateInvestorDto } from './dto/investor.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -69,6 +73,36 @@ export class InvestorController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.investorService.findOne(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INVESTOR)
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateInvestorDto,
+    @GetUser() user: ActiveUser,
+  ) {
+    return this.investorService.update(id, dto, user);
+  }
+
+  @Post(':id/photo')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INVESTOR)
+  @UseInterceptors(FileInterceptor('image'))
+  uploadPhoto(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: ActiveUser,
+  ) {
+    return this.investorService.uploadProfilePhoto(id, file, user);
+  }
+
+  @Delete(':id/photo')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INVESTOR)
+  removePhoto(@Param('id') id: string, @GetUser() user: ActiveUser) {
+    return this.investorService.removeProfilePhoto(id, user);
   }
 
   @Delete(':id')

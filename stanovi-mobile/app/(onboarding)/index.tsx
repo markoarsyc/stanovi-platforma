@@ -66,8 +66,8 @@ export default function OnboardingScreen() {
 
   const finish = async () => {
     await setOnboardingComplete();
-    // Logged-in users land straight on the listings; everyone else goes to login.
-    router.replace((isAuthenticated ? '/(tabs)/oglasi' : '/(auth)/login') as never);
+    // Logged-in users land straight on the listings; everyone else goes to the landing screen.
+    router.replace((isAuthenticated ? '/(tabs)/oglasi' : '/(auth)') as never);
   };
 
   const handleNext = () => {

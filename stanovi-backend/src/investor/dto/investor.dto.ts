@@ -25,3 +25,23 @@ export class CreateInvestorDto {
   @IsNotEmpty()
   contactPhone: string;
 }
+
+export class UpdateInvestorDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  companyName?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(50)
+  tin?: string;
+
+  @IsEmail()
+  @IsOptional()
+  contactEmail?: string;
+
+  @IsString()
+  @IsOptional()
+  contactPhone?: string;
+}

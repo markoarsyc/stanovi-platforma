@@ -2,15 +2,23 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateBuyerDto } from './dto/buyer.dto';
 import { Role } from '@prisma/client';
 import { ActiveUser } from '../auth/interfaces/active-user.interface';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class BuyerService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(BuyerService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private cloudinary: CloudinaryService,
+  ) {}
 
   async findAll() {
     return this.prisma.buyer.findMany();
@@ -47,6 +55,52 @@ export class BuyerService {
     return this.prisma.buyer.delete({
       where: { id },
     });
+  }
+
+  async uploadProfilePhoto(
+    id: string,
+    file: Express.Multer.File,
+    user: ActiveUser,
+  ) {
+    const buyer = await this.validateOwnership(id, user);
+
+    if (!file) throw new BadRequestException('No image file provided');
+
+    const { url, publicId } = await this.cloudinary.uploadImage(
+      file,
+      this.cloudinary.PROFILE_PHOTO_FOLDER,
+    );
+
+    if (buyer.profilePhotoPublicId) {
+      await this.safeDeletePhoto(buyer.profilePhotoPublicId);
+    }
+
+    return this.prisma.buyer.update({
+      where: { id },
+      data: { profilePhotoUrl: url, profilePhotoPublicId: publicId },
+    });
+  }
+
+  async removeProfilePhoto(id: string, user: ActiveUser) {
+    const buyer = await this.validateOwnership(id, user);
+
+    if (buyer.profilePhotoPublicId) {
+      await this.safeDeletePhoto(buyer.profilePhotoPublicId);
+    }
+
+    return this.prisma.buyer.update({
+      where: { id },
+      data: { profilePhotoUrl: null, profilePhotoPublicId: null },
+    });
+  }
+
+  private async safeDeletePhoto(publicId: string) {
+    try {
+      await this.cloudinary.deleteImage(publicId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(`Failed to delete old profile photo: ${message}`);
+    }
   }
 
   private async validateOwnership(buyerId: string, user: ActiveUser) {

@@ -1,12 +1,16 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   Body,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { BuyerService } from './buyer.service';
 import { UpdateBuyerDto } from './dto/buyer.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -53,5 +57,22 @@ export class BuyerController {
   @Roles(Role.ADMIN, Role.BUYER)
   remove(@Param('id') id: string, @GetUser() user: ActiveUser) {
     return this.buyerService.delete(id, user);
+  }
+
+  @Post(':id/photo')
+  @Roles(Role.ADMIN, Role.BUYER)
+  @UseInterceptors(FileInterceptor('image'))
+  uploadPhoto(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: ActiveUser,
+  ) {
+    return this.buyerService.uploadProfilePhoto(id, file, user);
+  }
+
+  @Delete(':id/photo')
+  @Roles(Role.ADMIN, Role.BUYER)
+  removePhoto(@Param('id') id: string, @GetUser() user: ActiveUser) {
+    return this.buyerService.removeProfilePhoto(id, user);
   }
 }

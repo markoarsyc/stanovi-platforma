@@ -25,6 +25,7 @@ export interface InvestorInfo {
   contactEmail: string;
   contactPhone: string;
   isVerified: boolean;
+  profilePhotoUrl?: string | null;
 }
 
 export interface BuildingImage {

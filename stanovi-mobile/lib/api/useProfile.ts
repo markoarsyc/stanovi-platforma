@@ -1,6 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getBuyerByUserId, getInvestorByUserId } from '@/lib/api/profile.service';
+import {
+  changePassword,
+  deleteBuyerPhoto,
+  deleteInvestorPhoto,
+  getBuyerByUserId,
+  getInvestorByUserId,
+  updateBuyer,
+  updateInvestor,
+  uploadBuyerPhoto,
+  uploadInvestorPhoto,
+  type UpdateBuyerPayload,
+  type UpdateInvestorPayload,
+} from '@/lib/api/profile.service';
+import type { BuyerProfile, InvestorProfile } from '@/lib/api/types';
 
 export function useBuyerProfile(userId: string | undefined, enabled: boolean) {
   return useQuery({
@@ -16,4 +29,51 @@ export function useInvestorProfile(userId: string | undefined, enabled: boolean)
     queryFn: () => getInvestorByUserId(userId as string),
     enabled: enabled && !!userId,
   });
+}
+
+export function useProfileMutations(userId: string | undefined, isInvestor: boolean) {
+  const queryClient = useQueryClient();
+  const invalidate = () => {
+    queryClient.invalidateQueries({
+      queryKey: [isInvestor ? 'investor' : 'buyer', userId],
+    });
+  };
+
+  const updateProfile = useMutation<
+    BuyerProfile | InvestorProfile,
+    Error,
+    { id: string; payload: UpdateBuyerPayload | UpdateInvestorPayload }
+  >({
+    mutationFn: ({ id, payload }) =>
+      isInvestor
+        ? updateInvestor(id, payload as UpdateInvestorPayload)
+        : updateBuyer(id, payload as UpdateBuyerPayload),
+    onSuccess: invalidate,
+  });
+
+  const uploadPhoto = useMutation<
+    BuyerProfile | InvestorProfile,
+    Error,
+    { id: string; uri: string }
+  >({
+    mutationFn: ({ id, uri }) =>
+      isInvestor ? uploadInvestorPhoto(id, uri) : uploadBuyerPhoto(id, uri),
+    onSuccess: invalidate,
+  });
+
+  const removePhoto = useMutation<
+    BuyerProfile | InvestorProfile,
+    Error,
+    { id: string }
+  >({
+    mutationFn: ({ id }) =>
+      isInvestor ? deleteInvestorPhoto(id) : deleteBuyerPhoto(id),
+    onSuccess: invalidate,
+  });
+
+  const changeProfilePassword = useMutation({
+    mutationFn: changePassword,
+  });
+
+  return { updateProfile, uploadPhoto, removePhoto, changeProfilePassword };
 }
