@@ -46,7 +46,7 @@ const Listings = () => {
 
   return (
     <div className="min-h-screen pt-24">
-      <section className="py-16">
+      <section className="pb-16 pt-1">
         <div className="container mx-auto px-6">
           {/* Header sekcija */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
