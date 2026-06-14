@@ -47,6 +47,9 @@ export interface Building {
 export interface Investor {
   companyName: string;
   contactEmail: string | null;
+  contactPhone?: string | null;
+  isVerified?: boolean;
+  profilePhotoUrl?: string | null;
 }
 
 export interface BuyerProfile {
@@ -55,6 +58,7 @@ export interface BuyerProfile {
   firstName: string;
   lastName: string;
   phone: string;
+  profilePhotoUrl?: string | null;
   createdAt: string;
 }
 
@@ -66,6 +70,7 @@ export interface InvestorProfile {
   contactEmail: string;
   contactPhone: string;
   isVerified: boolean;
+  profilePhotoUrl?: string | null;
   createdAt: string;
 }
 

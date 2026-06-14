@@ -6,6 +6,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatusBadge } from '@/components/StatusBadge';
+import { GradientText } from '@/components/ui/GradientText';
 import { buildingStatusConfig } from '@/constants/statusConfig';
 import type { Building } from '@/lib/api/types';
 import { useBuildings } from '@/lib/api/useBuildings';
@@ -71,7 +72,7 @@ export default function MapScreen() {
         pointerEvents="box-none"
         className="absolute inset-x-0 top-0">
         <View className="px-6 pt-2">
-          <Text className="font-display text-h2 text-white">Mapa projekata</Text>
+          <GradientText className="font-display text-h2">Mapa projekata</GradientText>
         </View>
       </SafeAreaView>
 

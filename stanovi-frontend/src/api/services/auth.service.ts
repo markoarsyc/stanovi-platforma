@@ -45,6 +45,17 @@ export const authService = {
   },
 
   /**
+   * Promena lozinke - zahteva trenutnu (staru) lozinku
+   */
+  async changePassword(data: {
+    oldPassword: string;
+    newPassword: string;
+  }): Promise<{ message: string }> {
+    const response = await api.patch<{ message: string }>("/auth/password", data);
+    return response.data;
+  },
+
+  /**
    * Pomoćna metoda za logout
    */
   logout() {

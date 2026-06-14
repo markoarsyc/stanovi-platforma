@@ -110,7 +110,13 @@ export class BuildingService {
           orderBy: { displayOrder: 'asc' },
         },
         investor: {
-          select: { companyName: true, contactEmail: true },
+          select: {
+            companyName: true,
+            contactEmail: true,
+            contactPhone: true,
+            isVerified: true,
+            profilePhotoUrl: true,
+          },
         },
       },
     });

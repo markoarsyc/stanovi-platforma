@@ -1,8 +1,38 @@
 import api from '../axios';
 import type { Investor } from '@/shared/types/entity/investor.entity';
 
+export interface UpdateInvestorData {
+  companyName?: string;
+  tin?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
 export const getInvestorInfo = async (investorId: string) => {
   const response = await api.get(`/investors/${investorId}`);
+  return response.data;
+};
+
+export const updateInvestor = async (
+  id: string,
+  data: UpdateInvestorData,
+): Promise<Investor> => {
+  const response = await api.patch<Investor>(`/investors/${id}`, data);
+  return response.data;
+};
+
+export const uploadInvestorPhoto = async (id: string, file: File): Promise<Investor> => {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await api.post<Investor>(`/investors/${id}/photo`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const deleteInvestorPhoto = async (id: string): Promise<Investor> => {
+  const response = await api.delete<Investor>(`/investors/${id}/photo`);
   return response.data;
 };
 
