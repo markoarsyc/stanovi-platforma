@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChangePasswordModal } from '@/components/profile/ChangePasswordModal';
 import { EditBuyerModal } from '@/components/profile/EditBuyerModal';
 import { EditInvestorModal } from '@/components/profile/EditInvestorModal';
+import { ReservationsList } from '@/components/profile/ReservationsList';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { GRADIENT_INDIGO } from '@/constants/gradients';
 import { useBuyerProfile, useInvestorProfile, useProfileMutations } from '@/lib/api/useProfile';
@@ -180,6 +181,9 @@ function AuthenticatedProfile() {
             )}
           </View>
         )}
+
+        {/* Reservations (buyers only) */}
+        {!isInvestor ? <ReservationsList enabled={hasProfile} /> : null}
 
         {/* Edit profile */}
         {hasProfile ? (

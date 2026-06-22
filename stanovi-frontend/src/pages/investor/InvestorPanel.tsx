@@ -184,6 +184,7 @@ const InvestorPanel = () => {
                   }}
                   onDeleteImage={(imageId) => deleteBuildingImage(building.id, imageId)}
                   imageLoading={imageLoading}
+                  onReservationChange={() => fetchApartments(building.id)}
                 >
                   <ApartmentList
                     apartments={apartments[building.id] || []}

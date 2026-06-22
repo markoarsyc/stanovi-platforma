@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { ApartmentImageManagerModal } from '@/components/investor/ApartmentImageManagerModal';
+import { BuildingReservations } from '@/components/investor/BuildingReservations';
 import { StatusBadge } from '@/components/StatusBadge';
 import { apartmentStatusConfig, buildingStatusConfig } from '@/constants/statusConfig';
 import type { Apartment, InvestorBuilding } from '@/lib/api/types';
@@ -185,6 +186,9 @@ export function InvestorBuildingCard({
               ))}
             </View>
           )}
+
+          {/* Reservations */}
+          <BuildingReservations buildingId={building.id} enabled={isExpanded} />
         </View>
       ) : null}
 

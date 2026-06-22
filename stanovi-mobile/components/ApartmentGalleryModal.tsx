@@ -4,6 +4,7 @@ import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatusBadge } from '@/components/StatusBadge';
+import { GradientButton } from '@/components/ui/GradientButton';
 import { apartmentStatusConfig } from '@/constants/statusConfig';
 import type { Apartment } from '@/lib/api/types';
 import { formatPrice } from '@/lib/format';
@@ -11,9 +12,16 @@ import { formatPrice } from '@/lib/format';
 interface ApartmentGalleryModalProps {
   apartment: Apartment | null;
   onClose: () => void;
+  onReserve?: () => void;
+  reserving?: boolean;
 }
 
-export function ApartmentGalleryModal({ apartment, onClose }: ApartmentGalleryModalProps) {
+export function ApartmentGalleryModal({
+  apartment,
+  onClose,
+  onReserve,
+  reserving = false,
+}: ApartmentGalleryModalProps) {
   const images = apartment
     ? [...apartment.images].sort((a, b) => a.displayOrder - b.displayOrder)
     : [];
@@ -67,6 +75,17 @@ export function ApartmentGalleryModal({ apartment, onClose }: ApartmentGalleryMo
                 </Text>
               </View>
             )}
+
+            {onReserve ? (
+              <View className="px-5 pb-2 pt-1">
+                <GradientButton
+                  title={apartment.status === 'AVAILABLE' ? 'Rezerviši' : 'Rezervisan'}
+                  onPress={onReserve}
+                  loading={reserving}
+                  disabled={apartment.status !== 'AVAILABLE'}
+                />
+              </View>
+            ) : null}
           </>
         ) : null}
       </SafeAreaView>
