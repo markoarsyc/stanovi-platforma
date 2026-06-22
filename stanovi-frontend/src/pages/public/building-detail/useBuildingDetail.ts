@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getBuildingById } from '@/api/services/buildings.service';
 import { getInvestorInfo } from '@/api/services/investor.service';
 import type {
@@ -13,6 +13,7 @@ interface UseBuildingDetailResult {
   investor: InvestorInfo | null;
   loading: boolean;
   error: string | null;
+  refetch: () => void;
 }
 
 export const useBuildingDetail = (id: string | undefined): UseBuildingDetailResult => {
@@ -21,6 +22,9 @@ export const useBuildingDetail = (id: string | undefined): UseBuildingDetailResu
   const [investor, setInvestor] = useState<InvestorInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const refetch = useCallback(() => setReloadKey((key) => key + 1), []);
 
   useEffect(() => {
     if (!id) {
@@ -60,7 +64,7 @@ export const useBuildingDetail = (id: string | undefined): UseBuildingDetailResu
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, reloadKey]);
 
-  return { building, apartments, investor, loading, error };
+  return { building, apartments, investor, loading, error, refetch };
 };

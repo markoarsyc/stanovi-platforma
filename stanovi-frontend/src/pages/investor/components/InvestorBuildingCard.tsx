@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Pencil, Trash2, Images } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { BuildingImageGallery } from './BuildingImageGallery';
+import { BuildingReservationsSection } from './BuildingReservationsSection';
 import type { Building } from '@/shared/types/entity/building.entity';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 import type { Location } from '@/shared/types/entity/location.entity';
@@ -19,6 +20,7 @@ interface BuildingCardProps {
   onUploadImage?: (file: File) => Promise<void>;
   onDeleteImage?: (imageId: string) => Promise<void>;
   imageLoading?: boolean;
+  onReservationChange?: () => void;
   children?: React.ReactNode;
 }
 
@@ -31,6 +33,7 @@ export const BuildingCardInvestor: React.FC<BuildingCardProps> = ({
   onUploadImage,
   onDeleteImage,
   imageLoading = false,
+  onReservationChange,
   children,
 }) => {
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -130,6 +133,12 @@ export const BuildingCardInvestor: React.FC<BuildingCardProps> = ({
 
           {/* Apartments Section */}
           {children}
+
+          {/* Reservations Section */}
+          <BuildingReservationsSection
+            buildingId={building.id}
+            onChanged={onReservationChange}
+          />
         </motion.div>
       )}
     </motion.div>

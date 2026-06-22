@@ -9,6 +9,7 @@ import { InvestorModule } from './investor/investor.module';
 import { BuyerModule } from './buyer/buyer.module';
 import { BuildingModule } from './building/building.module';
 import { ApartmentModule } from './apartment/apartment.module';
+import { ReservationModule } from './reservation/reservation.module';
 import { LocationModule } from './location/location.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
@@ -25,6 +26,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     BuyerModule,
     BuildingModule,
     ApartmentModule,
+    ReservationModule,
     LocationModule,
     CloudinaryModule,
   ],

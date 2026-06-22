@@ -1,15 +1,17 @@
 import { motion } from 'framer-motion';
-import { ImageIcon } from 'lucide-react';
+import { ImageIcon, BookMarked } from 'lucide-react';
 import type { ApartmentDetail } from '@/shared/types/building-detail.types';
 import { apartmentStatusConfig } from '@/shared/constants/statusConfig';
 import { formatPrice } from '@/shared/utils/format';
+import { Button } from '@/shared/components/ui';
 
 interface ApartmentCardsProps {
   apartments: ApartmentDetail[];
   onSelect: (apt: ApartmentDetail) => void;
+  onReserve?: (apt: ApartmentDetail) => void;
 }
 
-export const ApartmentCards: React.FC<ApartmentCardsProps> = ({ apartments, onSelect }) => (
+export const ApartmentCards: React.FC<ApartmentCardsProps> = ({ apartments, onSelect, onReserve }) => (
   <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
     {apartments.map((apt) => {
       const config = apartmentStatusConfig[apt.status];
@@ -48,6 +50,21 @@ export const ApartmentCards: React.FC<ApartmentCardsProps> = ({ apartments, onSe
             <p className="mt-2 font-body text-lg font-semibold text-accent">
               {formatPrice(apt.price)}
             </p>
+            {onReserve && (
+              <Button
+                size="sm"
+                fullWidth
+                className="mt-3"
+                disabled={apt.status !== 'AVAILABLE'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReserve(apt);
+                }}
+              >
+                <BookMarked size={14} />
+                {apt.status === 'AVAILABLE' ? 'Rezerviši' : 'Rezervisan'}
+              </Button>
+            )}
           </div>
         </motion.div>
       );

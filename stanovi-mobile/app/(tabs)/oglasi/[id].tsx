@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ApartmentCard } from '@/components/ApartmentCard';
@@ -11,17 +11,47 @@ import { ApartmentGalleryModal } from '@/components/ApartmentGalleryModal';
 import { InvestorContactModal } from '@/components/InvestorContactModal';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { useBuildingDetail } from '@/lib/api/useBuildings';
+import { useReservationMutations } from '@/lib/api/useReservations';
+import { useAuth } from '@/lib/auth/AuthContext';
 import type { Apartment } from '@/lib/api/types';
 
 export default function BuildingDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { isBuyer } = useAuth();
 
   const { data: building, isLoading, isError } = useBuildingDetail(id);
+  const { create: createReservation } = useReservationMutations();
 
   const [contactVisible, setContactVisible] = useState(false);
   const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
+
+  const handleReserve = () => {
+    if (!selectedApartment) return;
+    const apartment = selectedApartment;
+    Alert.alert(
+      'Rezervacija stana',
+      `Da li ste sigurni da želite da rezervišete stan ${apartment.aptNo}?`,
+      [
+        { text: 'Otkaži', style: 'cancel' },
+        {
+          text: 'Rezerviši',
+          onPress: () => {
+            createReservation.mutate(apartment.id, {
+              onSuccess: () => {
+                setSelectedApartment(null);
+                Alert.alert('Uspešno', `Stan ${apartment.aptNo} je rezervisan.`);
+              },
+              onError: () => {
+                Alert.alert('Greška', 'Rezervacija nije uspela. Pokušajte ponovo.');
+              },
+            });
+          },
+        },
+      ],
+    );
+  };
 
   if (isLoading) {
     return (
@@ -151,6 +181,8 @@ export default function BuildingDetailScreen() {
       <ApartmentGalleryModal
         apartment={selectedApartment}
         onClose={() => setSelectedApartment(null)}
+        onReserve={isBuyer ? handleReserve : undefined}
+        reserving={createReservation.isPending}
       />
     </View>
   );

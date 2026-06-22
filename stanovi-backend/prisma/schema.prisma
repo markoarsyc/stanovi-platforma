@@ -33,6 +33,11 @@ enum VerificationStatus {
   REJECTED
 }
 
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+}
+
 //
 // MODELS
 //
@@ -61,6 +66,7 @@ model Buyer {
   createdAt            DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  reservations Reservation[]
 }
 
 model Investor {
@@ -151,6 +157,7 @@ model Apartment {
 
   building   Building         @relation(fields: [buildingId], references: [id], onDelete: Cascade)
   images     ApartmentImage[]
+  reservations Reservation[]
 
   @@unique([buildingId, aptNo])
   @@index([buildingId])
@@ -167,5 +174,22 @@ model VerificationRequest {
   investor    Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
 
   @@index([investorId])
+}
+
+model Reservation {
+  id          String            @id @default(uuid())
+  apartmentId String
+  buyerId     String
+  status      ReservationStatus @default(ACTIVE)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  cancelledAt DateTime?
+  canceledBy  String?
+
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  buyer       Buyer     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@index([apartmentId])
+  @@index([buyerId])
 }
 

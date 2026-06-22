@@ -29,6 +29,7 @@ import { VerificationDialog } from './VerificationDialog';
 import { EditBuyerDialog } from './EditBuyerDialog';
 import { EditInvestorDialog } from './EditInvestorDialog';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { ReservationsSection } from './ReservationsSection';
 import { useProfile } from './useProfile';
 
 const ProfilePage: React.FC = () => {
@@ -141,6 +142,8 @@ const ProfilePage: React.FC = () => {
               )}
             </div>
           )}
+
+          {!isInvestor && <ReservationsSection />}
         </motion.div>
       </div>
 

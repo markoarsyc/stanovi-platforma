@@ -1,5 +1,6 @@
 export type BuildingStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED';
 export type ApartmentStatus = 'AVAILABLE' | 'RESERVED';
+export type ReservationStatus = 'ACTIVE' | 'CANCELLED';
 
 export interface Location {
   id: number;
@@ -90,4 +91,31 @@ export interface BuildingDetail {
   images: BuildingImage[];
   apartments: Apartment[];
   investor: Investor;
+}
+
+export interface ReservationBuyer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+export interface ReservationApartment extends Apartment {
+  building?: {
+    id: string;
+    title: string;
+    address: string;
+  };
+}
+
+export interface Reservation {
+  id: string;
+  apartmentId: string;
+  buyerId: string;
+  status: ReservationStatus;
+  createdAt: string;
+  cancelledAt?: string | null;
+  canceledBy?: string | null;
+  apartment?: ReservationApartment;
+  buyer?: ReservationBuyer;
 }

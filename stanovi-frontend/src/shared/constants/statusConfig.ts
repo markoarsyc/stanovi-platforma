@@ -54,6 +54,23 @@ export const apartmentStatusConfig: Record<ApartmentStatus, StatusConfig> = {
   },
 };
 
+export type ReservationStatus = 'ACTIVE' | 'CANCELLED';
+
+export const reservationStatusConfig: Record<ReservationStatus, StatusConfig> = {
+  ACTIVE: {
+    label: 'Aktivna',
+    icon: CheckCircle,
+    textClassName: 'text-green-400',
+    badgeClassName: 'bg-green-500/20 text-green-400',
+  },
+  CANCELLED: {
+    label: 'Otkazana',
+    icon: XCircle,
+    textClassName: 'text-muted-foreground',
+    badgeClassName: 'bg-secondary text-muted-foreground',
+  },
+};
+
 export type VerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export const verificationStatusConfig: Record<VerificationStatus, StatusConfig> = {

@@ -1,16 +1,19 @@
+import { BookMarked } from 'lucide-react';
 import type { ApartmentDetail } from '@/shared/types/building-detail.types';
 import { apartmentStatusConfig } from '@/shared/constants/statusConfig';
 import { formatPrice } from '@/shared/utils/format';
+import { Button } from '@/shared/components/ui';
 
 interface ApartmentTableProps {
   apartments: ApartmentDetail[];
   onSelect: (apt: ApartmentDetail) => void;
+  onReserve?: (apt: ApartmentDetail) => void;
 }
 
 const headerCellClass =
   'px-5 py-4 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground';
 
-export const ApartmentTable: React.FC<ApartmentTableProps> = ({ apartments, onSelect }) => (
+export const ApartmentTable: React.FC<ApartmentTableProps> = ({ apartments, onSelect, onReserve }) => (
   <div className="mt-6 overflow-x-auto rounded-xl border border-border">
     <table className="w-full">
       <thead>
@@ -21,6 +24,7 @@ export const ApartmentTable: React.FC<ApartmentTableProps> = ({ apartments, onSe
           <th className={headerCellClass}>Površina</th>
           <th className={headerCellClass}>Cena</th>
           <th className={headerCellClass}>Status</th>
+          {onReserve && <th className={headerCellClass}>Akcija</th>}
         </tr>
       </thead>
       <tbody>
@@ -44,6 +48,21 @@ export const ApartmentTable: React.FC<ApartmentTableProps> = ({ apartments, onSe
                   {config.label}
                 </span>
               </td>
+              {onReserve && (
+                <td className="px-5 py-4">
+                  <Button
+                    size="sm"
+                    disabled={apt.status !== 'AVAILABLE'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onReserve(apt);
+                    }}
+                  >
+                    <BookMarked size={14} />
+                    {apt.status === 'AVAILABLE' ? 'Rezerviši' : 'Rezervisan'}
+                  </Button>
+                </td>
+              )}
             </tr>
           );
         })}
