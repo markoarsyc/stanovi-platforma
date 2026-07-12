@@ -144,6 +144,19 @@ model ApartmentImage {
   @@index([displayOrder])
 }
 
+model ApartmentModel {
+  id            String          @id @default(uuid())
+  apartmentId   String          @unique
+  modelUrl      String
+  publicId      String          @unique
+  fileSize      Int?
+  createdAt     DateTime        @default(now())
+
+  apartment     Apartment       @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  @@index([apartmentId])
+}
+
 model Apartment {
   id         String           @id @default(uuid())
   buildingId String
@@ -157,6 +170,7 @@ model Apartment {
 
   building   Building         @relation(fields: [buildingId], references: [id], onDelete: Cascade)
   images     ApartmentImage[]
+  model      ApartmentModel?
   reservations Reservation[]
 
   @@unique([buildingId, aptNo])

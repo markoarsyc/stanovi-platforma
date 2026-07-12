@@ -18,6 +18,13 @@ export class CloudinaryService {
   private readonly UPLOAD_FOLDER =
     process.env.CLOUDINARY_UPLOAD_FOLDER || 'stanovi-platforma/buildings';
   readonly PROFILE_PHOTO_FOLDER = 'stanovi-platforma/profile-photos';
+  private readonly MODEL_FOLDER = 'stanovi-platforma/apartment-models';
+  private readonly MAX_MODEL_SIZE = 10 * 1024 * 1024; // 10MB
+  private readonly ALLOWED_MODEL_MIMETYPES = [
+    'model/gltf-binary',
+    'application/octet-stream',
+    '',
+  ];
 
   async uploadImage(
     file: Express.Multer.File,
@@ -94,5 +101,75 @@ export class CloudinaryService {
 
   async deleteMultipleImages(publicIds: string[]): Promise<void> {
     await Promise.all(publicIds.map((publicId) => this.deleteImage(publicId)));
+  }
+
+  async uploadModel(file: Express.Multer.File): Promise<UploadResponse> {
+    if (file.size > this.MAX_MODEL_SIZE) {
+      throw new BadRequestException(
+        `File size exceeds maximum allowed size of ${this.MAX_MODEL_SIZE / (1024 * 1024)}MB`,
+      );
+    }
+
+    const isGlb = file.originalname.toLowerCase().endsWith('.glb');
+    if (!isGlb || !this.ALLOWED_MODEL_MIMETYPES.includes(file.mimetype)) {
+      throw new BadRequestException(
+        'Invalid file type. Only .glb 3D models are allowed',
+      );
+    }
+
+    try {
+      const cloudinary = getCloudinary();
+
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: this.MODEL_FOLDER,
+            resource_type: 'raw',
+          },
+          (error, result) => {
+            if (error) {
+              reject(
+                new BadRequestException(
+                  `Cloudinary upload failed: ${error.message}`,
+                ),
+              );
+            } else if (result) {
+              resolve({
+                url: result.secure_url,
+                publicId: result.public_id,
+              });
+            }
+          },
+        );
+
+        uploadStream.end(file.buffer);
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(`Model upload failed: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async deleteModel(publicId: string): Promise<void> {
+    try {
+      const cloudinary = getCloudinary();
+      // resource_type: 'raw' is required — Cloudinary won't delete raw assets
+      // (GLB files) with the default 'image' type, leaving orphaned files.
+      const result = (await cloudinary.uploader.destroy(publicId, {
+        resource_type: 'raw',
+      })) as CloudinaryDestroyResponse;
+
+      if (result.result !== 'ok') {
+        throw new BadRequestException(
+          `Cloudinary deletion returned non-ok status for ${publicId}: ${result.result}`,
+        );
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to delete model from Cloudinary: ${message}`);
+      throw error;
+    }
   }
 }

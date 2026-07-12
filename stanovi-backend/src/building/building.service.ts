@@ -103,6 +103,7 @@ export class BuildingService {
             images: {
               orderBy: { displayOrder: 'asc' },
             },
+            model: true,
           },
           orderBy: { aptNo: 'asc' },
         },
