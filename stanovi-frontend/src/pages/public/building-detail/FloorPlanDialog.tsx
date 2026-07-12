@@ -9,6 +9,7 @@ import {
 import type { ApartmentDetail } from '@/shared/types/building-detail.types';
 import { apartmentStatusConfig } from '@/shared/constants/statusConfig';
 import { formatPrice } from '@/shared/utils/format';
+import { Model3DViewer } from './Model3DViewer';
 
 interface FloorPlanDialogProps {
   apartment: ApartmentDetail | null;
@@ -28,6 +29,11 @@ export const FloorPlanDialog: React.FC<FloorPlanDialogProps> = ({ apartment, onC
           {apartment && apartmentStatusConfig[apartment.status].label}
         </DialogDescription>
       </DialogHeader>
+      {apartment?.model && (
+        <div className="mt-2">
+          <Model3DViewer src={apartment.model.modelUrl} alt={`3D model stana ${apartment.aptNo}`} />
+        </div>
+      )}
       <div className="mt-2 flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">
         {apartment?.images && apartment.images.length > 0 ? (
           <div className="w-full space-y-4">

@@ -1,5 +1,5 @@
 import api from '../axios';
-import type { ApartmentDetail, ApartmentImage } from '@/shared/types/building-detail.types';
+import type { ApartmentDetail, ApartmentImage, ApartmentModel } from '@/shared/types/building-detail.types';
 
 export const getApartmentsByBuildingId = async (buildingId: string) => {
   const response = await api.get(`/apartments`, {
@@ -50,4 +50,25 @@ export const deleteApartmentImage = async (apartmentId: string, imageId: string)
 
 export const reorderApartmentImages = async (apartmentId: string, imageIds: string[]): Promise<void> => {
   await api.patch(`/apartments/${apartmentId}/images/reorder`, { imageIds });
+};
+
+export const uploadApartmentModel = async (apartmentId: string, file: File): Promise<ApartmentModel> => {
+  const formData = new FormData();
+  formData.append('model', file);
+
+  const response = await api.post(`/apartments/${apartmentId}/model`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const getApartmentModel = async (apartmentId: string): Promise<ApartmentModel | null> => {
+  const response = await api.get(`/apartments/${apartmentId}/model`);
+  return response.data;
+};
+
+export const deleteApartmentModel = async (apartmentId: string): Promise<void> => {
+  await api.delete(`/apartments/${apartmentId}/model`);
 };

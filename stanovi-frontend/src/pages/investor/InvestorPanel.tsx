@@ -10,6 +10,7 @@ import { useInvestorPanelDialogs } from './hooks/useInvestorPanelDialogs';
 import { BuildingForm } from './components/BuildingForm';
 import { ApartmentForm } from './components/ApartmentForm';
 import { ApartmentImageGallery } from './components/ApartmentImageGallery';
+import { ApartmentModelManager } from './components/ApartmentModelManager';
 import { BuildingCardInvestor } from './components/InvestorBuildingCard';
 import { ApartmentList } from './components/ApartmentList';
 import type { Building } from '@/shared/types/entity/building.entity';
@@ -155,6 +156,11 @@ const InvestorPanel = () => {
                 <ApartmentImageGallery
                   apartmentId={apartmentImages.id}
                   onImageUploadSuccess={() => fetchApartments(apartmentImages.buildingId)}
+                />
+                <div className="my-6 border-t border-border" />
+                <ApartmentModelManager
+                  apartmentId={apartmentImages.id}
+                  onModelChangeSuccess={() => fetchApartments(apartmentImages.buildingId)}
                 />
               </DialogContent>
             </Dialog>

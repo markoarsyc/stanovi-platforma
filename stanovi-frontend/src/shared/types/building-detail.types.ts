@@ -12,6 +12,7 @@ export interface ApartmentDetail {
   buildingId: string;
   createdAt?: string;
   images?: ApartmentImage[];
+  model?: ApartmentModel | null;
 }
 
 export interface LocationInfo {
@@ -43,6 +44,15 @@ export interface ApartmentImage {
   imageUrl: string;
   publicId: string;
   displayOrder: number;
+  createdAt: string;
+}
+
+export interface ApartmentModel {
+  id: string;
+  apartmentId: string;
+  modelUrl: string;
+  publicId: string;
+  fileSize: number | null;
   createdAt: string;
 }
 
