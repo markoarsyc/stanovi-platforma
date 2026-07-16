@@ -40,28 +40,25 @@ export const FloorPlanDialog: React.FC<FloorPlanDialogProps> = ({ apartment, onC
               {apartment && apartmentStatusConfig[apartment.status].label}
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-2 flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">
-            {apartment?.images && apartment.images.length > 0 ? (
-              <div className="w-full space-y-4">
-                {apartment.images.map((img) => (
-                  <div key={img.id} className="rounded-lg overflow-hidden">
-                    <img
-                      src={img.imageUrl}
-                      alt={`Plan stana ${apartment.aptNo}`}
-                      className="w-full h-auto object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <>
-                <ImageIcon size={48} className="text-muted-foreground" />
-                <p className="mt-2 font-body text-sm text-muted-foreground">
-                  Plan stana nije dostupan
-                </p>
-              </>
-            )}
-          </div>
+          {apartment?.images && apartment.images.length > 0 ? (
+            <div className="mt-2 flex flex-col items-center gap-4">
+              {apartment.images.map((img) => (
+                <img
+                  key={img.id}
+                  src={img.imageUrl}
+                  alt={`Plan stana ${apartment.aptNo}`}
+                  className="max-h-[60vh] w-auto max-w-full rounded-lg object-contain"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-2 flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">
+              <ImageIcon size={48} className="text-muted-foreground" />
+              <p className="mt-2 font-body text-sm text-muted-foreground">
+                Plan stana nije dostupan
+              </p>
+            </div>
+          )}
 
           {apartment?.model && (
             <div className="mt-4 flex justify-center">
