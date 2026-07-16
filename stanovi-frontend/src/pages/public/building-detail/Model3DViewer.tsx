@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { Box, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface Model3DViewerProps {
   src: string;
   alt?: string;
 }
+
+// Responsive height: never taller than ~42% of the viewport, so the model fits
+// on screen inside a dialog without forcing the modal to scroll.
+const VIEWER_HEIGHT = 'clamp(220px, 42vh, 420px)';
 
 export function Model3DViewer({ src, alt = '3D model stana' }: Model3DViewerProps) {
   const [ready, setReady] = useState(false);
@@ -36,7 +40,10 @@ export function Model3DViewer({ src, alt = '3D model stana' }: Model3DViewerProp
 
   if (error) {
     return (
-      <div className="flex h-72 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border bg-secondary">
+      <div
+        className="flex w-full flex-col items-center justify-center rounded-lg border border-dashed border-border bg-secondary"
+        style={{ height: VIEWER_HEIGHT }}
+      >
         <AlertCircle size={40} className="text-muted-foreground" />
         <p className="mt-2 font-body text-sm text-muted-foreground">
           3D model se ne može učitati
@@ -47,7 +54,10 @@ export function Model3DViewer({ src, alt = '3D model stana' }: Model3DViewerProp
 
   if (!ready) {
     return (
-      <div className="flex h-72 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border bg-secondary">
+      <div
+        className="flex w-full flex-col items-center justify-center rounded-lg border border-dashed border-border bg-secondary"
+        style={{ height: VIEWER_HEIGHT }}
+      >
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="mt-2 font-body text-sm text-muted-foreground">Učitavanje 3D modela...</p>
       </div>
@@ -56,10 +66,6 @@ export function Model3DViewer({ src, alt = '3D model stana' }: Model3DViewerProp
 
   return (
     <div className="w-full overflow-hidden rounded-lg border border-border bg-secondary">
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-        <Box size={16} className="text-primary" />
-        <span className="font-display text-sm font-semibold text-foreground">3D model stana</span>
-      </div>
       <model-viewer
         ref={viewerRef}
         src={src}
@@ -69,7 +75,7 @@ export function Model3DViewer({ src, alt = '3D model stana' }: Model3DViewerProp
         loading="eager"
         touch-action="pan-y"
         shadow-intensity="1"
-        style={{ width: '100%', height: '360px', backgroundColor: 'transparent' }}
+        style={{ width: '100%', height: VIEWER_HEIGHT, backgroundColor: 'transparent' }}
       />
     </div>
   );

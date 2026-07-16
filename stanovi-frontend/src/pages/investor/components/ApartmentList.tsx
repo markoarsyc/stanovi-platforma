@@ -1,9 +1,10 @@
 import React from 'react';
-import { Pencil, Trash2, Home, ImageIcon, Images } from 'lucide-react';
+import { Pencil, Trash2, Home, ImageIcon, Images, Box } from 'lucide-react';
 import ApartmentViewToggle from '@/shared/components/ApartmentViewToggle';
 import type { Apartment } from '@/shared/types/entity/apartment.entity';
 import { apartmentStatusConfig } from '@/shared/constants/statusConfig';
 import { formatPrice } from '@/shared/utils/format';
+import { cn } from '@/shared/utils/cn';
 
 interface ApartmentListProps {
   apartments: Apartment[];
@@ -13,7 +14,66 @@ interface ApartmentListProps {
   onDelete: (id: string) => void;
   onAddNew: () => void;
   onManageImages?: (apartment: Apartment) => void;
+  onManageModel?: (apartment: Apartment) => void;
 }
+
+interface ApartmentActionsProps {
+  apartment: Apartment;
+  onManageImages?: (apartment: Apartment) => void;
+  onManageModel?: (apartment: Apartment) => void;
+  onEdit: (apartment: Apartment) => void;
+  onDelete: (id: string) => void;
+}
+
+const actionBtnClass =
+  'inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary';
+
+const ApartmentActions: React.FC<ApartmentActionsProps> = ({
+  apartment,
+  onManageImages,
+  onManageModel,
+  onEdit,
+  onDelete,
+}) => {
+  const hasModel = !!apartment.model;
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <button
+        onClick={() => onManageImages?.(apartment)}
+        className={cn(actionBtnClass, 'hover:text-primary')}
+        title="Upravljaj slikama"
+      >
+        <Images size={16} />
+      </button>
+      <button
+        onClick={() => onManageModel?.(apartment)}
+        className={cn(
+          actionBtnClass,
+          hasModel
+            ? 'bg-primary/10 text-primary hover:bg-primary/20'
+            : 'hover:text-primary',
+        )}
+        title={hasModel ? 'Upravljaj 3D modelom (postavljen)' : 'Dodaj 3D model'}
+      >
+        <Box size={16} />
+      </button>
+      <button
+        onClick={() => onEdit(apartment)}
+        className={cn(actionBtnClass, 'hover:text-primary')}
+        title="Izmeni"
+      >
+        <Pencil size={16} />
+      </button>
+      <button
+        onClick={() => onDelete(apartment.id)}
+        className={cn(actionBtnClass, 'hover:text-destructive')}
+        title="Obriši"
+      >
+        <Trash2 size={16} />
+      </button>
+    </div>
+  );
+};
 
 export const ApartmentList: React.FC<ApartmentListProps> = ({
   apartments,
@@ -23,6 +83,7 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
   onDelete,
   onAddNew,
   onManageImages,
+  onManageModel,
 }) => {
   return (
     <div className="p-6">
@@ -48,62 +109,53 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-secondary/50">
-                <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3.5 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Br.
                 </th>
-                <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3.5 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Sprat
                 </th>
-                <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3.5 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Sobe
                 </th>
-                <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3.5 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   m²
                 </th>
-                <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3.5 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Cena
                 </th>
-                <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3.5 text-left font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3"></th>
+                <th className="px-4 py-3.5 text-right font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Akcije
+                </th>
               </tr>
             </thead>
             <tbody>
               {apartments.map((apt) => (
-                <tr key={apt.id} className="border-b border-border">
-                  <td className="px-4 py-3 font-body text-sm font-medium text-foreground">{apt.aptNo}</td>
-                  <td className="px-4 py-3 font-body text-sm text-muted-foreground">{apt.floor}.</td>
-                  <td className="px-4 py-3 font-body text-sm text-muted-foreground">{apt.rooms}</td>
-                  <td className="px-4 py-3 font-body text-sm text-muted-foreground">{apt.area}</td>
-                  <td className="px-4 py-3 font-body text-sm font-semibold text-accent">
+                <tr
+                  key={apt.id}
+                  className="border-b border-border last:border-0 transition-colors hover:bg-secondary/30"
+                >
+                  <td className="px-4 py-4 font-body text-sm font-medium text-foreground">{apt.aptNo}</td>
+                  <td className="px-4 py-4 font-body text-sm text-muted-foreground">{apt.floor}.</td>
+                  <td className="px-4 py-4 font-body text-sm text-muted-foreground">{apt.rooms}</td>
+                  <td className="px-4 py-4 font-body text-sm text-muted-foreground">{apt.area}</td>
+                  <td className="px-4 py-4 font-body text-sm font-semibold text-accent">
                     {formatPrice(apt.price)}
                   </td>
-                  <td className="px-4 py-3 font-body text-sm text-muted-foreground">
+                  <td className="px-4 py-4 font-body text-sm text-muted-foreground">
                     {apartmentStatusConfig[apt.status].label}
                   </td>
-                  <td className="px-4 py-3 flex items-center gap-1">
-                    <button
-                      onClick={() => onManageImages?.(apt)}
-                      className="text-muted-foreground hover:text-primary"
-                      title="Upravljaj slikama"
-                    >
-                      <Images size={14} />
-                    </button>
-                    <button
-                      onClick={() => onEdit(apt)}
-                      className="text-muted-foreground hover:text-primary"
-                      title="Izmeni"
-                    >
-                      <Pencil size={14} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(apt.id)}
-                      className="text-muted-foreground hover:text-destructive"
-                      title="Obriši"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                  <td className="px-4 py-4">
+                    <ApartmentActions
+                      apartment={apt}
+                      onManageImages={onManageImages}
+                      onManageModel={onManageModel}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
                   </td>
                 </tr>
               ))}
@@ -114,7 +166,7 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {apartments.map((apt) => (
             <div key={apt.id} className="overflow-hidden rounded-xl border border-border bg-secondary/30">
-              <div className="aspect-[4/3] bg-secondary flex items-center justify-center">
+              <div className="aspect-4/3 bg-secondary flex items-center justify-center">
                 {apt.images?.[0]?.imageUrl ? (
                   <img
                     src={apt.images[0].imageUrl}
@@ -128,29 +180,13 @@ export const ApartmentList: React.FC<ApartmentListProps> = ({
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-base font-bold text-foreground">Stan {apt.aptNo}</h3>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => onManageImages?.(apt)}
-                      className="text-muted-foreground hover:text-primary"
-                      title="Upravljaj slikama"
-                    >
-                      <Images size={14} />
-                    </button>
-                    <button
-                      onClick={() => onEdit(apt)}
-                      className="text-muted-foreground hover:text-primary"
-                      title="Izmeni"
-                    >
-                      <Pencil size={14} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(apt.id)}
-                      className="text-muted-foreground hover:text-destructive"
-                      title="Obriši"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  <ApartmentActions
+                    apartment={apt}
+                    onManageImages={onManageImages}
+                    onManageModel={onManageModel}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
                 </div>
                 <p className="mt-1 font-body text-xs text-muted-foreground">
                   Sprat {apt.floor}. · {apt.rooms} sobe · {apt.area} m² ·{' '}

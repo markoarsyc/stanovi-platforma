@@ -58,8 +58,6 @@ export function ApartmentModelManager({
         <h4 className="font-display text-sm font-semibold text-foreground">3D model stana</h4>
       </div>
 
-      <Model3DUpload onUploadSuccess={handleUpload} isLoading={modelLoading} />
-
       {modelError && (
         <div className="flex items-center gap-2 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">
           <AlertCircle size={16} />
@@ -72,8 +70,11 @@ export function ApartmentModelManager({
           <div className="w-6 h-6 border-3 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : model ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Model3DViewer src={model.modelUrl} />
+          <p className="text-sm text-muted-foreground">
+            Da biste postavili novi model, prvo obrišite postojeći.
+          </p>
           <button
             onClick={handleDelete}
             disabled={modelLoading}
@@ -84,7 +85,7 @@ export function ApartmentModelManager({
           </button>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Nema dodanog 3D modela za ovaj stan.</p>
+        <Model3DUpload onUploadSuccess={handleUpload} isLoading={modelLoading} />
       )}
     </div>
   );

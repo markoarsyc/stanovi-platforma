@@ -49,6 +49,9 @@ const InvestorPanel = () => {
     apartmentImages,
     openApartmentImages,
     closeApartmentImages,
+    apartmentModel,
+    openApartmentModel,
+    closeApartmentModel,
   } = useInvestorPanelDialogs();
 
   const [apartmentViewMode, setApartmentViewMode] = useState<'list' | 'cards'>('list');
@@ -157,10 +160,21 @@ const InvestorPanel = () => {
                   apartmentId={apartmentImages.id}
                   onImageUploadSuccess={() => fetchApartments(apartmentImages.buildingId)}
                 />
-                <div className="my-6 border-t border-border" />
+              </DialogContent>
+            </Dialog>
+          )}
+
+          {apartmentModel && (
+            <Dialog open onOpenChange={(open) => !open && closeApartmentModel()}>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="font-display text-xl">
+                    Upravljanje 3D modelom - Stan {apartmentModel.aptNo}
+                  </DialogTitle>
+                </DialogHeader>
                 <ApartmentModelManager
-                  apartmentId={apartmentImages.id}
-                  onModelChangeSuccess={() => fetchApartments(apartmentImages.buildingId)}
+                  apartmentId={apartmentModel.id}
+                  onModelChangeSuccess={() => fetchApartments(apartmentModel.buildingId)}
                 />
               </DialogContent>
             </Dialog>
@@ -200,6 +214,7 @@ const InvestorPanel = () => {
                     onDelete={(id) => handleDeleteApartment(id, building.id)}
                     onAddNew={() => openApartmentForm(building.id)}
                     onManageImages={openApartmentImages}
+                    onManageModel={openApartmentModel}
                   />
                 </BuildingCardInvestor>
               ))
