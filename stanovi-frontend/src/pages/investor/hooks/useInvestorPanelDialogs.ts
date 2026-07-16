@@ -17,6 +17,8 @@ export const useInvestorPanelDialogs = () => {
 
   const [apartmentImages, setApartmentImages] = useState<Apartment | null>(null);
 
+  const [apartmentModel, setApartmentModel] = useState<Apartment | null>(null);
+
   const toggleExpand = useCallback((id: string) => {
     setExpandedBuildingId((current) => (current === id ? null : id));
   }, []);
@@ -45,6 +47,14 @@ export const useInvestorPanelDialogs = () => {
     setApartmentImages(null);
   }, []);
 
+  const openApartmentModel = useCallback((apartment: Apartment) => {
+    setApartmentModel(apartment);
+  }, []);
+
+  const closeApartmentModel = useCallback(() => {
+    setApartmentModel(null);
+  }, []);
+
   return {
     expandedBuildingId,
     toggleExpand,
@@ -57,5 +67,8 @@ export const useInvestorPanelDialogs = () => {
     apartmentImages,
     openApartmentImages,
     closeApartmentImages,
+    apartmentModel,
+    openApartmentModel,
+    closeApartmentModel,
   };
 };

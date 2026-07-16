@@ -137,4 +137,56 @@ export class ApartmentController {
       user,
     );
   }
+
+  // ============================================
+  // Apartment 3D Model Endpoints (one model per apartment)
+  // ============================================
+
+  @Post(':id/model')
+  @Roles(Role.INVESTOR)
+  @UseInterceptors(FileInterceptor('model'))
+  uploadModel(
+    @Param('id') apartmentId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: ActiveUser,
+  ) {
+    try {
+      this.logger.log(
+        `[UPLOAD APARTMENT MODEL] User ${user.id} (${user.role}) uploading 3D model for apartment ${apartmentId}`,
+      );
+      return this.apartmentService.uploadApartmentModel(
+        apartmentId,
+        file,
+        user,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[UPLOAD APARTMENT MODEL ERROR] Apartment: ${apartmentId}, User: ${user.id}`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  @Get(':id/model')
+  getApartmentModel(@Param('id') apartmentId: string) {
+    return this.apartmentService.getApartmentModel(apartmentId);
+  }
+
+  @Delete(':id/model')
+  @Roles(Role.INVESTOR)
+  deleteModel(@Param('id') apartmentId: string, @GetUser() user: ActiveUser) {
+    try {
+      this.logger.log(
+        `[DELETE APARTMENT MODEL] User ${user.id} (${user.role}) attempting to delete 3D model from apartment ${apartmentId}`,
+      );
+      return this.apartmentService.deleteApartmentModel(apartmentId, user);
+    } catch (error) {
+      this.logger.error(
+        `[DELETE APARTMENT MODEL ERROR] Apartment: ${apartmentId}, User: ${user.id}`,
+        error,
+      );
+      throw error;
+    }
+  }
 }

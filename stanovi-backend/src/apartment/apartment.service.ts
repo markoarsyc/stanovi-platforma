@@ -9,8 +9,9 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApartmentDto, UpdateApartmentDto } from './dto/apartment.dto';
 import { ApartmentImageResponseDto } from './dto/apartment-image.dto';
+import { ApartmentModelResponseDto } from './dto/apartment-model.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { Role, ApartmentImage } from '@prisma/client';
+import { Role, ApartmentImage, ApartmentModel } from '@prisma/client';
 import { ActiveUser } from '../auth/interfaces/active-user.interface';
 import type { Express } from 'express';
 
@@ -53,6 +54,7 @@ export class ApartmentService {
         images: {
           orderBy: { displayOrder: 'asc' },
         },
+        model: true,
       },
     });
   }
@@ -65,6 +67,7 @@ export class ApartmentService {
         images: {
           orderBy: { displayOrder: 'asc' },
         },
+        model: true,
       },
     });
 
@@ -330,6 +333,97 @@ export class ApartmentService {
       publicId: apartmentImage.publicId,
       displayOrder: apartmentImage.displayOrder,
       createdAt: apartmentImage.createdAt,
+    };
+  }
+
+  // ============================================
+  // Apartment 3D Model Methods (one model per apartment)
+  // ============================================
+
+  async uploadApartmentModel(
+    apartmentId: string,
+    file: Express.Multer.File,
+    user: ActiveUser,
+  ): Promise<ApartmentModelResponseDto> {
+    await this.validateApartmentOwnership(apartmentId, user);
+
+    // One model per apartment: remove the existing one first (replace).
+    const existing = await this.prisma.apartmentModel.findUnique({
+      where: { apartmentId },
+    });
+
+    if (existing) {
+      await this.cloudinaryService.deleteModel(existing.publicId);
+      await this.prisma.apartmentModel.delete({
+        where: { id: existing.id },
+      });
+    }
+
+    const { url, publicId } = await this.cloudinaryService.uploadModel(file);
+
+    const apartmentModel = await this.prisma.apartmentModel.create({
+      data: {
+        apartmentId,
+        modelUrl: url,
+        publicId,
+        fileSize: file.size,
+      },
+    });
+
+    return this.mapApartmentModelToResponseDto(apartmentModel);
+  }
+
+  async deleteApartmentModel(
+    apartmentId: string,
+    user: ActiveUser,
+  ): Promise<void> {
+    await this.validateApartmentOwnership(apartmentId, user);
+
+    const apartmentModel = await this.prisma.apartmentModel.findUnique({
+      where: { apartmentId },
+    });
+
+    if (!apartmentModel) {
+      throw new NotFoundException('3D model not found');
+    }
+
+    await this.cloudinaryService.deleteModel(apartmentModel.publicId);
+
+    await this.prisma.apartmentModel.delete({
+      where: { id: apartmentModel.id },
+    });
+  }
+
+  async getApartmentModel(
+    apartmentId: string,
+  ): Promise<ApartmentModelResponseDto | null> {
+    const apartment = await this.prisma.apartment.findUnique({
+      where: { id: apartmentId },
+    });
+
+    if (!apartment) {
+      throw new NotFoundException('Apartment not found');
+    }
+
+    const apartmentModel = await this.prisma.apartmentModel.findUnique({
+      where: { apartmentId },
+    });
+
+    return apartmentModel
+      ? this.mapApartmentModelToResponseDto(apartmentModel)
+      : null;
+  }
+
+  private mapApartmentModelToResponseDto(
+    apartmentModel: ApartmentModel,
+  ): ApartmentModelResponseDto {
+    return {
+      id: apartmentModel.id,
+      apartmentId: apartmentModel.apartmentId,
+      modelUrl: apartmentModel.modelUrl,
+      publicId: apartmentModel.publicId,
+      fileSize: apartmentModel.fileSize,
+      createdAt: apartmentModel.createdAt,
     };
   }
 }

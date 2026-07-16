@@ -10,6 +10,7 @@ import { useInvestorPanelDialogs } from './hooks/useInvestorPanelDialogs';
 import { BuildingForm } from './components/BuildingForm';
 import { ApartmentForm } from './components/ApartmentForm';
 import { ApartmentImageGallery } from './components/ApartmentImageGallery';
+import { ApartmentModelManager } from './components/ApartmentModelManager';
 import { BuildingCardInvestor } from './components/InvestorBuildingCard';
 import { ApartmentList } from './components/ApartmentList';
 import type { Building } from '@/shared/types/entity/building.entity';
@@ -48,6 +49,9 @@ const InvestorPanel = () => {
     apartmentImages,
     openApartmentImages,
     closeApartmentImages,
+    apartmentModel,
+    openApartmentModel,
+    closeApartmentModel,
   } = useInvestorPanelDialogs();
 
   const [apartmentViewMode, setApartmentViewMode] = useState<'list' | 'cards'>('list');
@@ -160,6 +164,22 @@ const InvestorPanel = () => {
             </Dialog>
           )}
 
+          {apartmentModel && (
+            <Dialog open onOpenChange={(open) => !open && closeApartmentModel()}>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="font-display text-xl">
+                    Upravljanje 3D modelom - Stan {apartmentModel.aptNo}
+                  </DialogTitle>
+                </DialogHeader>
+                <ApartmentModelManager
+                  apartmentId={apartmentModel.id}
+                  onModelChangeSuccess={() => fetchApartments(apartmentModel.buildingId)}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
+
           <div className="mt-10 space-y-4">
             {loading ? (
               <div className="flex items-center justify-center rounded-xl border border-dashed border-border py-20">
@@ -194,6 +214,7 @@ const InvestorPanel = () => {
                     onDelete={(id) => handleDeleteApartment(id, building.id)}
                     onAddNew={() => openApartmentForm(building.id)}
                     onManageImages={openApartmentImages}
+                    onManageModel={openApartmentModel}
                   />
                 </BuildingCardInvestor>
               ))

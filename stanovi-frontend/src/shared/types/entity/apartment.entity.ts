@@ -1,5 +1,5 @@
 import type { ApartmentStatus } from "../enums/apartment-status.enum";
-import type { ApartmentImage } from "../building-detail.types";
+import type { ApartmentImage, ApartmentModel } from "../building-detail.types";
 
 export interface Apartment {
   id: string;
@@ -11,4 +11,5 @@ export interface Apartment {
   price: number;
   status: ApartmentStatus;
   images?: ApartmentImage[];
+  model?: ApartmentModel | null;
 }
