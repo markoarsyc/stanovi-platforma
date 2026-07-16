@@ -1,110 +1,107 @@
-import { useState } from 'react';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
-import { Button, Input, Select } from '@/shared/components/ui';
+import { useEffect, useMemo, useState } from 'react';
+import { Search, ArrowDownUp, X } from 'lucide-react';
+import { Button, Input, Select, SearchableSelect } from '@/shared/components/ui';
 import { buildingStatusConfig } from '@/shared/constants/statusConfig';
 import { BuildingStatus } from '@/shared/types/enums/building-status.enum';
 import { useLocationsList } from '@/pages/investor/hooks/useLocationsList';
 import type { BuildingFilters } from '@/api/services/buildings.service';
 
+const SEARCH_DEBOUNCE_MS = 500;
+
+type SortOrder = 'newest' | 'oldest';
+
 interface ListingsFiltersProps {
   onApply: (filters: BuildingFilters) => void;
-  onClear: () => void;
-  filtersApplied: boolean;
-  loading?: boolean;
 }
 
-const emptyDraft = {
-  search: '',
-  locationId: '',
-  status: '',
-  sort: 'newest' as 'newest' | 'oldest',
-};
-
-const ListingsFilters = ({
-  onApply,
-  onClear,
-  filtersApplied,
-  loading,
-}: ListingsFiltersProps) => {
+const ListingsFilters = ({ onApply }: ListingsFiltersProps) => {
   const { locations } = useLocationsList();
-  const [draft, setDraft] = useState(emptyDraft);
 
-  const handleApply = () => {
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [locationId, setLocationId] = useState('');
+  const [status, setStatus] = useState('');
+  const [sort, setSort] = useState<SortOrder>('newest');
+
+  // Free-text search is debounced; selects and sort apply immediately.
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
     onApply({
-      search: draft.search.trim() || undefined,
-      locationId: draft.locationId ? Number(draft.locationId) : undefined,
-      status: (draft.status as BuildingStatus) || undefined,
-      sort: draft.sort,
+      search: debouncedSearch.trim() || undefined,
+      locationId: locationId ? Number(locationId) : undefined,
+      status: (status as BuildingStatus) || undefined,
+      sort,
     });
-  };
+  }, [onApply, debouncedSearch, locationId, status, sort]);
+
+  const filtersActive = Boolean(search || locationId || status);
 
   const handleClear = () => {
-    setDraft(emptyDraft);
-    onClear();
+    setSearch('');
+    setDebouncedSearch('');
+    setLocationId('');
+    setStatus('');
   };
+
+  const toggleSort = () =>
+    setSort((prev) => (prev === 'newest' ? 'oldest' : 'newest'));
+
+  const locationOptions = useMemo(
+    () => locations.map((loc) => ({ value: String(loc.id), label: loc.name })),
+    [locations],
+  );
 
   return (
     <div className="mt-10 rounded-xl border border-border bg-secondary/30 p-5">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Input
-          leadingIcon={Search}
-          placeholder="Pretraži po nazivu..."
-          value={draft.search}
-          onChange={(e) => setDraft((d) => ({ ...d, search: e.target.value }))}
-        />
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+        <div className="grid flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Input
+            leadingIcon={Search}
+            placeholder="Pretraži po nazivu..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-        <Select
-          value={draft.locationId}
-          onChange={(e) =>
-            setDraft((d) => ({ ...d, locationId: e.target.value }))
-          }
-        >
-          <option value="">Sve opštine</option>
-          {locations.map((loc) => (
-            <option key={loc.id} value={loc.id}>
-              {loc.name}
-            </option>
-          ))}
-        </Select>
+          <SearchableSelect
+            value={locationId}
+            onChange={setLocationId}
+            options={locationOptions}
+            placeholder="Sve opštine"
+            searchPlaceholder="Pretraži opštine..."
+          />
 
-        <Select
-          value={draft.status}
-          onChange={(e) => setDraft((d) => ({ ...d, status: e.target.value }))}
-        >
-          <option value="">Svi statusi</option>
-          {Object.values(BuildingStatus).map((status) => (
-            <option key={status} value={status}>
-              {buildingStatusConfig[status].label}
-            </option>
-          ))}
-        </Select>
+          <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">Svi statusi</option>
+            {Object.values(BuildingStatus).map((s) => (
+              <option key={s} value={s}>
+                {buildingStatusConfig[s].label}
+              </option>
+            ))}
+          </Select>
+        </div>
 
-        <Select
-          value={draft.sort}
-          onChange={(e) =>
-            setDraft((d) => ({
-              ...d,
-              sort: e.target.value as 'newest' | 'oldest',
-            }))
-          }
+        <Button
+          variant="secondary"
+          onClick={toggleSort}
+          className="w-full shrink-0 lg:w-auto"
         >
-          <option value="newest">Najnovije</option>
-          <option value="oldest">Najstarije</option>
-        </Select>
+          <ArrowDownUp size={16} />
+          {sort === 'newest' ? 'Prvo najnoviji' : 'Prvo najstariji'}
+        </Button>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <Button variant="primary" onClick={handleApply} disabled={loading}>
-          <SlidersHorizontal size={16} />
-          Primeni filtere
-        </Button>
-        {filtersApplied && (
-          <Button variant="ghost" onClick={handleClear} disabled={loading}>
+      {filtersActive && (
+        <div className="mt-4">
+          <Button variant="ghost" onClick={handleClear}>
             <X size={16} />
             Ukloni filtere
           </Button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

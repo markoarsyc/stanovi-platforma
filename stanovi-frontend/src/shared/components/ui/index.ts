@@ -1,6 +1,8 @@
 export { Button } from './Button';
 export { Input } from './Input';
 export { Select } from './Select';
+export { SearchableSelect } from './SearchableSelect';
+export type { SelectOption } from './SearchableSelect';
 export { Textarea } from './Textarea';
 export { Badge } from './Badge';
 export { Spinner } from './Spinner';

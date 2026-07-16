@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Home } from "lucide-react";
 import type { Building } from "@/shared/types/entity/building.entity";
@@ -11,34 +11,34 @@ const Listings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filtersApplied, setFiltersApplied] = useState(false);
+  const requestIdRef = useRef(0);
 
   const fetchBuildings = useCallback(async (filters: BuildingFilters = {}) => {
+    const requestId = ++requestIdRef.current;
     try {
       setLoading(true);
       const data = await getBuildings(filters);
+      if (requestId !== requestIdRef.current) return; // ignore stale response
       setBuildings(data);
       setError(null);
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       console.error("Greška pri učitavanju objekata:", err);
       setError("Došlo je do greške prilikom učitavanja podataka.");
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchBuildings();
-  }, [fetchBuildings]);
-
-  const handleApply = (filters: BuildingFilters) => {
-    setFiltersApplied(true);
-    fetchBuildings(filters);
-  };
-
-  const handleClear = () => {
-    setFiltersApplied(false);
-    fetchBuildings();
-  };
+  const handleApply = useCallback(
+    (filters: BuildingFilters) => {
+      setFiltersApplied(
+        Boolean(filters.search || filters.locationId || filters.status),
+      );
+      fetchBuildings(filters);
+    },
+    [fetchBuildings],
+  );
 
   const handleDeleteBuilding = (id: string) => {
     setBuildings(prev => prev.filter((b) => b.id !== id));
@@ -58,12 +58,7 @@ const Listings = () => {
             </p>
           </motion.div>
 
-          <ListingsFilters
-            onApply={handleApply}
-            onClear={handleClear}
-            filtersApplied={filtersApplied}
-            loading={loading}
-          />
+          <ListingsFilters onApply={handleApply} />
 
           {/* State handling: Loading, Error, Empty, ili Grid */}
           {loading ? (
