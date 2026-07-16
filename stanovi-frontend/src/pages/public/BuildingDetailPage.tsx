@@ -43,7 +43,7 @@ const BuildingDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center pt-24">
+      <div className="flex min-h-screen items-center justify-center">
         <Spinner size={32} label="Učitavanje..." />
       </div>
     );
@@ -51,7 +51,7 @@ const BuildingDetailPage = () => {
 
   if (error || !building) {
     return (
-      <div className="flex min-h-screen items-center justify-center pt-24">
+      <div className="flex min-h-screen items-center justify-center">
         <p className="font-body text-muted-foreground">
           {error || 'Projekat nije pronađen.'}
         </p>
@@ -60,7 +60,7 @@ const BuildingDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen">
       <BuildingHero
         building={building}
         apartmentCount={apartments.length}

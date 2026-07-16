@@ -45,7 +45,7 @@ const Listings = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen">
       <section className="pb-16 pt-1">
         <div className="container mx-auto px-6">
           {/* Header sekcija */}

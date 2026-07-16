@@ -83,7 +83,7 @@ const ProfilePage: React.FC = () => {
   const canEdit = !loading && !error && (isInvestor ? !!investor : !!buyer);
 
   return (
-    <main className="min-h-screen pb-24 pt-32">
+    <main className="min-h-screen pb-24 pt-1">
       <div className="container mx-auto max-w-3xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -102,8 +102,8 @@ const InvestorPanel = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24">
-      <section className="py-16">
+    <div className="min-h-screen">
+      <section className="pb-16 pt-1">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
