@@ -65,7 +65,7 @@ export class BuildingService {
         location: true,
         _count: { select: { apartments: true } },
         images: {
-          orderBy: { displayOrder: 'asc' },
+          orderBy: [{ isCover: 'desc' }, { displayOrder: 'asc' }],
         },
       },
       orderBy: { createdAt: sort === 'oldest' ? 'asc' : 'desc' },
@@ -86,7 +86,7 @@ export class BuildingService {
           orderBy: { aptNo: 'asc' },
         },
         images: {
-          orderBy: { displayOrder: 'asc' },
+          orderBy: [{ isCover: 'desc' }, { displayOrder: 'asc' }],
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -108,7 +108,7 @@ export class BuildingService {
           orderBy: { aptNo: 'asc' },
         },
         images: {
-          orderBy: { displayOrder: 'asc' },
+          orderBy: [{ isCover: 'desc' }, { displayOrder: 'asc' }],
         },
         investor: {
           select: {
@@ -231,13 +231,14 @@ export class BuildingService {
     });
     const nextOrder = (last?.displayOrder ?? -1) + 1;
 
-    // Save to database
+    // Save to database; first image of a building becomes its cover
     const buildingImage = await this.prisma.buildingImage.create({
       data: {
         buildingId,
         imageUrl: url,
         publicId,
         displayOrder: nextOrder,
+        isCover: imageCount === 0,
       },
     });
 
@@ -293,9 +294,62 @@ export class BuildingService {
       where: { id: imageId },
     });
 
+    // If the cover was removed, promote the first remaining image to cover
+    if (buildingImage.isCover) {
+      const nextCover = await this.prisma.buildingImage.findFirst({
+        where: { buildingId },
+        orderBy: { displayOrder: 'asc' },
+        select: { id: true },
+      });
+      if (nextCover) {
+        await this.prisma.buildingImage.update({
+          where: { id: nextCover.id },
+          data: { isCover: true },
+        });
+      }
+    }
+
     this.logger.log(
       `[DELETE IMAGE] Successfully deleted image ${imageId} from building ${buildingId}`,
     );
+  }
+
+  async setCoverImage(
+    buildingId: string,
+    imageId: string,
+    user: ActiveUser,
+  ): Promise<BuildingImageResponseDto[]> {
+    // Validate ownership
+    if (user.role !== Role.ADMIN) {
+      await this.validateOwnership(buildingId, user);
+    }
+
+    // Verify the image belongs to this building
+    const buildingImage = await this.prisma.buildingImage.findUnique({
+      where: { id: imageId },
+    });
+
+    if (!buildingImage) {
+      throw new NotFoundException('Image not found');
+    }
+
+    if (buildingImage.buildingId !== buildingId) {
+      throw new ForbiddenException('Image does not belong to this building');
+    }
+
+    // Only one image can be the cover
+    await this.prisma.$transaction([
+      this.prisma.buildingImage.updateMany({
+        where: { buildingId },
+        data: { isCover: false },
+      }),
+      this.prisma.buildingImage.update({
+        where: { id: imageId },
+        data: { isCover: true },
+      }),
+    ]);
+
+    return this.getBuildingImages(buildingId);
   }
 
   async getBuildingImages(
@@ -312,7 +366,7 @@ export class BuildingService {
 
     const images = await this.prisma.buildingImage.findMany({
       where: { buildingId },
-      orderBy: { displayOrder: 'asc' },
+      orderBy: [{ isCover: 'desc' }, { displayOrder: 'asc' }],
     });
 
     return images.map((img) => this.mapToResponseDto(img));
@@ -363,6 +417,7 @@ export class BuildingService {
       imageUrl: buildingImage.imageUrl,
       publicId: buildingImage.publicId,
       displayOrder: buildingImage.displayOrder,
+      isCover: buildingImage.isCover,
       createdAt: buildingImage.createdAt,
     };
   }

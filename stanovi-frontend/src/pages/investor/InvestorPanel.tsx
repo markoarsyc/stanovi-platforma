@@ -27,6 +27,7 @@ const InvestorPanel = () => {
     deleteBuilding,
     uploadBuildingImage,
     deleteBuildingImage,
+    setCoverBuildingImage,
   } = useInvestorBuildings();
   const {
     apartments,
@@ -203,6 +204,7 @@ const InvestorPanel = () => {
                     await uploadBuildingImage(building.id, file);
                   }}
                   onDeleteImage={(imageId) => deleteBuildingImage(building.id, imageId)}
+                  onSetCoverImage={(imageId) => setCoverBuildingImage(building.id, imageId)}
                   imageLoading={imageLoading}
                   onReservationChange={() => fetchApartments(building.id)}
                 >

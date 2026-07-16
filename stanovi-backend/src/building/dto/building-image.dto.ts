@@ -20,5 +20,6 @@ export class BuildingImageResponseDto {
   imageUrl: string;
   publicId: string;
   displayOrder: number;
+  isCover: boolean;
   createdAt: Date;
 }

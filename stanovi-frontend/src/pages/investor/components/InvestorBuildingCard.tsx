@@ -19,6 +19,7 @@ interface BuildingCardProps {
   onDelete: () => void;
   onUploadImage?: (file: File) => Promise<void>;
   onDeleteImage?: (imageId: string) => Promise<void>;
+  onSetCoverImage?: (imageId: string) => Promise<void>;
   imageLoading?: boolean;
   onReservationChange?: () => void;
   children?: React.ReactNode;
@@ -32,6 +33,7 @@ export const BuildingCardInvestor: React.FC<BuildingCardProps> = ({
   onDelete,
   onUploadImage,
   onDeleteImage,
+  onSetCoverImage,
   imageLoading = false,
   onReservationChange,
   children,
@@ -122,6 +124,7 @@ export const BuildingCardInvestor: React.FC<BuildingCardProps> = ({
               <BuildingImageGallery
                 images={building.images}
                 onDelete={onDeleteImage}
+                onSetCover={onSetCoverImage}
                 isLoading={imageLoading}
               />
             ) : (

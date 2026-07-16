@@ -143,6 +143,40 @@ export const useInvestorBuildings = () => {
     []
   );
 
+  const setCoverBuildingImage = useCallback(
+    async (buildingId: string, imageId: string) => {
+      try {
+        setImageLoading(true);
+        setImageError(null);
+        await buildingsService.setBuildingCoverImage(buildingId, imageId);
+        toast.success('Naslovna slika postavljena!');
+
+        // Update local state: only the chosen image is the cover
+        setBuildings((prevBuildings) =>
+          prevBuildings.map((building) =>
+            building.id === buildingId
+              ? {
+                  ...building,
+                  images: (building.images || []).map((img: BuildingImage) => ({
+                    ...img,
+                    isCover: img.id === imageId,
+                  })) as BuildingImage[],
+                }
+              : building
+          )
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Greška pri postavljanju naslovne slike';
+        setImageError(message);
+        toast.error(message);
+        throw err;
+      } finally {
+        setImageLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     buildings,
     loading,
@@ -155,5 +189,6 @@ export const useInvestorBuildings = () => {
     deleteBuilding,
     uploadBuildingImage,
     deleteBuildingImage,
+    setCoverBuildingImage,
   };
 };

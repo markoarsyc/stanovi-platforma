@@ -35,6 +35,7 @@ export interface BuildingImage {
   imageUrl: string;
   publicId: string;
   displayOrder: number;
+  isCover: boolean;
   createdAt: string;
 }
 

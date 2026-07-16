@@ -11,6 +11,7 @@ interface BuildingImage {
   id: string;
   imageUrl: string;
   displayOrder: number;
+  isCover?: boolean;
 }
 
 interface BuildingCardProps {
@@ -34,10 +35,9 @@ const BuildingCard = ({ building, onDelete }: BuildingCardProps) => {
   const formattedDate = formatDate(building.dueDate);
   const status = buildingStatusConfig[building.status as BuildingStatus];
 
-  // Prikaži prvu sliku iz images niza, ili fallback na image_url, ili Home ikonu
-  const imageToDisplay = building.images && building.images.length > 0
-    ? building.images[0].imageUrl
-    : building.image_url;
+  // Prikaži naslovnu (cover) sliku, ili fallback na image_url, ili Home ikonu
+  const coverImage = building.images?.find((img) => img.isCover) ?? building.images?.[0];
+  const imageToDisplay = coverImage ? coverImage.imageUrl : building.image_url;
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -89,7 +89,7 @@ const BuildingCard = ({ building, onDelete }: BuildingCardProps) => {
           ) : (
             <Home size={48} className="text-muted-foreground" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-card/60 to-transparent" />
           <span className={`absolute top-3 right-3 rounded-full px-3 py-1 font-body text-xs font-semibold uppercase ${status?.badgeClassName ?? "bg-secondary text-muted-foreground"}`}>
             {status?.label ?? building.status.replace("_", " ")}
           </span>
