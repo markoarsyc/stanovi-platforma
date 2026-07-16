@@ -120,6 +120,17 @@ export class BuildingController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch(':id/images/:imageId/cover')
+  @Roles(Role.INVESTOR)
+  setCoverImage(
+    @Param('id') buildingId: string,
+    @Param('imageId') imageId: string,
+    @GetUser() user: ActiveUser,
+  ) {
+    return this.buildingService.setCoverImage(buildingId, imageId, user);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id/images/:imageId')
   @Roles(Role.INVESTOR)
   updateImage(

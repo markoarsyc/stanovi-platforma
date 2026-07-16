@@ -78,3 +78,11 @@ export const deleteBuildingImage = async (buildingId: string, imageId: string): 
 export const reorderBuildingImages = async (buildingId: string, imageIds: string[]): Promise<void> => {
   await api.patch(`/buildings/${buildingId}/images/reorder`, { imageIds });
 };
+
+export const setBuildingCoverImage = async (
+  buildingId: string,
+  imageId: string,
+): Promise<BuildingImage[]> => {
+  const response = await api.patch(`/buildings/${buildingId}/images/${imageId}/cover`);
+  return response.data;
+};

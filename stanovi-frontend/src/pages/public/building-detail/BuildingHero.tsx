@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Calendar, Home, ArrowLeft, User } from 'lucide-react';
 import type { BuildingDetail, InvestorInfo } from '@/shared/types/building-detail.types';
 import { formatDate } from '@/shared/utils/format';
+import { getCoverImage, getGalleryImages } from '@/shared/utils/buildingImages';
+import { BuildingGalleryDialog } from './BuildingGalleryDialog';
 
 interface BuildingHeroProps {
   building: BuildingDetail;
@@ -10,15 +13,28 @@ interface BuildingHeroProps {
   onContactInvestor: () => void;
 }
 
+const MAX_THUMBNAILS = 4;
+
 export const BuildingHero: React.FC<BuildingHeroProps> = ({
   building,
   apartmentCount,
   investor,
   onContactInvestor,
 }) => {
-  const heroImage = building.images && building.images.length > 0
-    ? building.images[0].imageUrl
-    : building.image_url;
+  const cover = getCoverImage(building.images);
+  const heroImage = cover ? cover.imageUrl : building.image_url;
+  const galleryImages = getGalleryImages(building.images);
+
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+
+  const openGallery = (index: number) => {
+    setGalleryIndex(index);
+    setGalleryOpen(true);
+  };
+
+  const thumbnails = galleryImages.slice(0, MAX_THUMBNAILS);
+  const extraCount = galleryImages.length - thumbnails.length;
 
   return (
     <div className="relative h-72 overflow-hidden md:h-96">
@@ -33,7 +49,39 @@ export const BuildingHero: React.FC<BuildingHeroProps> = ({
           <Home size={64} className="text-muted-foreground" />
         </div>
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
+
+      {galleryImages.length > 0 && (
+        <div className="absolute bottom-4 right-4 z-10 flex gap-2">
+          {thumbnails.map((img, i) => {
+            const isLast = i === thumbnails.length - 1;
+            const showOverlay = isLast && extraCount > 0;
+            return (
+              <button
+                key={img.id}
+                onClick={() => openGallery(i)}
+                className="relative h-14 w-14 overflow-hidden rounded-lg border-2 border-white/70 shadow-md transition-transform hover:scale-105 md:h-16 md:w-16"
+                title="Pogledaj slike projekta"
+              >
+                <img src={img.imageUrl} alt="Slika projekta" className="h-full w-full object-cover" />
+                {showOverlay && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/60 font-body text-sm font-semibold text-white">
+                    +{extraCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <BuildingGalleryDialog
+        images={galleryImages}
+        index={galleryIndex}
+        open={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+        onIndexChange={setGalleryIndex}
+      />
       <div className="absolute bottom-0 left-0 right-0 p-6">
         <div className="container mx-auto">
           <Link

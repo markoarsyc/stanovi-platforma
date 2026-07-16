@@ -122,6 +122,7 @@ model BuildingImage {
   imageUrl      String
   publicId      String          @unique
   displayOrder  Int             @default(0)
+  isCover       Boolean         @default(false)
   createdAt     DateTime        @default(now())
 
   building      Building        @relation(fields: [buildingId], references: [id], onDelete: Cascade)
