@@ -4,9 +4,12 @@ import {
   createApartment,
   deleteApartment,
   deleteApartmentImage,
+  deleteApartmentModel,
   getApartmentImages,
+  getApartmentModel,
   updateApartment,
   uploadApartmentImage,
+  uploadApartmentModel,
   type ApartmentPayload,
 } from '@/lib/api/apartments.service';
 import {
@@ -132,6 +135,37 @@ export function useApartmentImageMutations(apartmentId: string) {
 
   const remove = useMutation({
     mutationFn: (imageId: string) => deleteApartmentImage(apartmentId, imageId),
+    onSuccess: invalidate,
+  });
+
+  return { upload, remove };
+}
+
+export function useApartmentModel(apartmentId: string | null) {
+  return useQuery({
+    queryKey: ['apartment-model', apartmentId],
+    queryFn: () => getApartmentModel(apartmentId!),
+    enabled: !!apartmentId,
+  });
+}
+
+export function useApartmentModelMutations(apartmentId: string) {
+  const queryClient = useQueryClient();
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['apartment-model', apartmentId] });
+    // The model is embedded in both listing responses, so they go stale too.
+    queryClient.invalidateQueries({ queryKey: INVESTOR_BUILDINGS_KEY });
+    queryClient.invalidateQueries({ queryKey: PUBLIC_BUILDINGS_KEY });
+  };
+
+  const upload = useMutation({
+    mutationFn: ({ uri, name }: { uri: string; name: string }) =>
+      uploadApartmentModel(apartmentId, uri, name),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: () => deleteApartmentModel(apartmentId),
     onSuccess: invalidate,
   });
 

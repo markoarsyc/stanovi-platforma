@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Model3DViewer } from '@/components/Model3DViewer';
 import { StatusBadge } from '@/components/StatusBadge';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { apartmentStatusConfig } from '@/constants/statusConfig';
@@ -22,9 +24,17 @@ export function ApartmentGalleryModal({
   onReserve,
   reserving = false,
 }: ApartmentGalleryModalProps) {
+  const [show3D, setShow3D] = useState(false);
+
+  // Closing the gallery must not leave the nested 3D modal hanging.
+  useEffect(() => {
+    if (!apartment) setShow3D(false);
+  }, [apartment]);
+
   const images = apartment
     ? [...apartment.images].sort((a, b) => a.displayOrder - b.displayOrder)
     : [];
+  const modelUrl = apartment?.model?.modelUrl;
 
   return (
     <Modal
@@ -52,6 +62,20 @@ export function ApartmentGalleryModal({
                 <Ionicons name="close" size={28} color="hsl(230, 25%, 92%)" />
               </Pressable>
             </View>
+
+            {modelUrl ? (
+              <View className="px-5 pb-3">
+                <Pressable
+                  onPress={() => setShow3D(true)}
+                  className="flex-row items-center justify-center gap-2 border border-dashed bg-surface py-3.5"
+                  style={{ borderRadius: 20, borderColor: '#3A3A63' }}>
+                  <Ionicons name="cube-outline" size={20} color="hsl(239, 84%, 67%)" />
+                  <Text className="font-body-medium text-body-base text-primary">
+                    Prikaži 3D model
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
 
             {images.length > 0 ? (
               <ScrollView
@@ -85,6 +109,29 @@ export function ApartmentGalleryModal({
                   disabled={apartment.status !== 'AVAILABLE'}
                 />
               </View>
+            ) : null}
+
+            {modelUrl ? (
+              <Modal
+                visible={show3D}
+                animationType="slide"
+                presentationStyle="pageSheet"
+                onRequestClose={() => setShow3D(false)}>
+                <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+                  <View className="flex-row items-center justify-between px-5 pb-3 pt-2">
+                    <Text className="font-display text-h3 text-foreground">
+                      3D model — Stan {apartment.aptNo}
+                    </Text>
+                    <Pressable
+                      onPress={() => setShow3D(false)}
+                      hitSlop={12}
+                      className="h-10 w-10 items-center justify-center">
+                      <Ionicons name="close" size={28} color="hsl(230, 25%, 92%)" />
+                    </Pressable>
+                  </View>
+                  <Model3DViewer src={modelUrl} />
+                </SafeAreaView>
+              </Modal>
             ) : null}
           </>
         ) : null}

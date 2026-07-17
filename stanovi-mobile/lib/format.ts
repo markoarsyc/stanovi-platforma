@@ -1,4 +1,5 @@
-const DEFAULT_LOCALE = 'sr-RS';
+// Latin script is explicit: bare 'sr-RS' resolves to Cyrillic month names.
+const DEFAULT_LOCALE = 'sr-Latn-RS';
 
 export const formatPrice = (
   amount: number | string,

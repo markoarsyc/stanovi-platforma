@@ -19,6 +19,15 @@ export interface ApartmentImage {
   displayOrder: number;
 }
 
+export interface ApartmentModel {
+  id: string;
+  apartmentId: string;
+  modelUrl: string;
+  publicId: string;
+  fileSize: number | null;
+  createdAt: string;
+}
+
 export interface Apartment {
   id: string;
   aptNo: string;
@@ -29,6 +38,7 @@ export interface Apartment {
   price: number | string;
   status: ApartmentStatus;
   images: ApartmentImage[];
+  model?: ApartmentModel | null;
 }
 
 export interface Building {
