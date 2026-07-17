@@ -94,9 +94,8 @@ export function BuildingFilters({ onApply }: BuildingFiltersProps) {
 
       <Pressable
         onPress={toggleSort}
-        className="flex-row items-center gap-2 self-start border px-4 py-2"
+        className="flex-row items-center gap-2 self-start rounded-full border px-4 py-2"
         style={({ pressed }) => ({
-          borderRadius: 40,
           borderColor: '#3A3A63',
           opacity: pressed ? 0.6 : 1,
         })}>

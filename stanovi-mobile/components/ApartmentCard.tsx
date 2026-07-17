@@ -12,6 +12,11 @@ interface ApartmentCardProps {
   onPress: () => void;
 }
 
+function roomsLabel(rooms: number): string {
+  if (rooms === 1) return 'soba';
+  return rooms < 5 ? 'sobe' : 'soba';
+}
+
 export function ApartmentCard({ apartment, onPress }: ApartmentCardProps) {
   const cover = [...apartment.images].sort((a, b) => a.displayOrder - b.displayOrder)[0];
 
@@ -37,10 +42,12 @@ export function ApartmentCard({ apartment, onPress }: ApartmentCardProps) {
 
       <View className="flex-1">
         <Text className="font-body-medium text-h5 text-foreground">Stan {apartment.aptNo}</Text>
-        <Text className="mt-0.5 font-body text-body-sm text-muted">
-          Sprat {apartment.floor}. · {apartment.rooms} sobe · {Number(apartment.area)} m²
+        <Text className="mt-1 font-body text-body-sm text-muted">Sprat {apartment.floor}</Text>
+        <Text className="font-body text-body-sm text-muted">
+          {apartment.rooms} {roomsLabel(apartment.rooms)}
         </Text>
-        <Text className="mt-1 font-body-medium text-body-base text-accent">
+        <Text className="font-body text-body-sm text-muted">{Number(apartment.area)} m²</Text>
+        <Text className="mt-1.5 font-body-medium text-body-base text-accent">
           {formatPrice(apartment.price)}
         </Text>
       </View>

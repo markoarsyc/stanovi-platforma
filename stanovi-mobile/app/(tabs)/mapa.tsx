@@ -1,15 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, useColorScheme, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatusBadge } from '@/components/StatusBadge';
-import { GradientText } from '@/components/ui/GradientText';
 import { buildingStatusConfig } from '@/constants/statusConfig';
-import type { Building } from '@/lib/api/types';
+import type { Building, BuildingStatus } from '@/lib/api/types';
 import { useBuildings } from '@/lib/api/useBuildings';
+
+const STATUS_LEGEND = Object.entries(buildingStatusConfig) as [
+  BuildingStatus,
+  (typeof buildingStatusConfig)[BuildingStatus],
+][];
 
 // Centered on Belgrade — all locations are Belgrade municipalities.
 const BELGRADE_REGION = {
@@ -23,6 +27,10 @@ export default function MapScreen() {
   const router = useRouter();
   const { data: buildings, isLoading, isError } = useBuildings({});
   const [selected, setSelected] = useState<Building | null>(null);
+
+  // The map renders in the system appearance, so the legend follows it rather than the app theme.
+  const isDark = useColorScheme() !== 'light';
+  const legendTextColor = isDark ? '#ffffff' : '#000000';
 
   const mapped = useMemo(
     () =>
@@ -62,6 +70,7 @@ export default function MapScreen() {
           <Marker
             key={building.id}
             coordinate={{ latitude: building.latitude, longitude: building.longitude }}
+            pinColor={buildingStatusConfig[building.status].color}
             onPress={() => setSelected(building)}
           />
         ))}
@@ -72,7 +81,31 @@ export default function MapScreen() {
         pointerEvents="box-none"
         className="absolute inset-x-0 top-0">
         <View className="px-6 pt-2">
-          <GradientText className="font-display text-h2">Mapa projekata</GradientText>
+          <View
+            pointerEvents="none"
+            className="gap-2 self-start rounded-2xl border px-3 py-2.5"
+            style={{
+              backgroundColor: isDark ? 'rgba(21,21,31,0.9)' : 'rgba(255,255,255,0.9)',
+              borderColor: isDark ? '#2A2A40' : 'rgba(0,0,0,0.12)',
+            }}>
+            {STATUS_LEGEND.map(([status, { label, color }]) => (
+              <View key={status} className="flex-row items-center gap-2">
+                <View
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 6,
+                    backgroundColor: color,
+                    borderWidth: 1,
+                    borderColor: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.25)',
+                  }}
+                />
+                <Text className="font-body text-body-sm" style={{ color: legendTextColor }}>
+                  {label}
+                </Text>
+              </View>
+            ))}
+          </View>
         </View>
       </SafeAreaView>
 
