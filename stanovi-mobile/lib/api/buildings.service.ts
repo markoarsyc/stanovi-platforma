@@ -79,3 +79,13 @@ export async function deleteBuildingImage(
 ): Promise<void> {
   await api.delete(`/buildings/${buildingId}/images/${imageId}`);
 }
+
+export async function setBuildingCoverImage(
+  buildingId: string,
+  imageId: string,
+): Promise<BuildingImage[]> {
+  const { data } = await api.patch<BuildingImage[]>(
+    `/buildings/${buildingId}/images/${imageId}/cover`,
+  );
+  return data;
+}

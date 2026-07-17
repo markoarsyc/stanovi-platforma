@@ -8,11 +8,13 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ApartmentCard } from '@/components/ApartmentCard';
 import { ApartmentGalleryModal } from '@/components/ApartmentGalleryModal';
+import { BuildingGalleryModal } from '@/components/BuildingGalleryModal';
 import { InvestorContactModal } from '@/components/InvestorContactModal';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { useBuildingDetail } from '@/lib/api/useBuildings';
 import { useReservationMutations } from '@/lib/api/useReservations';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { getCoverImage, getGalleryImages } from '@/lib/buildingImages';
 import type { Apartment } from '@/lib/api/types';
 
 export default function BuildingDetailScreen() {
@@ -26,6 +28,7 @@ export default function BuildingDetailScreen() {
 
   const [contactVisible, setContactVisible] = useState(false);
   const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
+  const [galleryVisible, setGalleryVisible] = useState(false);
 
   const handleReserve = () => {
     if (!selectedApartment) return;
@@ -75,7 +78,9 @@ export default function BuildingDetailScreen() {
     );
   }
 
-  const cover = [...building.images].sort((a, b) => a.displayOrder - b.displayOrder)[0];
+  const cover = getCoverImage(building.images);
+  // The gallery leads with the cover, then the rest in display order.
+  const galleryImages = cover ? [cover, ...getGalleryImages(building.images)] : [];
   const apartmentCount = building.apartments.length;
 
   return (
@@ -136,6 +141,21 @@ export default function BuildingDetailScreen() {
         </View>
 
         <View className="px-6 pt-5">
+          {galleryImages.length > 0 ? (
+            <Pressable
+              onPress={() => setGalleryVisible(true)}
+              className="mb-3 flex-row items-center justify-center gap-2 self-center rounded-full border px-4 py-2"
+              style={({ pressed }) => ({
+                borderColor: '#3A3A63',
+                opacity: pressed ? 0.6 : 1,
+              })}>
+              <Ionicons name="images-outline" size={16} color="hsl(239, 84%, 67%)" />
+              <Text className="font-body-medium text-body-sm text-primary">
+                Prikaži slike ({galleryImages.length})
+              </Text>
+            </Pressable>
+          ) : null}
+
           <GradientButton
             title="Kontakt investitora"
             onPress={() => setContactVisible(true)}
@@ -176,6 +196,12 @@ export default function BuildingDetailScreen() {
         investor={building.investor}
         visible={contactVisible}
         onClose={() => setContactVisible(false)}
+      />
+
+      <BuildingGalleryModal
+        images={galleryImages}
+        visible={galleryVisible}
+        onClose={() => setGalleryVisible(false)}
       />
 
       <ApartmentGalleryModal

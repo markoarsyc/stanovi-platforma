@@ -17,6 +17,7 @@ import {
   deleteBuilding,
   deleteBuildingImage,
   getInvestorBuildings,
+  setBuildingCoverImage,
   updateBuilding,
   uploadBuildingImage,
   type BuildingPayload,
@@ -120,7 +121,12 @@ export function useBuildingImageMutations(buildingId: string) {
     onSuccess: invalidate,
   });
 
-  return { upload, remove };
+  const setCover = useMutation({
+    mutationFn: (imageId: string) => setBuildingCoverImage(buildingId, imageId),
+    onSuccess: invalidate,
+  });
+
+  return { upload, remove, setCover };
 }
 
 export function useApartmentImageMutations(apartmentId: string) {

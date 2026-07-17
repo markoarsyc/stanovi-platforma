@@ -10,8 +10,11 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { apartmentStatusConfig, buildingStatusConfig } from '@/constants/statusConfig';
 import type { Apartment, InvestorBuilding } from '@/lib/api/types';
 import { useBuildingImageMutations, useInvestorMutations } from '@/lib/api/useInvestorPanel';
+import { getCoverImage, sortImages } from '@/lib/buildingImages';
 import { pickImages } from '@/lib/investor/imagePicker';
 import { formatDate, formatPrice } from '@/lib/format';
+
+const COVER_COLOR = 'hsl(38, 92%, 50%)';
 
 interface InvestorBuildingCardProps {
   building: InvestorBuilding;
@@ -35,7 +38,7 @@ export function InvestorBuildingCard({
   const [apartmentForImages, setApartmentForImages] = useState<Apartment | null>(null);
   const [apartmentForModel, setApartmentForModel] = useState<Apartment | null>(null);
 
-  const cover = [...(building.images ?? [])].sort((a, b) => a.displayOrder - b.displayOrder)[0];
+  const cover = getCoverImage(building.images);
   const apartmentCount = building.apartments.length;
   const status = buildingStatusConfig[building.status];
 
@@ -79,9 +82,12 @@ export function InvestorBuildingCard({
     ]);
   };
 
-  const sortedImages = [...(building.images ?? [])].sort(
-    (a, b) => a.displayOrder - b.displayOrder,
-  );
+  const handleSetCover = (imageId: string) => {
+    if (imageId === cover?.id) return;
+    buildingImages.setCover.mutate(imageId);
+  };
+
+  const sortedImages = sortImages(building.images);
 
   return (
     <View className="overflow-hidden rounded-3xl bg-surface">
@@ -137,6 +143,12 @@ export function InvestorBuildingCard({
             <Text className="font-display text-body-base text-foreground">Slike projekta</Text>
           </View>
 
+          {sortedImages.length > 0 ? (
+            <Text className="mb-2 font-body text-body-sm text-muted">
+              Zadrži sliku duže da je postaviš kao naslovnu.
+            </Text>
+          ) : null}
+
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
             <View className="flex-row gap-3">
               <Pressable
@@ -150,21 +162,56 @@ export function InvestorBuildingCard({
                   <Ionicons name="add" size={26} color="hsl(239, 84%, 67%)" />
                 )}
               </Pressable>
-              {sortedImages.map((img) => (
-                <View key={img.id} className="relative">
-                  <Image
-                    source={{ uri: img.imageUrl }}
-                    style={{ width: 80, height: 80, borderRadius: 16 }}
-                    contentFit="cover"
-                  />
-                  <Pressable
-                    onPress={() => handleDeleteImage(img.id)}
-                    hitSlop={6}
-                    className="absolute -right-1 -top-1 h-6 w-6 items-center justify-center rounded-full bg-black/80">
-                    <Ionicons name="close" size={14} color="#ffffff" />
-                  </Pressable>
-                </View>
-              ))}
+              {sortedImages.map((img) => {
+                const isCover = img.id === cover?.id;
+                const isSettingCover =
+                  buildingImages.setCover.isPending && buildingImages.setCover.variables === img.id;
+
+                return (
+                  <View key={img.id} className="relative">
+                    <Pressable
+                      onLongPress={() => handleSetCover(img.id)}
+                      delayLongPress={400}
+                      disabled={isCover || buildingImages.setCover.isPending}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+                      <Image
+                        source={{ uri: img.imageUrl }}
+                        style={{
+                          width: 80,
+                          height: 80,
+                          borderRadius: 16,
+                          borderWidth: isCover ? 2 : 0,
+                          borderColor: COVER_COLOR,
+                        }}
+                        contentFit="cover"
+                      />
+                      {isCover ? (
+                        <View
+                          className="absolute bottom-1 left-1 flex-row items-center gap-0.5 rounded-full px-1.5 py-0.5"
+                          style={{ backgroundColor: COVER_COLOR }}>
+                          <Ionicons name="star" size={9} color="#ffffff" />
+                          <Text className="font-body-medium text-white" style={{ fontSize: 9 }}>
+                            Naslovna
+                          </Text>
+                        </View>
+                      ) : null}
+                      {isSettingCover ? (
+                        <View
+                          className="absolute inset-0 items-center justify-center"
+                          style={{ borderRadius: 16, backgroundColor: 'rgba(11,11,18,0.6)' }}>
+                          <ActivityIndicator color="#ffffff" />
+                        </View>
+                      ) : null}
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleDeleteImage(img.id)}
+                      hitSlop={6}
+                      className="absolute -right-1 -top-1 h-6 w-6 items-center justify-center rounded-full bg-black/80">
+                      <Ionicons name="close" size={14} color="#ffffff" />
+                    </Pressable>
+                  </View>
+                );
+              })}
             </View>
           </ScrollView>
 

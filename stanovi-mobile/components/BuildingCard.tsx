@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { StatusBadge } from '@/components/StatusBadge';
 import { buildingStatusConfig } from '@/constants/statusConfig';
 import type { Building } from '@/lib/api/types';
+import { getCoverImage } from '@/lib/buildingImages';
 
 interface BuildingCardProps {
   building: Building;
@@ -15,7 +16,7 @@ interface BuildingCardProps {
 export function BuildingCard({ building }: BuildingCardProps) {
   const router = useRouter();
 
-  const cover = [...building.images].sort((a, b) => a.displayOrder - b.displayOrder)[0];
+  const cover = getCoverImage(building.images);
   const apartmentCount = building._count.apartments;
 
   return (

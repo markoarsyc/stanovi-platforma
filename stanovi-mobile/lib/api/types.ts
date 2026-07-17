@@ -11,6 +11,7 @@ export interface BuildingImage {
   id: string;
   imageUrl: string;
   displayOrder: number;
+  isCover?: boolean;
 }
 
 export interface ApartmentImage {
