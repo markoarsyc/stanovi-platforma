@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { ApartmentImageManagerModal } from '@/components/investor/ApartmentImageManagerModal';
+import { ApartmentModelManagerModal } from '@/components/investor/ApartmentModelManagerModal';
 import { BuildingReservations } from '@/components/investor/BuildingReservations';
 import { StatusBadge } from '@/components/StatusBadge';
 import { apartmentStatusConfig, buildingStatusConfig } from '@/constants/statusConfig';
@@ -32,6 +33,7 @@ export function InvestorBuildingCard({
   const { deleteBuilding, deleteApartment } = useInvestorMutations();
   const buildingImages = useBuildingImageMutations(building.id);
   const [apartmentForImages, setApartmentForImages] = useState<Apartment | null>(null);
+  const [apartmentForModel, setApartmentForModel] = useState<Apartment | null>(null);
 
   const cover = [...(building.images ?? [])].sort((a, b) => a.displayOrder - b.displayOrder)[0];
   const apartmentCount = building.apartments.length;
@@ -182,6 +184,7 @@ export function InvestorBuildingCard({
                   onEdit={() => onEditApartment(apartment)}
                   onDelete={() => handleDeleteApartment(apartment)}
                   onManageImages={() => setApartmentForImages(apartment)}
+                  onManageModel={() => setApartmentForModel(apartment)}
                 />
               ))}
             </View>
@@ -195,6 +198,11 @@ export function InvestorBuildingCard({
       <ApartmentImageManagerModal
         apartment={apartmentForImages}
         onClose={() => setApartmentForImages(null)}
+      />
+
+      <ApartmentModelManagerModal
+        apartment={apartmentForModel}
+        onClose={() => setApartmentForModel(null)}
       />
     </View>
   );
@@ -219,9 +227,16 @@ interface ApartmentRowProps {
   onEdit: () => void;
   onDelete: () => void;
   onManageImages: () => void;
+  onManageModel: () => void;
 }
 
-function ApartmentRow({ apartment, onEdit, onDelete, onManageImages }: ApartmentRowProps) {
+function ApartmentRow({
+  apartment,
+  onEdit,
+  onDelete,
+  onManageImages,
+  onManageModel,
+}: ApartmentRowProps) {
   return (
     <View
       className="flex-row items-center gap-2 rounded-2xl bg-background px-3 py-2.5"
@@ -237,6 +252,7 @@ function ApartmentRow({ apartment, onEdit, onDelete, onManageImages }: Apartment
       </View>
       <StatusBadge status={apartmentStatusConfig[apartment.status]} />
       <IconButton icon="images-outline" onPress={onManageImages} />
+      <IconButton icon="cube-outline" onPress={onManageModel} />
       <IconButton icon="pencil" onPress={onEdit} />
       <IconButton icon="trash-outline" onPress={onDelete} />
     </View>

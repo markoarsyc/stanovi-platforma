@@ -1,5 +1,5 @@
 import { api } from '@/lib/api/client';
-import type { Apartment, ApartmentImage, ApartmentStatus } from '@/lib/api/types';
+import type { Apartment, ApartmentImage, ApartmentModel, ApartmentStatus } from '@/lib/api/types';
 
 export interface ApartmentPayload {
   buildingId: string;
@@ -55,4 +55,26 @@ export async function deleteApartmentImage(
   imageId: string,
 ): Promise<void> {
   await api.delete(`/apartments/${apartmentId}/images/${imageId}`);
+}
+
+export async function getApartmentModel(apartmentId: string): Promise<ApartmentModel | null> {
+  const { data } = await api.get<ApartmentModel | null>(`/apartments/${apartmentId}/model`);
+  return data ?? null;
+}
+
+export async function uploadApartmentModel(
+  apartmentId: string,
+  uri: string,
+  name: string,
+): Promise<ApartmentModel> {
+  const form = new FormData();
+  form.append('model', { uri, name, type: 'application/octet-stream' } as never);
+  const { data } = await api.post<ApartmentModel>(`/apartments/${apartmentId}/model`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+export async function deleteApartmentModel(apartmentId: string): Promise<void> {
+  await api.delete(`/apartments/${apartmentId}/model`);
 }
