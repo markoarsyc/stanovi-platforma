@@ -11,7 +11,7 @@ import { apartmentStatusConfig, buildingStatusConfig } from '@/constants/statusC
 import type { Apartment, InvestorBuilding } from '@/lib/api/types';
 import { useBuildingImageMutations, useInvestorMutations } from '@/lib/api/useInvestorPanel';
 import { pickImages } from '@/lib/investor/imagePicker';
-import { formatPrice } from '@/lib/format';
+import { formatDate, formatPrice } from '@/lib/format';
 
 interface InvestorBuildingCardProps {
   building: InvestorBuilding;
@@ -37,8 +37,6 @@ export function InvestorBuildingCard({
 
   const cover = [...(building.images ?? [])].sort((a, b) => a.displayOrder - b.displayOrder)[0];
   const apartmentCount = building.apartments.length;
-  const minPrice =
-    apartmentCount > 0 ? Math.min(...building.apartments.map((a) => Number(a.price))) : 0;
   const status = buildingStatusConfig[building.status];
 
   const handleDelete = () => {
@@ -88,8 +86,8 @@ export function InvestorBuildingCard({
   return (
     <View className="overflow-hidden rounded-3xl bg-surface">
       {/* Header row */}
-      <View className="flex-row items-center gap-3 p-4">
-        <Pressable onPress={onToggle} className="flex-1 flex-row items-center gap-3">
+      <View className="flex-row items-start gap-3 p-4">
+        <Pressable onPress={onToggle}>
           <View className="h-16 w-16 overflow-hidden rounded-2xl bg-border">
             {cover ? (
               <Image source={{ uri: cover.imageUrl }} style={{ flex: 1 }} contentFit="cover" />
@@ -99,23 +97,34 @@ export function InvestorBuildingCard({
               </View>
             )}
           </View>
-          <View className="flex-1">
+        </Pressable>
+
+        <View className="flex-1">
+          <Pressable onPress={onToggle}>
             <Text className="font-display text-h3 text-foreground" numberOfLines={1}>
               {building.title}
             </Text>
+            <Text className="mt-0.5 font-body text-body-sm text-muted" numberOfLines={1}>
+              {building.address}
+            </Text>
             <Text className="font-body text-body-sm text-muted" numberOfLines={1}>
-              {building.address}, {building.location.name}
+              {building.location.name}
             </Text>
             <Text className="mt-0.5 font-body text-body-sm text-accent" numberOfLines={1}>
-              {apartmentCount} {apartmentCount === 1 ? 'stan' : 'stanova'} · {status.label}
-              {minPrice > 0 ? ` · Od ${formatPrice(minPrice)}` : ''}
+              {apartmentCount} {apartmentCount === 1 ? 'stan' : 'stanova'} · {status.label} · Rok:{' '}
+              {formatDate(building.dueDate)}
             </Text>
-          </View>
-        </Pressable>
+          </Pressable>
 
-        <View className="flex-row items-center gap-1">
-          <IconButton icon="pencil" onPress={onEdit} />
-          <IconButton icon="trash-outline" onPress={handleDelete} />
+          <View
+            className="mt-2 flex-row items-center border-t pt-1"
+            style={{ borderTopColor: '#2A2A40' }}>
+            <ActionButton icon="pencil" label="Izmeni" onPress={onEdit} />
+            <ActionButton icon="trash-outline" label="Obriši" onPress={handleDelete} destructive />
+          </View>
+        </View>
+
+        <View className="self-center">
           <IconButton icon={isExpanded ? 'chevron-up' : 'chevron-down'} onPress={onToggle} />
         </View>
       </View>
@@ -239,22 +248,55 @@ function ApartmentRow({
 }: ApartmentRowProps) {
   return (
     <View
-      className="flex-row items-center gap-2 rounded-2xl bg-background px-3 py-2.5"
+      className="rounded-2xl bg-background p-3.5"
       style={{ borderWidth: 1, borderColor: '#2A2A40' }}>
-      <View className="flex-1">
-        <Text className="font-body-medium text-body-base text-foreground">
+      <View className="flex-row items-center justify-between gap-2">
+        <Text className="flex-1 font-body-medium text-h5 text-foreground" numberOfLines={1}>
           Stan {apartment.aptNo}
         </Text>
-        <Text className="font-body text-body-sm text-muted">
-          Sprat {apartment.floor} · {apartment.rooms}-soban · {Number(apartment.area)} m² ·{' '}
-          {formatPrice(apartment.price)}
-        </Text>
+        <StatusBadge status={apartmentStatusConfig[apartment.status]} />
       </View>
-      <StatusBadge status={apartmentStatusConfig[apartment.status]} />
-      <IconButton icon="images-outline" onPress={onManageImages} />
-      <IconButton icon="cube-outline" onPress={onManageModel} />
-      <IconButton icon="pencil" onPress={onEdit} />
-      <IconButton icon="trash-outline" onPress={onDelete} />
+
+      <Text className="mt-1 font-body text-body-sm text-muted">
+        Sprat {apartment.floor} · {Number(apartment.area)} m² · {apartment.rooms}-soban ·{' '}
+        {formatPrice(apartment.price)}
+      </Text>
+
+      <View
+        className="mt-3 flex-row items-center justify-between border-t pt-1"
+        style={{ borderTopColor: '#2A2A40' }}>
+        <ActionButton icon="images-outline" label="Slike" onPress={onManageImages} />
+        <ActionButton icon="cube-outline" label="3D" onPress={onManageModel} />
+        <ActionButton icon="pencil" label="Izmeni" onPress={onEdit} />
+        <ActionButton icon="trash-outline" label="Obriši" onPress={onDelete} destructive />
+      </View>
     </View>
+  );
+}
+
+const DESTRUCTIVE = 'hsl(0, 70%, 60%)';
+
+function ActionButton({
+  icon,
+  label,
+  onPress,
+  destructive = false,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  destructive?: boolean;
+}) {
+  const color = destructive ? DESTRUCTIVE : 'hsl(239, 84%, 67%)';
+  return (
+    <Pressable
+      onPress={onPress}
+      className="flex-1 items-center gap-1 py-2"
+      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
+      <Ionicons name={icon} size={19} color={color} />
+      <Text className="font-body text-body-sm" style={{ color }} numberOfLines={1}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }

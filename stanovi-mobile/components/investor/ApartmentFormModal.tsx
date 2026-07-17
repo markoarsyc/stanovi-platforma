@@ -1,7 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -19,10 +16,8 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { FormInput } from '@/components/ui/FormInput';
 import { FormSelect } from '@/components/ui/FormSelect';
 import { GradientButton } from '@/components/ui/GradientButton';
-import { uploadApartmentImage } from '@/lib/api/apartments.service';
 import type { Apartment } from '@/lib/api/types';
 import { useInvestorMutations } from '@/lib/api/useInvestorPanel';
-import { pickImages } from '@/lib/investor/imagePicker';
 import { apartmentSchema, type ApartmentFormValues } from '@/lib/investor/schemas';
 
 interface ApartmentFormModalProps {
@@ -44,10 +39,8 @@ export function ApartmentFormModal({
   onClose,
 }: ApartmentFormModalProps) {
   const isEditing = !!apartment;
-  const queryClient = useQueryClient();
   const { createApartment, updateApartment } = useInvestorMutations();
 
-  const [pickedImage, setPickedImage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const {
@@ -78,30 +71,16 @@ export function ApartmentFormModal({
 
   const handleClose = () => {
     reset();
-    setPickedImage(null);
     onClose();
-  };
-
-  const handlePickImage = async () => {
-    const uris = await pickImages(false);
-    if (uris.length) setPickedImage(uris[0]);
   };
 
   const onValid = async (values: ApartmentFormValues) => {
     setSubmitting(true);
     try {
-      let apartmentId = apartment?.id;
       if (isEditing && apartment) {
         await updateApartment.mutateAsync({ id: apartment.id, payload: values });
       } else {
-        const created = await createApartment.mutateAsync({ ...values, buildingId });
-        apartmentId = created.id;
-      }
-      if (pickedImage && apartmentId) {
-        await uploadApartmentImage(apartmentId, pickedImage).catch(() => {});
-        await queryClient.invalidateQueries({ queryKey: ['apartment-images', apartmentId] });
-        await queryClient.invalidateQueries({ queryKey: ['investor-buildings'] });
-        await queryClient.invalidateQueries({ queryKey: ['buildings'] });
+        await createApartment.mutateAsync({ ...values, buildingId });
       }
       handleClose();
     } catch {
@@ -178,31 +157,6 @@ export function ApartmentFormModal({
                 )}
               />
 
-              <View
-                className="border border-dashed bg-surface p-4"
-                style={{ borderRadius: 24, borderColor: '#3A3A63' }}>
-                {pickedImage ? (
-                  <View className="mb-3 flex-row">
-                    <View className="relative">
-                      <Image
-                        source={{ uri: pickedImage }}
-                        style={{ width: 80, height: 80, borderRadius: 12 }}
-                        contentFit="cover"
-                      />
-                      <Pressable
-                        onPress={() => setPickedImage(null)}
-                        hitSlop={6}
-                        className="absolute -right-1 -top-1 h-6 w-6 items-center justify-center rounded-full bg-black/80">
-                        <Ionicons name="close" size={14} color="#ffffff" />
-                      </Pressable>
-                    </View>
-                  </View>
-                ) : null}
-                <Pressable onPress={handlePickImage} className="items-center py-4">
-                  <Ionicons name="image-outline" size={28} color="hsl(239, 84%, 67%)" />
-                  <Text className="mt-2 font-body text-body-base text-muted">Dodaj sliku</Text>
-                </Pressable>
-              </View>
             </View>
 
             <View className="mt-8 flex-row items-center justify-center gap-6">
