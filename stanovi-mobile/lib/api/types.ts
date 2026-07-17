@@ -1,6 +1,16 @@
 export type BuildingStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED';
 export type ApartmentStatus = 'AVAILABLE' | 'RESERVED';
 export type ReservationStatus = 'ACTIVE' | 'CANCELLED';
+export type VerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface VerificationRequest {
+  id: string;
+  investorId: string;
+  companyName: string;
+  tin: string;
+  status: VerificationStatus;
+  createdAt: string;
+}
 
 export interface Location {
   id: number;
@@ -84,6 +94,8 @@ export interface InvestorProfile {
   isVerified: boolean;
   profilePhotoUrl?: string | null;
   createdAt: string;
+  /** Only the most recent request is returned by the API. */
+  verificationRequests?: VerificationRequest[];
 }
 
 export interface InvestorBuilding extends Omit<Building, '_count'> {

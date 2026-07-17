@@ -41,6 +41,13 @@ export class InvestorService {
   async findByUserId(userId: string) {
     const investor = await this.prisma.investor.findUnique({
       where: { userId },
+      // The latest request lets the profile distinguish "not requested" from "pending".
+      include: {
+        verificationRequests: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
     });
 
     if (!investor) throw new NotFoundException('Investor not found');
@@ -162,6 +169,21 @@ export class InvestorService {
     if (investor.userId !== user.id) {
       throw new ForbiddenException(
         'You can only request verification for your own investor profile',
+      );
+    }
+
+    if (investor.isVerified) {
+      throw new ConflictException('Investor profile is already verified');
+    }
+
+    const pending = await this.prisma.verificationRequest.findFirst({
+      where: { investorId: id, status: 'PENDING' },
+      select: { id: true },
+    });
+
+    if (pending) {
+      throw new ConflictException(
+        'A verification request is already pending review',
       );
     }
 

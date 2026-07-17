@@ -10,6 +10,7 @@ import {
   BadgeCheck,
   ShieldCheck,
   Shield,
+  Clock,
   Pencil,
   Lock,
 } from 'lucide-react';
@@ -38,6 +39,10 @@ const ProfilePage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isEditOpen, setIsEditOpen] = useState<boolean>(false);
   const [isPasswordOpen, setIsPasswordOpen] = useState<boolean>(false);
+
+  // The API returns only the most recent request; a pending one blocks a new submission.
+  const verificationPending =
+    investor?.verificationRequests?.[0]?.status === 'PENDING';
 
   const roleLabel = isInvestor ? 'Investitor' : 'Kupac';
   const displayName = isInvestor
@@ -113,9 +118,17 @@ const ProfilePage: React.FC = () => {
               <InfoRow icon={Mail} label="Kontakt email" value={investor?.contactEmail} />
               <InfoRow icon={Phone} label="Kontakt telefon" value={investor?.contactPhone} />
               <InfoRow
-                icon={investor?.isVerified ? ShieldCheck : Shield}
+                icon={
+                  investor?.isVerified ? ShieldCheck : verificationPending ? Clock : Shield
+                }
                 label="Status verifikacije"
-                value={investor?.isVerified ? 'Verifikovan' : 'Nije verifikovan'}
+                value={
+                  investor?.isVerified
+                    ? 'Verifikovan'
+                    : verificationPending
+                      ? 'Zahtev za verifikaciju poslat'
+                      : 'Nije verifikovan'
+                }
               />
             </div>
           ) : (
@@ -135,7 +148,7 @@ const ProfilePage: React.FC = () => {
               <Button variant="secondary" onClick={() => setIsPasswordOpen(true)}>
                 <Lock size={18} /> Promeni lozinku
               </Button>
-              {isInvestor && investor && !investor.isVerified && (
+              {isInvestor && investor && !investor.isVerified && !verificationPending && (
                 <Button variant="secondary" onClick={() => setIsDialogOpen(true)}>
                   <BadgeCheck size={18} /> Verifikuj profil
                 </Button>

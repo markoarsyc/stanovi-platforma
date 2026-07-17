@@ -17,6 +17,13 @@ export const investorProfileSchema = z.object({
 
 export type InvestorProfileFormValues = z.infer<typeof investorProfileSchema>;
 
+export const verificationRequestSchema = z.object({
+  companyName: z.string().min(1, 'Naziv kompanije je obavezan'),
+  tin: z.string().min(1, 'PIB je obavezan'),
+});
+
+export type VerificationRequestFormValues = z.infer<typeof verificationRequestSchema>;
+
 export const changePasswordSchema = z
   .object({
     oldPassword: z.string().min(1, 'Unesite trenutnu lozinku'),

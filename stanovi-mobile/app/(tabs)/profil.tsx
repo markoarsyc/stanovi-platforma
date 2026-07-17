@@ -10,13 +10,61 @@ import { ChangePasswordModal } from '@/components/profile/ChangePasswordModal';
 import { EditBuyerModal } from '@/components/profile/EditBuyerModal';
 import { EditInvestorModal } from '@/components/profile/EditInvestorModal';
 import { ReservationsList } from '@/components/profile/ReservationsList';
+import { VerificationModal } from '@/components/profile/VerificationModal';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { GRADIENT_INDIGO } from '@/constants/gradients';
+import type { InvestorProfile } from '@/lib/api/types';
 import { useBuyerProfile, useInvestorProfile, useProfileMutations } from '@/lib/api/useProfile';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { pickImages } from '@/lib/investor/imagePicker';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
+
+interface VerificationState {
+  icon: IoniconName;
+  value: string;
+  canRequest: boolean;
+  actionLabel: string;
+}
+
+function getVerificationState(investor?: InvestorProfile): VerificationState {
+  if (investor?.isVerified) {
+    return {
+      icon: 'shield-checkmark-outline',
+      value: 'Verifikovan',
+      canRequest: false,
+      actionLabel: '',
+    };
+  }
+
+  // The API returns only the most recent request.
+  const latest = investor?.verificationRequests?.[0];
+
+  if (latest?.status === 'PENDING') {
+    return {
+      icon: 'time-outline',
+      value: 'Zahtev za verifikaciju poslat',
+      canRequest: false,
+      actionLabel: '',
+    };
+  }
+
+  if (latest?.status === 'REJECTED') {
+    return {
+      icon: 'close-circle-outline',
+      value: 'Zahtev odbijen',
+      canRequest: true,
+      actionLabel: 'Pošalji novi zahtev',
+    };
+  }
+
+  return {
+    icon: 'shield-outline',
+    value: 'Nije verifikovan',
+    canRequest: true,
+    actionLabel: 'Pošalji zahtev za verifikaciju',
+  };
+}
 
 export default function ProfilScreen() {
   const { isAuthenticated } = useAuth();
@@ -38,6 +86,7 @@ function AuthenticatedProfile() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [verificationOpen, setVerificationOpen] = useState(false);
 
   const isLoading = isInvestor ? investorQuery.isLoading : buyerQuery.isLoading;
   const buyer = buyerQuery.data;
@@ -51,6 +100,7 @@ function AuthenticatedProfile() {
       : 'Kupac';
   const initial = (displayName?.[0] ?? user?.email?.[0] ?? '?').toUpperCase();
 
+  const verification = getVerificationState(investor);
   const profileId = isInvestor ? investor?.id : buyer?.id;
   const photoUrl = isInvestor ? investor?.profilePhotoUrl : buyer?.profilePhotoUrl;
   const hasProfile = isInvestor ? !!investor : !!buyer;
@@ -166,10 +216,22 @@ function AuthenticatedProfile() {
                 <InfoRow icon="mail-outline" label="Kontakt email" value={investor?.contactEmail} />
                 <InfoRow icon="call-outline" label="Kontakt telefon" value={investor?.contactPhone} />
                 <InfoRow
-                  icon={investor?.isVerified ? 'shield-checkmark-outline' : 'shield-outline'}
+                  icon={verification.icon}
                   label="Status verifikacije"
-                  value={investor?.isVerified ? 'Verifikovan' : 'Nije verifikovan'}
-                />
+                  value={verification.value}>
+                  {verification.canRequest && investor ? (
+                    <Pressable
+                      onPress={() => setVerificationOpen(true)}
+                      hitSlop={8}
+                      className="flex-row items-center gap-1.5 self-start rounded-full border border-border px-3 py-1.5"
+                      style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+                      <Ionicons name="shield-outline" size={14} color="hsl(239, 84%, 67%)" />
+                      <Text className="font-body-medium text-body-sm text-primary">
+                        {verification.actionLabel}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </InfoRow>
               </>
             ) : (
               <>
@@ -233,12 +295,20 @@ function AuthenticatedProfile() {
       ) : null}
 
       {isInvestor && investor ? (
-        <EditInvestorModal
-          visible={editOpen}
-          investor={investor}
-          userId={user?.id}
-          onClose={() => setEditOpen(false)}
-        />
+        <>
+          <EditInvestorModal
+            visible={editOpen}
+            investor={investor}
+            userId={user?.id}
+            onClose={() => setEditOpen(false)}
+          />
+          <VerificationModal
+            visible={verificationOpen}
+            investor={investor}
+            userId={user?.id}
+            onClose={() => setVerificationOpen(false)}
+          />
+        </>
       ) : null}
 
       <ChangePasswordModal
@@ -287,13 +357,24 @@ function GuestProfile() {
   );
 }
 
-function InfoRow({ icon, label, value }: { icon: IoniconName; label: string; value?: string | null }) {
+function InfoRow({
+  icon,
+  label,
+  value,
+  children,
+}: {
+  icon: IoniconName;
+  label: string;
+  value?: string | null;
+  children?: React.ReactNode;
+}) {
   return (
     <View className="flex-row items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-3">
       <Ionicons name={icon} size={20} color="hsl(239, 84%, 67%)" />
       <View className="flex-1">
         <Text className="font-body text-body-sm uppercase tracking-wide text-muted">{label}</Text>
         <Text className="font-body text-body-base text-foreground">{value || '—'}</Text>
+        {children ? <View className="mt-2">{children}</View> : null}
       </View>
     </View>
   );

@@ -6,10 +6,12 @@ import {
   deleteInvestorPhoto,
   getBuyerByUserId,
   getInvestorByUserId,
+  requestInvestorVerification,
   updateBuyer,
   updateInvestor,
   uploadBuyerPhoto,
   uploadInvestorPhoto,
+  type RequestVerificationPayload,
   type UpdateBuyerPayload,
   type UpdateInvestorPayload,
 } from '@/lib/api/profile.service';
@@ -75,5 +77,20 @@ export function useProfileMutations(userId: string | undefined, isInvestor: bool
     mutationFn: changePassword,
   });
 
-  return { updateProfile, uploadPhoto, removePhoto, changeProfilePassword };
+  const requestVerification = useMutation<
+    void,
+    Error,
+    { id: string; payload: RequestVerificationPayload }
+  >({
+    mutationFn: ({ id, payload }) => requestInvestorVerification(id, payload),
+    onSuccess: invalidate,
+  });
+
+  return {
+    updateProfile,
+    uploadPhoto,
+    removePhoto,
+    changeProfilePassword,
+    requestVerification,
+  };
 }

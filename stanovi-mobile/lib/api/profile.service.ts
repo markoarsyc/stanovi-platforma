@@ -19,6 +19,11 @@ export interface ChangePasswordPayload {
   newPassword: string;
 }
 
+export interface RequestVerificationPayload {
+  companyName: string;
+  tin: string;
+}
+
 export async function getBuyerByUserId(userId: string): Promise<BuyerProfile> {
   const { data } = await api.get<BuyerProfile>(`/buyers/user/${userId}`);
   return data;
@@ -27,6 +32,13 @@ export async function getBuyerByUserId(userId: string): Promise<BuyerProfile> {
 export async function getInvestorByUserId(userId: string): Promise<InvestorProfile> {
   const { data } = await api.get<InvestorProfile>(`/investors/user/${userId}`);
   return data;
+}
+
+export async function requestInvestorVerification(
+  investorId: string,
+  payload: RequestVerificationPayload,
+): Promise<void> {
+  await api.post(`/investors/${investorId}/request-verification`, payload);
 }
 
 export async function updateBuyer(
