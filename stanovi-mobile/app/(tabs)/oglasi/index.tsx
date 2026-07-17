@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,15 +15,10 @@ export default function ListingsScreen() {
 
   const { data: buildings, isLoading, isError } = useBuildings(appliedFilters);
 
-  const handleApply = (filters: BuildingFiltersValue) => {
-    setFiltersApplied(true);
+  const handleApply = useCallback((filters: BuildingFiltersValue) => {
+    setFiltersApplied(Boolean(filters.search || filters.locationId || filters.status));
     setAppliedFilters(filters);
-  };
-
-  const handleClear = () => {
-    setFiltersApplied(false);
-    setAppliedFilters({});
-  };
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -43,11 +38,7 @@ export default function ListingsScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View className="mb-2">
-            <BuildingFilters
-              onApply={handleApply}
-              onClear={handleClear}
-              filtersApplied={filtersApplied}
-            />
+            <BuildingFilters onApply={handleApply} />
           </View>
         }
         ListEmptyComponent={

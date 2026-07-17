@@ -1,8 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -20,11 +18,10 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormInput } from '@/components/ui/FormInput';
 import { FormSelect } from '@/components/ui/FormSelect';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { GradientButton } from '@/components/ui/GradientButton';
-import { uploadBuildingImage } from '@/lib/api/buildings.service';
 import type { InvestorBuilding, Location } from '@/lib/api/types';
 import { useInvestorMutations } from '@/lib/api/useInvestorPanel';
-import { pickImages } from '@/lib/investor/imagePicker';
 import { buildingSchema, type BuildingFormValues } from '@/lib/investor/schemas';
 
 interface BuildingFormModalProps {
@@ -61,10 +58,8 @@ export function BuildingFormModal({
   onClose,
 }: BuildingFormModalProps) {
   const isEditing = !!building;
-  const queryClient = useQueryClient();
   const { createBuilding, updateBuilding } = useInvestorMutations();
 
-  const [pickedImages, setPickedImages] = useState<string[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -96,21 +91,7 @@ export function BuildingFormModal({
 
   const handleClose = () => {
     reset();
-    setPickedImages([]);
     onClose();
-  };
-
-  const handleAddImages = async () => {
-    const uris = await pickImages(true);
-    if (uris.length) setPickedImages((prev) => [...prev, ...uris]);
-  };
-
-  const uploadPicked = async (buildingId: string) => {
-    for (const uri of pickedImages) {
-      await uploadBuildingImage(buildingId, uri).catch(() => {});
-    }
-    await queryClient.invalidateQueries({ queryKey: ['investor-buildings'] });
-    await queryClient.invalidateQueries({ queryKey: ['buildings'] });
   };
 
   const onValid = async (values: BuildingFormValues) => {
@@ -123,10 +104,8 @@ export function BuildingFormModal({
       };
       if (isEditing && building) {
         await updateBuilding.mutateAsync({ id: building.id, payload });
-        if (pickedImages.length) await uploadPicked(building.id);
       } else {
-        const created = await createBuilding.mutateAsync(payload);
-        if (pickedImages.length) await uploadPicked(created.id);
+        await createBuilding.mutateAsync(payload);
       }
       handleClose();
     } catch {
@@ -173,12 +152,14 @@ export function BuildingFormModal({
                 control={control}
                 name="locationId"
                 render={({ field: { onChange, value } }) => (
-                  <FormSelect
+                  <SearchableSelect
                     placeholder="Izaberite opštinu"
+                    searchPlaceholder="Pretraži opštine..."
                     icon="location-outline"
                     options={locations.map((l) => ({ label: l.name, value: l.id }))}
                     value={value || null}
                     onChange={onChange}
+                    allowClear={false}
                     error={errors.locationId?.message}
                   />
                 )}
@@ -265,9 +246,6 @@ export function BuildingFormModal({
                 )}
               />
 
-              <ImagePickerField images={pickedImages} onAdd={handleAddImages} onRemove={(i) =>
-                setPickedImages((prev) => prev.filter((_, idx) => idx !== i))
-              } />
             </View>
 
             <View className="mt-8 flex-row items-center justify-center gap-6">
@@ -290,42 +268,3 @@ export function BuildingFormModal({
   );
 }
 
-interface ImagePickerFieldProps {
-  images: string[];
-  onAdd: () => void;
-  onRemove: (index: number) => void;
-}
-
-function ImagePickerField({ images, onAdd, onRemove }: ImagePickerFieldProps) {
-  return (
-    <View
-      className="border border-dashed bg-surface p-4"
-      style={{ borderRadius: 24, borderColor: '#3A3A63' }}>
-      {images.length > 0 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
-          <View className="flex-row gap-3">
-            {images.map((uri, index) => (
-              <View key={`${uri}-${index}`} className="relative">
-                <Image
-                  source={{ uri }}
-                  style={{ width: 80, height: 80, borderRadius: 12 }}
-                  contentFit="cover"
-                />
-                <Pressable
-                  onPress={() => onRemove(index)}
-                  hitSlop={6}
-                  className="absolute -right-1 -top-1 h-6 w-6 items-center justify-center rounded-full bg-black/80">
-                  <Ionicons name="close" size={14} color="#ffffff" />
-                </Pressable>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
-      ) : null}
-      <Pressable onPress={onAdd} className="items-center py-4">
-        <Ionicons name="images-outline" size={28} color="hsl(239, 84%, 67%)" />
-        <Text className="mt-2 font-body text-body-base text-muted">Dodaj slike</Text>
-      </Pressable>
-    </View>
-  );
-}

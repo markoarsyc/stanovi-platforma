@@ -1,55 +1,62 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { FormSelect } from '@/components/ui/FormSelect';
-import { GradientButton } from '@/components/ui/GradientButton';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { buildingStatusConfig } from '@/constants/statusConfig';
 import type { BuildingFilters as BuildingFiltersValue } from '@/lib/api/buildings.service';
 import { useLocations } from '@/lib/api/useInvestorPanel';
 import type { BuildingStatus } from '@/lib/api/types';
 
+const SEARCH_DEBOUNCE_MS = 500;
+
+type SortOrder = 'newest' | 'oldest';
+
 interface BuildingFiltersProps {
   onApply: (filters: BuildingFiltersValue) => void;
-  onClear: () => void;
-  filtersApplied: boolean;
 }
 
 const STATUS_OPTIONS = (Object.keys(buildingStatusConfig) as BuildingStatus[]).map(
   (status) => ({ label: buildingStatusConfig[status].label, value: status }),
 );
 
-const SORT_OPTIONS: { label: string; value: 'newest' | 'oldest' }[] = [
-  { label: 'Najnovije', value: 'newest' },
-  { label: 'Najstarije', value: 'oldest' },
-];
-
-export function BuildingFilters({ onApply, onClear, filtersApplied }: BuildingFiltersProps) {
+export function BuildingFilters({ onApply }: BuildingFiltersProps) {
   const { data: locations } = useLocations();
 
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [locationId, setLocationId] = useState<number | null>(null);
   const [status, setStatus] = useState<BuildingStatus | null>(null);
-  const [sort, setSort] = useState<'newest' | 'oldest'>('newest');
+  const [sort, setSort] = useState<SortOrder>('newest');
 
-  const locationOptions = (locations ?? []).map((l) => ({ label: l.name, value: l.id }));
+  // Free-text search is debounced; selects and sort apply immediately.
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const handleApply = () => {
+  useEffect(() => {
     onApply({
-      search: search.trim() || undefined,
+      search: debouncedSearch.trim() || undefined,
       locationId: locationId ?? undefined,
       status: status ?? undefined,
       sort,
     });
-  };
+  }, [onApply, debouncedSearch, locationId, status, sort]);
+
+  const locationOptions = (locations ?? []).map((l) => ({ label: l.name, value: l.id }));
+
+  const filtersActive = Boolean(search || locationId || status);
 
   const handleClear = () => {
     setSearch('');
+    setDebouncedSearch('');
     setLocationId(null);
     setStatus(null);
-    setSort('newest');
-    onClear();
   };
+
+  const toggleSort = () => setSort((prev) => (prev === 'newest' ? 'oldest' : 'newest'));
 
   return (
     <View className="gap-3">
@@ -68,8 +75,9 @@ export function BuildingFilters({ onApply, onClear, filtersApplied }: BuildingFi
         />
       </View>
 
-      <FormSelect
+      <SearchableSelect
         placeholder="Sve opštine"
+        searchPlaceholder="Pretraži opštine..."
         icon="location-outline"
         options={locationOptions}
         value={locationId}
@@ -84,18 +92,26 @@ export function BuildingFilters({ onApply, onClear, filtersApplied }: BuildingFi
         onChange={setStatus}
       />
 
-      <FormSelect
-        placeholder="Sortiranje"
-        icon="swap-vertical-outline"
-        options={SORT_OPTIONS}
-        value={sort}
-        onChange={setSort}
-      />
+      <Pressable
+        onPress={toggleSort}
+        className="flex-row items-center gap-2 self-start border px-4 py-2"
+        style={({ pressed }) => ({
+          borderRadius: 40,
+          borderColor: '#3A3A63',
+          opacity: pressed ? 0.6 : 1,
+        })}>
+        <Ionicons name="swap-vertical-outline" size={16} color="hsl(239, 84%, 67%)" />
+        <Text className="font-body-medium text-body-sm text-foreground">
+          {sort === 'newest' ? 'Prvo najnoviji' : 'Prvo najstariji'}
+        </Text>
+      </Pressable>
 
-      <GradientButton title="Primeni filtere" onPress={handleApply} />
-
-      {filtersApplied ? (
-        <Pressable onPress={handleClear} className="items-center py-2">
+      {filtersActive ? (
+        <Pressable
+          onPress={handleClear}
+          className="flex-row items-center justify-center gap-1.5 py-2"
+          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+          <Ionicons name="close" size={16} color="#9A9AB0" />
           <Text className="font-body-medium text-body-base text-muted">Ukloni filtere</Text>
         </Pressable>
       ) : null}
