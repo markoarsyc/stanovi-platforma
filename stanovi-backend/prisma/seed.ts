@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import * as bcrypt from 'bcrypt';
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -7,9 +8,7 @@ const adapter = new PrismaPg({
 
 const prisma = new PrismaClient({ adapter });
 
-async function main() {
-  console.log("DATABASE_URL:", process.env.DATABASE_URL);
-
+async function seedLocations() {
   const locations = [
     { id: 1, name: 'Barajevo' },
     { id: 2, name: 'Čukarica' },
@@ -33,18 +32,87 @@ async function main() {
   for (const location of locations) {
     await prisma.location.upsert({
       where: { id: location.id },
-      update: { name: location.name },
-      create: { id: location.id, name: location.name },
+      update: {
+        name: location.name,
+      },
+      create: {
+        id: location.id,
+        name: location.name,
+      },
     });
   }
 
   const count = await prisma.location.count();
-  console.log("Ukupno lokacija:", count);
+
+  console.log(`Uspešno seedovane lokacije. Ukupno lokacija: ${count}`);
+}
+
+async function seedAdmin() {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email && !password) {
+    console.warn(
+      'ADMIN_EMAIL i ADMIN_PASSWORD nisu postavljeni. Administrator nije kreiran.',
+    );
+    return;
+  }
+
+  if (!email || !password) {
+    throw new Error(
+      'Moraju biti postavljene obe promenljive: ADMIN_EMAIL i ADMIN_PASSWORD.',
+    );
+  }
+
+  if (password.length < 12) {
+    throw new Error(
+      'ADMIN_PASSWORD mora sadržati najmanje 12 karaktera.',
+    );
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (existingUser) {
+    if (existingUser.role !== Role.ADMIN) {
+      throw new Error(
+        `Korisnik sa email adresom ${email} već postoji, ali nema ADMIN ulogu.`,
+      );
+    }
+
+    console.log(`Administrator ${email} već postoji.`);
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  await prisma.user.create({
+    data: {
+      email,
+      passwordHash,
+      role: Role.ADMIN,
+      isActive: true,
+    },
+  });
+
+  console.log(`Administrator ${email} je uspešno kreiran.`);
+}
+
+async function main() {
+  console.log('Pokretanje seedovanja baze...');
+
+  await seedLocations();
+  await seedAdmin();
+
+  console.log('Seedovanje baze je uspešno završeno.');
 }
 
 main()
-  .catch((e) => {
-    console.error("Greška:", e);
+  .catch((error: unknown) => {
+    console.error('Greška prilikom seedovanja baze:', error);
     process.exit(1);
   })
   .finally(async () => {
